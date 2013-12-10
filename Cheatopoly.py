@@ -2,9 +2,12 @@ class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
     Source: http://boardgames.about.com/od/monopolyfaq/f/bank_money.htm
+    There is also a limited number of houses and hotels.[how many?]
     '''
-    def __init__(self, money):
+    def __init__(self, money, houses, hotels):
         self.money = money
+        self.houses = houses
+        self.hotels = hotels
 
 class Place(object):
     '''
@@ -48,10 +51,11 @@ class Street(Place):
     Each street is a place and has a name and a price.
     The rent depends on the number of houses (0-4, plus a hotel) .
     The costs of the houses and hotels is specific to the street
-    Also, there is a mortgage value.
+    Also, there is a mortgage value and the street belongs to a neighborhood.
     '''
-    def __init__(self, name, price, rent0, rent1, rent2, rent3, rent4, rentH, mortgage, houseCost, hotelCost):
+    def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
+        self.placeType = placeType
         self.price = price
         self.rent0 = rent0
         self.rent1 = rent1
@@ -62,6 +66,7 @@ class Street(Place):
         self.mortgage = mortgage
         self.houseCost = houseCost
         self.hotelCost = hotelCost
+        self.neighborhood = neighborhood
     def newOwner(self, player):
         #change street owner
         self.ownedBy = player
@@ -73,7 +78,9 @@ class Railroad(Place):
     The rents and mortgae values are identical for all railroads.
     They are still defined in __init__().
     '''
-    def __init__(self, rent1, rent2, rent3, rent4, mortgage):
+    def __init__(self, name, placeType, rent1, rent2, rent3, rent4, mortgage):
+        self.name = name
+        self.placeType = placeType
         self.rent1 = rent1
         self.rent2 = rent2
         self.rent3 = rent3
@@ -87,11 +94,12 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
-    def __init__(self, name, mortgage):
+    def __init__(self, name, placeType, mortgage):
         self.name = name
+        self.placeType = placeType
         self.mortgage = mortgage
 
-class ComunityChests(Place):
+class CommunityChests(Place):
     '''
     No specific data.
     '''
@@ -143,26 +151,40 @@ class CommunityCard(object):
     These cards:
     - give or take cash from you; or 
     - move you to a new location; or
+    - order you to make general repairs (USD 25 per house, USD 100 per hotel);
     - give you an out-of-jail ticket.
     '''
-    def __init__(self, text, movement, cash, jailcard):
+    def __init__(self, text, cardType, goStart, cash, jailcard, repairs, collect, goToJail):
         self.text = text
-        self.movement = movement #int
-        self.cash = cash
-        self.jailcard = jailcard #0 or 1?
+        self.cardType = cardType #?
+        self.goStart = goStart # 0 or 1
+        self.cash = cash # positive or negative int
+        self.jailcard = jailcard # 0 or 1
+        self.repairs = repairs # 0 or 1
+        self.collect = collect # 0 or 1
+        self.goToJail = goToJail # 0 or 1
 
 class ChanceCard(object):
     '''
     Chance cards are generally similar to community chest cards, with several exceptions:
     - you advance to the neareast railroad and pay twice the rental or buy it from the bank;
-    - you make general repairs (USD 25 per house, USD 100 per hotel);
     - take a ride on the Reading; if you pass go, collect 200.
     '''
-    def __init__(self, text, movement, cash, jailcard, rail, repairs, reading):
+    def __init__(self, text, cardType, movement, cash, jailcard, rail, repairs, goToJail, reading, goTo):
         self.text = text
-        self.movement = movement #int
+        self.cardType = cardType #?
+        self.movement = movement # int
         self.cash = cash
         self.jailcard = jailcard #0 or 1?
         self.rail = rail #boolean
-        self.repairs = repairs #boolean
-        self.reading = reading #boolean
+        self.repairs = repairs #0 or 1
+        self.goToJail = goToJail # 0 or 1
+        self.reading = reading #0 or 1
+        self.goTo = goTo # 0 or 1 if Start or string
+        
+# import data from data.txt
+import os
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+ff = open(os.path.join(__location__, 'data.txt'));
+with ff as f:
+    content = f.readlines()
