@@ -38,14 +38,6 @@ class Neighborhood(object):
         #change neighborhood owner
         self.ownedBy = player
 
-class Player(object):
-    '''
-    Each player is initialized with an amount of money and a starting position.
-    '''
-    def __init__ (self, cash, location):
-        self.cash = cash
-        self.location = location
-
 class Street(Place):
     '''
     Each street is a place and has a name and a price.
@@ -53,6 +45,10 @@ class Street(Place):
     The costs of the houses and hotels is specific to the street
     Also, there is a mortgage value and the street belongs to a neighborhood.
     '''
+    #initially there are no houses or hotels on the street
+    houses = 0
+    hotels = 0
+    
     def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
         self.placeType = placeType
@@ -73,6 +69,7 @@ class Street(Place):
     def __repr__(self):
         print self.name + "\n"
         print "Neighborhood: " + self.neighborhood + "\n"
+        print "Price: " + str(self.price) + "\n"
         print "Rent: " + str(self.rent0) + "\n"
         print "With 1 House: " + str(self.rent1) + "\n"
         print "With 2 Houses: " + str(self.rent2) + "\n"
@@ -82,7 +79,7 @@ class Street(Place):
         print "Mortgage Value: " + str(self.mortgage) + "\n"
         print "Houses Cost " + str(self.houseCost) + " each." + "\n"
         print "Hotels, " + str(self.houseCost) + " plus 4 houses" + "\n"
-        return self.name + ", " + self.neighborhood
+        return self.name + ", " + self.neighborhood + " at pos " + str(self.location)
     
 class Railroad(Place):
     '''
@@ -91,14 +88,24 @@ class Railroad(Place):
     The rents and mortgae values are identical for all railroads.
     They are still defined in __init__().
     '''
-    def __init__(self, name, placeType, rent1, rent2, rent3, rent4, mortgage):
+    def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, mortgage):
         self.name = name
         self.placeType = placeType
+        self.price = price
         self.rent1 = rent1
         self.rent2 = rent2
         self.rent3 = rent3
         self.rent4 = rent4
         self.mortgage = mortgage
+    def __repr__(self):
+        print self.name + "\n"
+        print "Price: " + str(self.price) + "\n"
+        print "Rent: " + str(self.rent1) + "\n"
+        print "If 2 R.R's are owned: " + str(self.rent2) + "\n"
+        print "If 3 R.R's are owned: " + str(self.rent3) + "\n"
+        print "If 4 R.R's are owned: " + str(self.rent4) + "\n"
+        print "Mortgage Value: " + str(self.mortgage) + "\n"
+        return self.name + " at pos " + str(self.location)
     
 class Utility(Place):
     '''
@@ -107,56 +114,69 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
-    def __init__(self, name, placeType, mortgage):
+    def __init__(self, name, placeType, price, mortgage):
         self.name = name
         self.placeType = placeType
+        self.price = price
         self.mortgage = mortgage
+    def __repr__(self):
+        return self.name +  " at pos " + str(self.location)
 
-class CommunityChests(Place):
+class CommunityChest(Place):
     '''
     No specific data.
     '''
-    pass
+    def __repr__(self):
+        return "Community Chest at pos " + str(self.location)
 
-class Chances(Place):
+class Chance(Place):
     '''
     No specific data.
     '''
-    pass
+    def __repr__(self):
+        return "Chance at pos " + str(self.location)
 
-class Taxes(Place):
-    def __init__(self, name, option1, option2):
+class Tax(Place):
+    def __init__(self, name, placeType, option1, option2, text):
         '''
         Each tax location has a name or one or two taxation options, as
         some tax locations allow you to choose one of two alternatives.
         '''
         self.name = name
+        self.placeType = placeType
         self.option1 = option1
         self.option2 = option2
+        self.text = text
+    def __repr__(self):
+        return self.name + " at pos " + str(self.location)
 
 class Jail(Place):
     '''
     This is the jail
     '''
-    pass
+    def __repr__(self):
+        return "Jail at pos " + str(self.location)
 
 class GoToJail(Place):
      '''
      Here you go to jail.
      '''
-     pass
+     def __repr__(self):
+        return "Go To Jail at pos " + str(self.location)
 
 class FreeParking(Place):
     '''
     This is the free parking corner.
     '''
-    pass
+    def __repr__(self):
+        return "Free Parking at pos " + str(self.location)
 
 class Start(Place):
     '''
     This is the starting corner.
     '''
-    pass
+    def __repr__(self):
+        return "Start at pos " + str(self.location)
 
 class CommunityCard(object):
     '''
@@ -195,6 +215,15 @@ class ChanceCard(object):
         self.reading = reading #0 or 1
         self.goTo = goTo # 0 or 1 if Start or string
         
+class Player(object):
+    '''
+    Each player is initialized with an amount of money and a starting position.
+    '''
+    def __init__ (self, cash, location):
+        self.cash = cash
+        self.location = location
+
+
 # import data from data.txt
 import os
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -205,7 +234,41 @@ with ff as f:
 places = {}
 for i in range(len(content)):
     line = content[i].rstrip().split("\t")
-    if line[0] == "street":
+    if i < 10:
+        name = "pos0" + str(i)
+    else:
         name = "pos" + str(i)
+    if line[0] == "street":
         places[name] = Street(line[12], line[0], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), int(line[8]), int(line[9]), int(line[10]), line[11])
-        
+    elif line[0] == "start":
+        places[name] = Start()
+        places[name].placeType = line[0]
+    elif line[0] == "chestL":
+        places[name] = CommunityChest()
+        places[name].placeType = line[0]
+    elif line[0] == "tax":
+        places[name] = Tax(line[3], line[0], line[1], line[2], line[4])
+    elif line[0] == "rail":
+        places[name] = Railroad(line[7], line[0], line[1], line[2], line[3], line[4], line[5], line[6])
+    elif line[0] == "chanceL":
+        places[name] = Chance()
+        places[name].placeType = line[0]
+    elif line[0] == "jail":
+        places[name] = Jail()
+        places[name].placeType = line[0]
+    elif line[0] == "utility":
+        places[name] = Utility(line[3], line[0], line[1], line[2])
+    elif line[0] == "park":
+        places[name] = FreeParking()
+        places[name].placeType = line[0]
+    elif line[0] == "gotojail":
+        places[name] = GoToJail()
+        places[name].placeType = line[0]
+    if line[0] in ["street", "start", "chestL", "tax", "rail", "chanceL", "jail", "utility", "park", "gotojail"]:
+        places[name].location = i
+    
+#test: output  list of places to output.txt
+f = open(os.path.join(__location__, 'output.txt'), "w")
+for place in sorted(places):
+    f.write(str(places[place]) + "\n")
+f.close()
