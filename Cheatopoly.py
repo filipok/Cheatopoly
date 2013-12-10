@@ -70,6 +70,19 @@ class Street(Place):
     def newOwner(self, player):
         #change street owner
         self.ownedBy = player
+    def __repr__(self):
+        print self.name + "\n"
+        print "Neighborhood: " + self.neighborhood + "\n"
+        print "Rent: " + str(self.rent0) + "\n"
+        print "With 1 House: " + str(self.rent1) + "\n"
+        print "With 2 Houses: " + str(self.rent2) + "\n"
+        print "With 3 Houses: " + str(self.rent3) + "\n"
+        print "With 4 Houses: " + str(self.rent4) + "\n"
+        print "With Hotel: " + str(self.rentH) + "\n"
+        print "Mortgage Value: " + str(self.mortgage) + "\n"
+        print "Houses Cost " + str(self.houseCost) + " each." + "\n"
+        print "Hotels, " + str(self.houseCost) + " plus 4 houses" + "\n"
+        return self.name + ", " + self.neighborhood
     
 class Railroad(Place):
     '''
@@ -188,3 +201,11 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
+
+places = {}
+for i in range(len(content)):
+    line = content[i].rstrip().split("\t")
+    if line[0] == "street":
+        name = "pos" + str(i)
+        places[name] = Street(line[12], line[0], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), int(line[8]), int(line[9]), int(line[10]), line[11])
+        
