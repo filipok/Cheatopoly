@@ -24,19 +24,7 @@ class Place(object):
         - Start
     '''
     placeType = None #type of place
-    placeLocation = None #location of each place #useless when using lists?
-
-class Neighborhood(object):
-    '''
-    Each neighborhood has a name.
-    '''
-    ownedBy = None #initially owned by nobody
-    
-    def __init__(self, name):
-        self.name = name
-    def newOwner(self, player):
-        #change neighborhood owner
-        self.ownedBy = player
+    location = None
 
 class Street(Place):
     '''
@@ -68,6 +56,25 @@ class Street(Place):
     def newOwner(self, player):
         #change street owner
         self.ownedBy = player
+    def rent(self):
+        if self.hotels == 1:
+            return self.rentH
+        elif self.houses == 4:
+            return self.rent4
+        elif self.houses == 3:
+            return self.rent3
+        elif self.houses == 2:
+            return self.rent2
+        elif self.houses == 1:
+            return self.rent1
+        else:
+            #no hotels,no houses:
+            #check for ownership of entire neighborhood
+            for item in neighborhoods[self.neighborhood]:
+                if item.ownedBy != self.ownedBy:
+                    return self.rent0
+            return 2*self.rent0
+            
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " at pos " + \
         str(self.location) + ", price: " + str(self.price) + ", rents: " + \
@@ -80,9 +87,10 @@ class Railroad(Place):
     '''
     Railroad rents depend on the number of railroads owned.
     There is also a mortgage value.
-    The rents and mortgae values are identical for all railroads.
+    The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
     '''
+    ownedBy = None
     def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, \
     mortgage):
         self.name = name
@@ -93,11 +101,27 @@ class Railroad(Place):
         self.rent3 = rent3
         self.rent4 = rent4
         self.mortgage = mortgage
+    def newOwner(self, player):
+        #change railroad owner
+        self.ownedBy = player
+    def rent(self):
+        counter = 0
+        for item in board:
+            if item.placeType == "rail" and item.ownedBy == self.ownedBy:
+                counter += 1
+        if counter == 4:
+            return self.rent4
+        elif counter == 3:
+            return self.rent3
+        elif counter == 2:
+            return self.rent2
+        else:
+            return self.rent1
     def __repr__(self):
         return self.name + " at pos " + str(self.location) + ", price: " + \
         str(self.price) + ", rents: " + str(self.rent1) + " " +  \
         str(self.rent2) + " " + str(self.rent3) + " " + str(self.rent4) + \
-        ", mortgage: " + str(self.mortgage)
+        ", mortgage: " + str(self.mortgage) + "; owned by: " + str(self.ownedBy)
     
 class Utility(Place):
     '''
@@ -106,11 +130,27 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
+    ownedBy = None
     def __init__(self, name, placeType, price, mortgage):
         self.name = name
         self.placeType = placeType
         self.price = price
         self.mortgage = mortgage
+    def newOwner(self, player):
+        #change utility owner
+        self.ownedBy = player
+    def rent(self):
+        print "Let us roll the dice for rent!"
+        dice = Dice()
+        print "Dice: " +  str(dice[0]) + " " + str(dice[1])
+        counter = 0
+        for item in board:
+            if item.placeType == "utility" and item.ownedBy == self.ownedBy:
+                counter += 1
+        if counter == 1:
+            return 4 * (dice[0] + dice[1])
+        else:
+            return 10 * (dice[0] + dice[1])
     def __repr__(self):
         return self.name +  " at pos " + str(self.location) + ", price: " + \
         str(self.price) + ", mortgage: " + str(self.mortgage)
@@ -119,6 +159,7 @@ class CommunityChest(Place):
     '''
     No specific data.
     '''
+    name = "Community Chest"
     def __repr__(self):
         return "Community Chest at pos " + str(self.location)
 
@@ -126,6 +167,7 @@ class Chance(Place):
     '''
     No specific data.
     '''
+    name = "Chance"
     def __repr__(self):
         return "Chance at pos " + str(self.location)
 
@@ -147,6 +189,7 @@ class Jail(Place):
     '''
     This is the jail
     '''
+    name = "Jail"
     def __repr__(self):
         return "Jail at pos " + str(self.location)
 
@@ -154,6 +197,7 @@ class GoToJail(Place):
      '''
      Here you go to jail.
      '''
+     name = "Go To Jail"
      def __repr__(self):
         return "Go To Jail at pos " + str(self.location)
 
@@ -161,6 +205,7 @@ class FreeParking(Place):
     '''
     This is the free parking corner.
     '''
+    name = "Free Parking"
     def __repr__(self):
         return "Free Parking at pos " + str(self.location)
 
@@ -168,6 +213,7 @@ class Start(Place):
     '''
     This is the starting corner.
     '''
+    name = "Start"
     def __repr__(self):
         return "Start at pos " + str(self.location)
 
@@ -242,7 +288,7 @@ ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
 
-#places = {}
+neighborhoods = {}
 board = []
 communityChest = []
 chances = []
@@ -253,6 +299,10 @@ for i in range(len(content)):
     line = content[i].rstrip().split("\t")
     if line[0] == "street":
         board.append(Street(line[12], line[0], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), int(line[8]), int(line[9]), int(line[10]), line[11]))
+        if line[11] in neighborhoods:
+            neighborhoods[line[11]].append(board[-1])
+        else:
+            neighborhoods[line[11]] = [board[-1]]
     elif line[0] == "start":
         board.append(Start())
         board[i].placeType = line[0]
@@ -262,7 +312,7 @@ for i in range(len(content)):
     elif line[0] == "tax":
         board.append(Tax(line[3], line[0], line[1], line[2], line[4]))
     elif line[0] == "rail":
-        board.append(Railroad(line[7], line[0], line[1], line[2], line[3], line[4], line[5], line[6]))
+        board.append(Railroad(line[7], line[0], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
     elif line[0] == "chanceL":
         board.append(Chance())
         board[i].placeType = line[0]
@@ -270,7 +320,7 @@ for i in range(len(content)):
         board.append(Jail())
         board[i].placeType = line[0]
     elif line[0] == "utility":
-        board.append(Utility(line[3], line[0], line[1], line[2]))
+        board.append(Utility(line[3], line[0], int(line[1]), int(line[2])))
     elif line[0] == "park":
         board.append(FreeParking())
         board[i].placeType = line[0]
@@ -282,7 +332,8 @@ for i in range(len(content)):
     elif line[0] == "chance":
         chances.append(ChanceCard(line[9], line[0], line[1], line [2], line[3], line[4], line[5], line[6], line[7], line[8]))
     if line[0] in ["street", "start", "chestL", "tax", "rail", "chanceL", "jail", "utility", "park", "gotojail"]:
-        board[i].location = i #useless?
+        board[i].location = i
+
         
     
 #test: output  board, community cards and chance cards to output.txt
@@ -330,11 +381,14 @@ bank =  Bank(money, houses, hotels)
 
 currentPlayer = 0 # indicates current player
 startWage = 200
+print neighborhoods
 
 while bank.money > 0 and len(players) > 1:
+    #Start player turn
+    raw_input("Hello, " + players[currentPlayer].name +  "! You have $" + str(players[currentPlayer].cash) + ". Press Enter to start turn.")
     #Roll dice
     dice = Dice()
-    print "Dice roll for " + ": " +  str(dice[0]) + " " + str(dice[1])
+    print "Dice roll for " + players[currentPlayer].name + ": " +  str(dice[0]) + " " + str(dice[1])
     # resolve jail status (and advance to next position)
     if players[currentPlayer].inJail:
         if dice[0] == dice[1]:
@@ -385,36 +439,48 @@ while bank.money > 0 and len(players) > 1:
                 print players[currentPlayer].name + " pays $50 to get out of jail and advances to " + str(players[currentPlayer].location) + "."
     else:
         players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-        print players[currentPlayer].name + " advances to " + str(players[currentPlayer].location) + "."
+        print players[currentPlayer].name + " advances to " + str(players[currentPlayer].location) + " (" + board[players[currentPlayer].location].name + ")."
     #crossing start, +startWage/2*startWage
-    if players[currentPlayer].location - dice[0] - dice[1] < 0:
-        players[currentPlayer].cash += startWage
-        print players[currentPlayer].name + " gets $" + str(startWage) + "."
-    elif players[currentPlayer].location - dice[0] - dice[1] == 0:
+    if players[currentPlayer].location == 0:
         players[currentPlayer].cash += 2*startWage
         print players[currentPlayer].name + " is a lucky punk and gets $" + str(2*startWage) + "."
-    # if lands on street, rail or utility:
+    elif players[currentPlayer].location - dice[0] - dice[1] < 0:
+        players[currentPlayer].cash += startWage
+        print players[currentPlayer].name + " gets $" + str(startWage) + "."
+    # if player lands on street, rail or utility:
     if board[players[currentPlayer].location].placeType in ["street", "rail", "utility"]:
         if board[players[currentPlayer].location].ownedBy == None:
             choose = ''
             while choose not in ["yes", "no"]:
-                choose = raw_input(board[players[currentPlayer].location].name + " is currently available. Do you want to buy it? Summary: " + board[players[currentPlayer].location] + " [yes/no] ").lower() #human
-            if choose == "yes" and players[currentPlayer].cash > board[players[currentPlayer].location].price:
-                board[players[currentPlayer].location].newOwner(players[currentPlayer]) #assign new owner
-                players[currentPlayer].cash -= board[players[currentPlayer].location].price
-                bank.money += board[players[currentPlayer].location].price
-                print "Congratulations, " + players[currentPlayer].name + " has bought: " +  board[players[currentPlayer].location] + "."
+                choose = raw_input("Hey, " + players[currentPlayer].name + "! " + board[players[currentPlayer].location].name + " is currently available and you have $" + str(players[currentPlayer].cash) + ". Do you want to buy it? Summary: " + str(board[players[currentPlayer].location]) + " [yes/no] ").lower() #human
+            if choose == "yes":
+                if players[currentPlayer].cash > board[players[currentPlayer].location].price:
+                    board[players[currentPlayer].location].newOwner(players[currentPlayer]) #assign new owner
+                    players[currentPlayer].cash -= board[players[currentPlayer].location].price
+                    bank.money += board[players[currentPlayer].location].price
+                    print "Congratulations, " + players[currentPlayer].name + " has bought: " +  str(board[players[currentPlayer].location]) + "."
+                else:
+                    print "Sorry, you do not have the required funds!"
+                    import random
+                    a = random.randint(1, 6)
+                    if a == 1:
+                        print "Beggar...!"
+                
+        elif board[players[currentPlayer].location].ownedBy == players[currentPlayer]:
+            print "You own " + board[players[currentPlayer].location].name + "!"
         else:
-            pass #it is owned by someone!!!
+            rentDue = board[players[currentPlayer].location].rent()
+            print board[players[currentPlayer].location].name +  " is owned by " + board[players[currentPlayer].location].ownedBy.name + ", you must pay rent amounting to: " + str(rentDue) + "."
+            players[currentPlayer].cash -= rentDue
+            board[players[currentPlayer].location].ownedBy.cash += rentDue
+
     
-    #- buy
-    #- pay rent
-    #-do nothing
     #if chest/chance/tax/jail/gotojail/freeparking, do required actions
     #Upgrade/downgrade houses/hotels
     #Negotiate with other players
     #Turn end: check if positive balance. if not, remove from game
     #Update display
     #currentPlayer += 1
+    currentPlayer = (currentPlayer + 1) % len(players)
     
     
