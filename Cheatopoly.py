@@ -4,6 +4,10 @@ class Bank(object):
     Source: http://boardgames.about.com/od/monopolyfaq/f/bank_money.htm
     There is also a limited number of houses and hotels.[how many?]
     '''
+    #payments made by players as defined in community/chance cards are 
+    #cumulated into this account and are paid to the first player getting to
+    #Free Parking
+    cardPayments = 0
     def __init__(self, money, houses, hotels):
         self.money = money
         self.houses = houses
@@ -25,6 +29,7 @@ class Place(object):
     '''
     placeType = None #type of place
     location = None
+    ownedBy = None
 
 class Street(Place):
     '''
@@ -36,8 +41,6 @@ class Street(Place):
     #initially there are no houses or hotels on the street
     houses = 0
     hotels = 0
-    ownedBy = None
-    
     def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, \
     rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
@@ -90,7 +93,6 @@ class Railroad(Place):
     The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
     '''
-    ownedBy = None
     def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, \
     mortgage):
         self.name = name
@@ -130,7 +132,6 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
-    ownedBy = None
     def __init__(self, name, placeType, price, mortgage):
         self.name = name
         self.placeType = placeType
@@ -281,6 +282,25 @@ def Dice():
     b = random.randint(1, 6)
     return [a, b]
 
+def TaxRate(option, player):
+        '''
+        A function to calculate taxes for a certain player and one tax system.
+        It returns None when fed with the "None" option.
+        '''
+        if option[-1] == "%":
+            taxrate = int(option[:-1])
+            payment = player.cash * taxrate/100.0 #add percentage of cash
+            for item in board:
+                if item.ownedBy == player:
+                    payment += item.price * taxrate/100.0
+                    if item.placeType == "street":
+                        payment += item.hotels * item.hotelCost + item.houses * item.houseCost
+            return int(payment)
+        elif option == "None":
+            return None
+        else:
+            return int(option)
+
 # import data from data.txt
 import os
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -389,58 +409,60 @@ while bank.money > 0 and len(players) > 1:
     #Roll dice
     dice = Dice()
     print "Dice roll for " + players[currentPlayer].name + ": " +  str(dice[0]) + " " + str(dice[1])
-    # resolve jail status (and advance to next position)
+    # Resolve jail status (and advance to next position)
+    #Try doubles
     if players[currentPlayer].inJail:
         if dice[0] == dice[1]:
             players[currentPlayer].inJail = False
             players[currentPlayer].timeInJail = 0
-            players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-            print players[currentPlayer].name + " has got a double: " + str(dice[0]) + " " +str(dice[1]) + ". Advance to position " + str(players[currentPlayer].location) + "."
+            print players[currentPlayer].name + " has got a double: " + str(dice[0]) + " " +str(dice[1]) + "."
         else:
             players[currentPlayer].timeInJail += 1
-            choose = ''
-            while choose not in ["yes", "no"]:
-                choose = raw_input("Do you want to use a 'Get Out Of Jail' card? [yes/no] ").lower() #human
-            if choose == 'yes':
-                if players[currentPlayer].jailCommCards > 0 or players[currentPlayer].jailChanceCards > 0:
-                   if players[currentPlayer].jailCommCards > players[currentPlayer].jailChanceCards:
-                       players[currentPlayer].jailCommCards -= 1
-                       #return community card back to the pile
-                       communityChest.insert(currentComm,CommunityCard("Get out of jail, free", "chest", 0, 0, 1, 0, 0, 0))
-                       currentComm = (currentComm + 1) % len(communityChest)
-                   else:
-                       players[currentPlayer].jailChanceCards -= 1
-                       #return chance card back to the pile
-                       chances.insert(currentChance,ChanceCard("Get out of jail free", "chance", 0, 0, 1, 0, 0, 0, 0, 0))
-                       currentChance = (currentChance + 1) % len(chances)
-                   players[currentPlayer].inJail = False
-                   players[currentPlayer].timeInJail = 0
-                   players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-                   print players[currentPlayer].name + " gets out of jail and advances to " + str(players[currentPlayer].location) + "."
-                else:
-                    print "Sorry, you have no 'Get Out Of Jail'cards."
-                    choose = ''
-                    while choose not in ["yes", "no"]:
-                        choose = raw_input("Do you want to pay $50 to get out of jail[yes/no] ").lower() #human
-                    if choose == 'yes':
-                        if players[currentPlayer].cash >= 50:
-                           players[currentPlayer].cash -= 50
-                           players[currentPlayer].inJail = False
-                           players[currentPlayer].timeInJail = 0
-                           players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-                           print players[currentPlayer].name + " pays $50 to get out of jail and advances to " + str(players[currentPlayer].location) + "."
-                        else:
-                            print "Sorry, you do not have enough cash to get out of jail."
-            if players[currentPlayer].timeInJail == 3:
-                players[currentPlayer].cash -= 50
-                players[currentPlayer].inJail = False
-                players[currentPlayer].timeInJail = 0
-                players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-                print players[currentPlayer].name + " pays $50 to get out of jail and advances to " + str(players[currentPlayer].location) + "."
-    else:
-        players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
-        print players[currentPlayer].name + " advances to " + str(players[currentPlayer].location) + " (" + board[players[currentPlayer].location].name + ")."
-    #crossing start, +startWage/2*startWage
+    #Else use a get ouf of jail card
+    if players[currentPlayer].inJail and (players[currentPlayer].jailCommCards > 0 or players[currentPlayer].jailChanceCards > 0):
+        choose = ''
+        while choose not in ["yes", "no"]:
+            choose = raw_input("Do you want to use a 'Get Out Of Jail' card? [yes/no] ").lower() #human
+        if choose == 'yes':
+            if players[currentPlayer].jailCommCards > players[currentPlayer].jailChanceCards:
+                players[currentPlayer].jailCommCards -= 1
+                #return community card back to the pile
+                communityChest.insert(currentComm,CommunityCard("Get out of jail, free", "chest", 0, 0, 1, 0, 0, 0))
+                currentComm = (currentComm + 1) % len(communityChest)
+            else:
+                players[currentPlayer].jailChanceCards -= 1
+                #return chance card back to the pile
+                chances.insert(currentChance,ChanceCard("Get out of jail free", "chance", 0, 0, 1, 0, 0, 0, 0, 0))
+                currentChance = (currentChance + 1) % len(chances)
+            players[currentPlayer].inJail = False
+            players[currentPlayer].timeInJail = 0
+            print players[currentPlayer].name + " gets out of jail."
+    #Else pay
+    if players[currentPlayer].inJail and players[currentPlayer].cash >= 50:
+        choose = ''
+        while choose not in ["yes", "no"]:
+            choose = raw_input("Do you want to pay $50 to get out of jail[yes/no] ").lower() #human
+        if choose == 'yes':
+            players[currentPlayer].cash -= 50
+            players[currentPlayer].inJail = False
+            players[currentPlayer].timeInJail = 0
+            print players[currentPlayer].name + " pays $50 to get out of jail."
+    #Else if already three turns in jail:
+    if players[currentPlayer].timeInJail == 3:
+        players[currentPlayer].cash -= 50
+        players[currentPlayer].inJail = False
+        players[currentPlayer].timeInJail = 0
+        print players[currentPlayer].name + " pays anyway $50 to get out of jail after three turns."
+    #Check if out of jail
+    if players[currentPlayer].inJail:
+        currentPlayer = (currentPlayer + 1) % len(players)
+        continue #end of turn
+    
+    #So,we are definitely not in jail. Advance to new position
+    players[currentPlayer].location = (players[currentPlayer].location + dice[0] + dice[1])% len(board)
+    print players[currentPlayer].name + " advances to " + str(players[currentPlayer].location) + " (" + board[players[currentPlayer].location].name + ")."
+    
+    #Did we pass Go? +startWage/2*startWage
     if players[currentPlayer].location == 0:
         players[currentPlayer].cash += 2*startWage
         print players[currentPlayer].name + " is a lucky punk and gets $" + str(2*startWage) + "."
@@ -473,10 +495,36 @@ while bank.money > 0 and len(players) > 1:
             print board[players[currentPlayer].location].name +  " is owned by " + board[players[currentPlayer].location].ownedBy.name + ", you must pay rent amounting to: " + str(rentDue) + "."
             players[currentPlayer].cash -= rentDue
             board[players[currentPlayer].location].ownedBy.cash += rentDue
-
+    #Free Parking
+    if board[players[currentPlayer].location].placeType == "park":
+        print "Congratulations, " + players[currentPlayer].name + "! You have landed on Free Parking!"
+        print "You get $" + str(bank.cardPayments) + " from the community and chance card payments."
+    #Go To Jail
+    if board[players[currentPlayer].location].placeType == "gotojail":
+        print players[currentPlayer].name + " goes to JAIL!"
+        #find next jail (you can have several, if you ask me)
+        searchJail = players[currentPlayer].location
+        while board[searchJail].placeType !="jail":
+            searchJail = (searchJail + 1) % len(board)
+        players[currentPlayer].location = searchJail
+        players[currentPlayer].inJail = True
+    #Pay taxes: you can pay either a lump sum or a percentage of total assets.
+    #Sometimes,the second option can be "None"
+    if board[players[currentPlayer].location].placeType == "tax":
+        tax1 = TaxRate(board[players[currentPlayer].location].option1, players[currentPlayer])
+        tax2 = TaxRate(board[players[currentPlayer].location].option2, players[currentPlayer])
+        if tax1 == None or tax2 == None:
+            tax = max(tax1,tax2)
+        else:
+            tax = min(tax1,tax2)
+        print "Well done, " + players[currentPlayer].name + ", you pay taxes amounting to: $" + str(tax)
+        players[currentPlayer].cash -= tax
+        bank.money += tax
     
-    #if chest/chance/tax/jail/gotojail/freeparking, do required actions
-    #Upgrade/downgrade houses/hotels
+    # three doubles -> jail
+    #what if I get to jail after a normal dice roll?
+    #if chest/chance, do required actions
+    #Upgrade/downgrade houses/hotels,mortgage
     #Negotiate with other players
     #Turn end: check if positive balance. if not, remove from game
     #Update display
