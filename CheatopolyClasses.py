@@ -43,6 +43,7 @@ class Street(Place):
     #initially there are no houses or hotels on the street
     houses = 0
     hotels = 0
+    mortgaged = False
     def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, \
     rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
@@ -95,6 +96,7 @@ class Railroad(Place):
     The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
     '''
+    mortgaged = False
     def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, \
     mortgage):
         self.name = name
@@ -134,6 +136,7 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
+    mortgaged = False
     def __init__(self, name, placeType, price, mortgage):
         self.name = name
         self.placeType = placeType

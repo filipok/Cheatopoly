@@ -201,6 +201,7 @@ while bank.money > 0 and len(players) > 1:
     # if player lands on street, rail or utility:
     if board[players[currentPlayer].location].placeType in ["street", "rail", "utility"]:
         if board[players[currentPlayer].location].ownedBy == None:
+            #You can buy the place
             choose = ''
             while choose not in ["yes", "no"]:
                 choose = raw_input("Hey, " + players[currentPlayer].name + "! " + board[players[currentPlayer].location].name + " is currently available and you have $" + str(players[currentPlayer].cash) + ". Do you want to buy it? Summary: " + str(board[players[currentPlayer].location]) + " [yes/no] ").lower() #human
@@ -217,15 +218,20 @@ while bank.money > 0 and len(players) > 1:
                         print "Beggar...!"
                 
         elif board[players[currentPlayer].location].ownedBy == players[currentPlayer]:
+            #If you already own that place
             print "You (" + players[currentPlayer].name + ") own " + board[players[currentPlayer].location].name + "!"
         else:
+            #Finally, you pay rent (if not mortgaged)
             rentDue = board[players[currentPlayer].location].rent(neighborhoods,board)
             if players[currentPlayer].doubleRent == 2:
                 rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
                 players[currentPlayer].doubleRent = 1
-            print board[players[currentPlayer].location].name +  " is owned by " + board[players[currentPlayer].location].ownedBy.name + ", you (" + players[currentPlayer].name + ") must pay rent amounting to: " + str(rentDue) + "."
-            players[currentPlayer].cash -= rentDue
-            board[players[currentPlayer].location].ownedBy.cash += rentDue
+            if board[players[currentPlayer].location].mortgaged == False:
+                print board[players[currentPlayer].location].name +  " is owned by " + board[players[currentPlayer].location].ownedBy.name + ", you (" + players[currentPlayer].name + ") must pay rent amounting to: " + str(rentDue) + "."
+                players[currentPlayer].cash -= rentDue
+                board[players[currentPlayer].location].ownedBy.cash += rentDue
+            else:
+                print board[players[currentPlayer].location].name +  " is owned by " + board[players[currentPlayer].location].ownedBy.name + ", but is mortgaged and you pay nothing."
     #Free Parking
     if board[players[currentPlayer].location].placeType == "park":
         MoveTable(players[currentPlayer],bank)
@@ -242,7 +248,7 @@ while bank.money > 0 and len(players) > 1:
         else:
             tax = min(tax1,tax2)
         print "Well done, " + players[currentPlayer].name + ", you pay taxes amounting to: $" + str(tax)
-        MoveMoney(-tax, players[currentPlayer], bank)
+        MoveMoneyToTable(-tax, players[currentPlayer], bank)
     #Community Chest
     if board[players[currentPlayer].location].placeType == "chestL":
         print "Well, " + players[currentPlayer].name + ", you have drawn this card:"
@@ -299,11 +305,11 @@ while bank.money > 0 and len(players) > 1:
                 if item.name == "Reading Railroad":
                     destination = item.location
                     break
-            players[currentPlayer].location = destination
-            print "You move to Reading Railroad, at location " + str(destination) + "."
-            if destination > item.location:
+            if destination < players[currentPlayer].location:
                 print "You pass Go and collect $" + str(startWage) + "."
                 MoveMoney(startWage, players[currentPlayer], bank)
+            players[currentPlayer].location = destination
+            print "You move to Reading Railroad, at location " + str(destination) + "."
             players[currentPlayer].teleport = 1
             continue
         elif chances[currentChance].movement != 0:
@@ -340,12 +346,75 @@ while bank.money > 0 and len(players) > 1:
         
     
     #money from tax locations goes to table or to bank?
-
     
-    #Upgrade/downgrade houses/hotels,mortgage
+    #Upgrade/downgrade houses/hotels, mortgage properties
+    print ""
+    print "You have the following properties:"
+    for item in board:
+        if item.ownedBy == players[currentPlayer]:
+            if item.placeType == "street":
+                print item.name + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels."
+            else:
+                print item.name + ": " + item.placeType + "."
+    choose = ''
+    while choose not in ["u", "d", "m","d", "e", "n"]:
+        choose = raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
+        if choose == "u":
+            #upgrade
+            choose = "" 
+            pass
+        elif choose == "d":
+            #downgrade
+            choose = ""
+            pass
+        elif choose == "m":
+            #mortgage
+            print "List of properties that you can mortgage:"
+            for item in board:
+                if item.ownedBy == players[currentPlayer] and item.mortgaged == False:
+                    if item.placeType == "street":
+                        print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. Mortgage price: " + str(item.mortgage) + "."
+                    else:
+                        print item.name + "(" + str(item.location) +")" + ": " + item.placeType + ". Mortgage price: " + str(item.mortgage) + "."
+                    
+            choose = int(raw_input("Enter code of property to mortgage: ")) #human
+            if 1 <= choose <= len(board)-1 and \
+            board[choose].placeType in ["street","rail","utility"] and \
+            board[choose].ownedBy == players[currentPlayer] and \
+            board[choose].mortgaged == False:
+                MoveMoney(board[choose].mortgage, players[currentPlayer], bank)
+                board[choose].mortgaged = True
+                print "You have successfully mortgaged " + board[choose].name + "."
+            choose = ""
+            pass
+        elif choose == "e":
+            #demortgage
+            print "List of properties that you can demortgage:"
+            for item in board:
+                if item.ownedBy == players[currentPlayer] and item.mortgaged == True:
+                    if item.placeType == "street":
+                        print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. Demortgage cost (mortgage +10%): " + str(int(item.mortgage * 1.1)) + "."
+                    else:
+                        print item.name + "(" + str(item.location) +")" + ": " + item.placeType + ". Demortgage cost (mortgage +10%): " + str(int(item.mortgage*1.1)) + "."
+                    
+            choose = int(raw_input("Enter code of property to demortgage: ")) #human
+            if 1 <= choose <= len(board)-1 and \
+            board[choose].placeType in ["street","rail","utility"] and \
+            board[choose].ownedBy == players[currentPlayer] and \
+            board[choose].mortgaged == True and \
+            players[currentPlayer].cash >= int(board[choose].mortgage * 1.1):
+                MoveMoney(-int(board[choose].mortgage * 1.1), players[currentPlayer], bank)
+                board[choose].mortgaged = False
+                print "You have successfully demortgaged " + board[choose].name + "."
+            choose = ""
+        elif choose == "n":
+            break
+    
     #Negotiate with other players
     #Turn end: check if positive balance. if not, remove from game
     #Update display
+    #stylecheck
+
     
     #Print current financial status
     print ""
