@@ -277,6 +277,7 @@ class Player(object):
     doublesInARow = 0
     doubleRent = 1# 1 or 2; flag for the chance card sending to next R.R.
     teleport =0 #indicates if the player was sent over by a Chance card
+    inAuction = False #used for auctions
     def __init__ (self, name, cash, human = True):
         self.name = name
         self.cash = cash

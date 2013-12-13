@@ -216,7 +216,41 @@ while bank.money > 0 and len(players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                
+            else:
+                #auction!
+                #set auction flag
+                print "Starting auction..."
+                for person in players:
+                    person.inAuction = True
+                players[currentPlayer].inAuction = False
+                auctionRunning = True
+                auctionPrice = board[players[currentPlayer].location].price
+                bestCandidate = None
+                while auctionRunning:
+                    stillInPlay = 0
+                    for person in players:
+                        if person.inAuction and person != bestCandidate:
+                            print "Hello,"+ person.name + "! " + players[currentPlayer].name + " did not buy " + board[players[currentPlayer].location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + "."
+                            choose = -1
+                            while choose == -1:
+                                try:
+                                    choose = int(raw_input("Please enter your price: ")) #human
+                                except ValueError:
+                                    print "Oops!  That was no valid number.  Try again..."
+                            if choose > auctionPrice:
+                                bestCandidate = person
+                                auctionPrice = choose
+                                stillInPlay += 1
+                            else:
+                                person.inAuction = False
+                    if stillInPlay == 0:
+                        auctionRunning = False
+                if bestCandidate == None:
+                    print "Sadly, nobody wants that place."
+                else:
+                    print "Congratulations, " + bestCandidate.name + "! You have bought " + board[players[currentPlayer].location].name + " for $" + str(auctionPrice) + "."
+                    MoveMoney(-auctionPrice, bestCandidate, bank)
+                    board[players[currentPlayer].location].newOwner(bestCandidate)#assign new owner
         elif board[players[currentPlayer].location].ownedBy == players[currentPlayer]:
             #If you already own that place
             print "You (" + players[currentPlayer].name + ") own " + board[players[currentPlayer].location].name + "!"
@@ -325,7 +359,7 @@ while bank.money > 0 and len(players) > 1:
             players[currentPlayer].teleport = 1
             continue
         elif chances[currentChance].goTo != 0:
-            if chances[currentChance].goTo == 1:
+            if chances[currentChance].goTo == "1":
                 players[currentPlayer].location = 0
                 MoveMoney(startWage, players[currentPlayer], bank)
                 print "You move to Go and only get $" + str(startWage) + "."
@@ -349,7 +383,7 @@ while bank.money > 0 and len(players) > 1:
     
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
-    print "You have the following properties:"
+    print players[currentPlayer].name + ", you have the following properties:"
     for item in board:
         if item.ownedBy == players[currentPlayer]:
             if item.placeType == "street":
@@ -410,10 +444,19 @@ while bank.money > 0 and len(players) > 1:
         elif choose == "n":
             break
     
+    #If a player lands on property and refuses to buy it the others may bid on the property. !! the property is auctioned, and the bidding may start at any price.
+    # upgrade only as long as none of the properties of that color group are mortgaged to the bank
+    #The properties in a color group must be developed evenly, i.e. each house that is built must go on a property in the group with the fewest number of houses on it so far. In another way of speaking, the number of houses of any properties of a same color group must not differ by more than one. For example, houses in a group may be distributed (2,3,2) or (0,1,1) or (4,4,3), but not (1,2,3) or (0,4,4)
+    #Return hotels and houses to the bank for half their purchase price
+    #? Whenever a mortgaged property changes hands between players, either through a trade, sale or by bankruptcy, the new owner must immediately pay 10% interest on the mortgage and at their option may pay the principal or hold the property. If the player holds the property and later wishes to lift the mortgage they must pay the 10% interest again as well as the principal.
+    #?[nope]If a property is mortgaged, a sale of this property can be forced by another player by offering the bank a some more than the mortgaged price. Thereby forcing the person mortgaging the property to buy it back at that time or relinquish the property to the bank which may then be purchased for sale for offered price.
+    #?[nope]If more players decide to build more houses at the same time than there are houses in the bank, the houses are auctioned off one at a time to the highest bidder.?
+    
     #Negotiate with other players
     #Turn end: check if positive balance. if not, remove from game
     #Update display
     #stylecheck
+    #turn 'choose' into a player method
 
     
     #Print current financial status
