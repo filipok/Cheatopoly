@@ -224,7 +224,7 @@ while bank.money > 0 and len(players) > 1:
                     person.inAuction = True
                 players[currentPlayer].inAuction = False
                 auctionRunning = True
-                auctionPrice = board[players[currentPlayer].location].price
+                auctionPrice = 0 # the auction starts from zero
                 bestCandidate = None
                 while auctionRunning:
                     stillInPlay = 0
@@ -377,10 +377,6 @@ while bank.money > 0 and len(players) > 1:
                 continue
         #increment chance card index
         currentChance = (currentChance + 1) % len(chances)
-        
-    
-    #money from tax locations goes to table or to bank?
-    
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print players[currentPlayer].name + ", you have the following properties:"
@@ -395,8 +391,56 @@ while bank.money > 0 and len(players) > 1:
         choose = raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
         if choose == "u":
             #upgrade
+            #first flag the upgradeable locations
+            for neighborhood in neighborhoods.values():
+                minUpgrade = 5
+                for street in neighborhood:
+                    #inefficient...
+                    if street.ownedBy != players[currentPlayer]  or street.mortgaged:
+                        #restore to 5
+                        for street in neighborhood:
+                            street.minUpgrade = 5
+                        minUpgrade = 5
+                        break
+                    else:
+                        if street.hotels == 0:
+                            minUpgrade = min(minUpgrade, street.houses)
+                for street in neighborhood:
+                    if street.ownedBy == players[currentPlayer]:
+                        street.minUpgrade = minUpgrade
+            print "Hey , " + players[currentPlayer].name + "! These are the locations you can upgrade now:"
+            for item in board: #this loop should become a function
+                if isinstance(item, Street) and item.ownedBy == players[currentPlayer] and item.minUpgrade == item.houses:
+                    print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. House price: " + str(item.houseCost) + ". Hotel price: " + str(item.hotelCost) + "."
+
+            choose = ""
+            while choose == "":
+                try:
+                    choose = int(raw_input("Enter code of property to upgrade: ")) #human
+                except ValueError:
+                    print "Oops!  That was no valid number.  Try again..."
+            #or set a canUpgrade flag?
+            if  board[choose].placeType == "street" and board[choose].ownedBy == players[currentPlayer] and board[choose].minUpgrade == board[choose].houses:
+                if board[choose].houses < 4:
+                    if board[choose].houseCost <= players[currentPlayer].cash:
+                        board[choose].houses += 1
+                        MoveMoney(-board[choose].houseCost, players[currentPlayer], bank)
+                        print "You have successfully upgraded " + board[choose].name + "."
+                    else:
+                        print "Sorry,  not enough cash."
+                else:
+                    if board[choose].hotelCost <= players[currentPlayer].cash:
+                        board[choose].hotels = 1
+                        MoveMoney(-board[choose].hotelCost, players[currentPlayer], bank)
+                        print "You have successfully upgraded " + board[choose].name + "."
+                    else:
+                        print "Sorry,  not enough cash."
+                
+            #restore to 5
+            for item in board:
+                if item.placeType == "street":
+                    item.minUpgrade = 5
             choose = "" 
-            pass
         elif choose == "d":
             #downgrade
             choose = ""
@@ -404,7 +448,7 @@ while bank.money > 0 and len(players) > 1:
         elif choose == "m":
             #mortgage
             print "List of properties that you can mortgage:"
-            for item in board:
+            for item in board: #this loop should become a function
                 if item.ownedBy == players[currentPlayer] and item.mortgaged == False:
                     if item.placeType == "street":
                         print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. Mortgage price: " + str(item.mortgage) + "."
@@ -420,7 +464,6 @@ while bank.money > 0 and len(players) > 1:
                 board[choose].mortgaged = True
                 print "You have successfully mortgaged " + board[choose].name + "."
             choose = ""
-            pass
         elif choose == "e":
             #demortgage
             print "List of properties that you can demortgage:"
@@ -444,19 +487,22 @@ while bank.money > 0 and len(players) > 1:
         elif choose == "n":
             break
     
-    #If a player lands on property and refuses to buy it the others may bid on the property. !! the property is auctioned, and the bidding may start at any price.
-    # upgrade only as long as none of the properties of that color group are mortgaged to the bank
-    #The properties in a color group must be developed evenly, i.e. each house that is built must go on a property in the group with the fewest number of houses on it so far. In another way of speaking, the number of houses of any properties of a same color group must not differ by more than one. For example, houses in a group may be distributed (2,3,2) or (0,1,1) or (4,4,3), but not (1,2,3) or (0,4,4)
+
     #Return hotels and houses to the bank for half their purchase price
     #? Whenever a mortgaged property changes hands between players, either through a trade, sale or by bankruptcy, the new owner must immediately pay 10% interest on the mortgage and at their option may pay the principal or hold the property. If the player holds the property and later wishes to lift the mortgage they must pay the 10% interest again as well as the principal.
     #?[nope]If a property is mortgaged, a sale of this property can be forced by another player by offering the bank a some more than the mortgaged price. Thereby forcing the person mortgaging the property to buy it back at that time or relinquish the property to the bank which may then be purchased for sale for offered price.
     #?[nope]If more players decide to build more houses at the same time than there are houses in the bank, the houses are auctioned off one at a time to the highest bidder.?
+    #upgrade if in jail?
     
     #Negotiate with other players
     #Turn end: check if positive balance. if not, remove from game
     #Update display
     #stylecheck
     #turn 'choose' into a player method
+    #placeType? check for class?
+    #what if "choose" not an int
+    #should consistently check for player funds
+
 
     
     #Print current financial status

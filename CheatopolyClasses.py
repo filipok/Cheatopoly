@@ -44,6 +44,7 @@ class Street(Place):
     houses = 0
     hotels = 0
     mortgaged = False
+    minUpgrade = 5
     def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, \
     rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
