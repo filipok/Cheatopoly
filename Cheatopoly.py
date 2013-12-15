@@ -410,7 +410,7 @@ while bank.money > 0 and len(players) > 1:
                         street.minUpgrade = minUpgrade
             print "Hey , " + players[currentPlayer].name + "! These are the locations you can upgrade now:"
             for item in board: #this loop should become a function
-                if isinstance(item, Street) and item.ownedBy == players[currentPlayer] and item.minUpgrade == item.houses:
+                if isinstance(item, Street) and item.ownedBy == players[currentPlayer] and item.minUpgrade == item.houses and item.hotels == 0:
                     print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. House price: " + str(item.houseCost) + ". Hotel price: " + str(item.hotelCost) + "."
 
             choose = ""
@@ -420,7 +420,7 @@ while bank.money > 0 and len(players) > 1:
                 except ValueError:
                     print "Oops!  That was no valid number.  Try again..."
             #or set a canUpgrade flag?
-            if  board[choose].placeType == "street" and board[choose].ownedBy == players[currentPlayer] and board[choose].minUpgrade == board[choose].houses:
+            if  1 <= choose <= len(board)-1 and isinstance(board[choose], Street) and board[choose].ownedBy == players[currentPlayer] and board[choose].minUpgrade == board[choose].houses:
                 if board[choose].houses < 4:
                     if board[choose].houseCost <= players[currentPlayer].cash:
                         board[choose].houses += 1
@@ -443,13 +443,34 @@ while bank.money > 0 and len(players) > 1:
             choose = "" 
         elif choose == "d":
             #downgrade
+            print "List of properties that you can downgrade:"
+            for item in board: #this loop should become a function
+                if isinstance(item, Street)and item.ownedBy == players[currentPlayer] and item.houses > 0:
+                    print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. House return price: " + str(item.houseCost/2) + ". Hotel return price: " + str(item.hotelCost/2) + "."
+            choose = ""
+            while choose == "":
+                try:
+                    choose = int(raw_input("Enter code of property to downgrade: ")) #human
+                except ValueError:
+                    print "Oops!  That was no valid number.  Try again..."        
+            if 1 <= choose <= len(board)-1 and \
+            isinstance(board[choose],Street) and \
+            board[choose].ownedBy == players[currentPlayer] and \
+            board[choose].houses > 0:
+                if board[choose].hotels == 1:
+                    board[choose].hotels = 0
+                    MoveMoney(board[choose].hotelCost/2, players[currentPlayer], bank)
+                else:
+                    board[choose].houses -= 1
+                    MoveMoney(board[choose].houseCost/2, players[currentPlayer], bank)
+                print "You have successfully downgraded " + board[choose].name + ": currently " + str(board[choose].houses) + " houses and " + str(board[choose].hotels) + " hotels."
             choose = ""
             pass
         elif choose == "m":
             #mortgage
             print "List of properties that you can mortgage:"
             for item in board: #this loop should become a function
-                if item.ownedBy == players[currentPlayer] and item.mortgaged == False:
+                if item.ownedBy == players[currentPlayer] and item.mortgaged == False and item.houses == 0:
                     if item.placeType == "street":
                         print item.name + "(" + str(item.location) +")" + ", " + item.neighborhood +  ": " + str(item.houses) + " houses " + str(item.hotels) + " hotels. Mortgage price: " + str(item.mortgage) + "."
                     else:
@@ -459,7 +480,7 @@ while bank.money > 0 and len(players) > 1:
             if 1 <= choose <= len(board)-1 and \
             board[choose].placeType in ["street","rail","utility"] and \
             board[choose].ownedBy == players[currentPlayer] and \
-            board[choose].mortgaged == False:
+            board[choose].mortgaged == False and board[choose].houses == 0:
                 MoveMoney(board[choose].mortgage, players[currentPlayer], bank)
                 board[choose].mortgaged = True
                 print "You have successfully mortgaged " + board[choose].name + "."
