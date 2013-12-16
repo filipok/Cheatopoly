@@ -63,3 +63,22 @@ def ResetJail(player):
     player.inJail = False
     player.timeInJail = 0
     player.doublesInARow = 0
+    
+def choose_int(fro, to):
+    choose = -1
+    while choose < fro or choose > to:
+        try:
+            choose = int(raw_input("Enter number [" + str(fro) + " - "+ str(to) + "]: ")) #human
+        except ValueError:
+            print "Oops!  That was no valid number.  Try again..."
+    return choose
+
+def choose_yes_no(string):
+    choose = ''
+    while choose not in ["yes", "no"]:
+        choose = raw_input(string).lower() #human
+    return choose
+                
+
+def isOwnedAndMortgaged(item, player, condition):
+    return item.ownedBy == player and item.mortgaged == condition

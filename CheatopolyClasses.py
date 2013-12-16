@@ -32,6 +32,10 @@ class Place(object):
     placeType = None #type of place
     location = None
     ownedBy = None
+    mortgaged = False
+    houses = 0
+    hotels = 0
+
 
 class Street(Place):
     '''
@@ -41,9 +45,6 @@ class Street(Place):
     Also, there is a mortgage value and the street belongs to a neighborhood.
     '''
     #initially there are no houses or hotels on the street
-    houses = 0
-    hotels = 0
-    mortgaged = False
     minUpgrade = 5
     def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, \
     rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
@@ -83,12 +84,15 @@ class Street(Place):
             return 2*self.rent0
             
     def __repr__(self):
-        return self.name + ", " + self.neighborhood + " at pos " + \
-        str(self.location) + ", price: " + str(self.price) + ", rents: " + \
+        return self.name + ", " + self.neighborhood + " (" + \
+        str(self.location) + "), $: " + str(self.price) + ", r: " + \
         str(self.rent1) + " " + str(self.rent2) + " " + str(self.rent3) + " " +\
-        str(self.rent4) + " " + str(self.rentH) + ", mortgage: " + \
-        str(self.mortgage) + ", house cost: " +  str(self.houseCost) + \
-        ", hotel cost: " + str(self.hotelCost) + " plus 4 houses"
+        str(self.rent4) + " " + str(self.rentH) + ", m: " + \
+        str(self.mortgage) + ", h+: " +  str(self.houseCost) + \
+        ", H+: " + str(self.hotelCost) + ", h-: " + \
+        str(self.houseCost/2) + ", H-: " + str(self.hotelCost/2) + \
+        ", dem: " + str(int(self.mortgage * 1.1)) + ", h: " + \
+        str(self.houses) + ", H: " + str(self.hotels)
     
 class Railroad(Place):
     '''
@@ -97,7 +101,6 @@ class Railroad(Place):
     The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
     '''
-    mortgaged = False
     def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, \
     mortgage):
         self.name = name
@@ -125,10 +128,11 @@ class Railroad(Place):
         else:
             return self.rent1
     def __repr__(self):
-        return self.name + " at pos " + str(self.location) + ", price: " + \
+        return self.name + " (" + str(self.location) + "), price: " + \
         str(self.price) + ", rents: " + str(self.rent1) + " " +  \
         str(self.rent2) + " " + str(self.rent3) + " " + str(self.rent4) + \
-        ", mortgage: " + str(self.mortgage) + "; owned by: " + str(self.ownedBy)
+        ", mortgage: " + str(self.mortgage) + "; demortgage: " + \
+        str(int(self.mortgage * 1.1))
     
 class Utility(Place):
     '''
@@ -137,7 +141,6 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
-    mortgaged = False
     def __init__(self, name, placeType, price, mortgage):
         self.name = name
         self.placeType = placeType
@@ -159,8 +162,9 @@ class Utility(Place):
         else:
             return 10 * (dice[0] + dice[1])
     def __repr__(self):
-        return self.name +  " at pos " + str(self.location) + ", price: " + \
-        str(self.price) + ", mortgage: " + str(self.mortgage)
+        return self.name +  " (" + str(self.location) + "), price: " + \
+        str(self.price) + ", mortgage: " + str(self.mortgage) + \
+        "; demortgage: " + str(int(self.mortgage * 1.1))
 
 class CommunityChest(Place):
     '''
