@@ -29,12 +29,13 @@ class Place(object):
         - free parking
         - Start
     '''
-    placeType = None #type of place
     location = None
     ownedBy = None
     mortgaged = False
     houses = 0
     hotels = 0
+    hotelCost = 0
+    houseCost = 0
 
 
 class Street(Place):
@@ -46,10 +47,9 @@ class Street(Place):
     '''
     #initially there are no houses or hotels on the street
     minUpgrade = 5
-    def __init__(self, name, placeType, price, rent0, rent1, rent2, rent3, \
+    def __init__(self, name, price, rent0, rent1, rent2, rent3, \
     rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
         self.name = name
-        self.placeType = placeType
         self.price = price
         self.rent0 = rent0
         self.rent1 = rent1
@@ -101,10 +101,9 @@ class Railroad(Place):
     The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
     '''
-    def __init__(self, name, placeType, price, rent1, rent2, rent3, rent4, \
+    def __init__(self, name, price, rent1, rent2, rent3, rent4, \
     mortgage):
         self.name = name
-        self.placeType = placeType
         self.price = price
         self.rent1 = rent1
         self.rent2 = rent2
@@ -117,7 +116,7 @@ class Railroad(Place):
     def rent(self,neighborhoods, board):
         counter = 0
         for item in board:
-            if item.placeType == "rail" and item.ownedBy == self.ownedBy:
+            if isinstance(item, Railroad) and item.ownedBy == self.ownedBy:
                 counter += 1
         if counter == 4:
             return self.rent4
@@ -141,9 +140,8 @@ class Utility(Place):
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
     '''
-    def __init__(self, name, placeType, price, mortgage):
+    def __init__(self, name, price, mortgage):
         self.name = name
-        self.placeType = placeType
         self.price = price
         self.mortgage = mortgage
     def newOwner(self, player):
@@ -155,7 +153,7 @@ class Utility(Place):
         print "Dice: " +  str(dice[0]) + " " + str(dice[1])
         counter = 0
         for item in board:
-            if item.placeType == "utility" and item.ownedBy == self.ownedBy:
+            if isinstance(item, Utility) and item.ownedBy == self.ownedBy:
                 counter += 1
         if counter == 1:
             return 4 * (dice[0] + dice[1])
@@ -183,13 +181,12 @@ class Chance(Place):
         return "Chance at pos " + str(self.location)
 
 class Tax(Place):
-    def __init__(self, name, placeType, option1, option2, text):
+    def __init__(self, name, option1, option2, text):
         '''
         Each tax location has a name or one or two taxation options, as
         some tax locations allow you to choose one of two alternatives.
         '''
         self.name = name
-        self.placeType = placeType
         self.option1 = option1
         self.option2 = option2
         self.text = text
@@ -237,9 +234,8 @@ class CommunityCard(object):
     - order you to make general repairs (USD 25 per house, USD 100 per hotel);
     - give you an out-of-jail ticket.
     '''
-    def __init__(self, text, cardType, goStart, cash, jailcard, repairs, collect, goToJail):
+    def __init__(self, text, goStart, cash, jailcard, repairs, collect, goToJail):
         self.text = text
-        self.cardType = cardType #?
         self.goStart = goStart # 0 or 1
         self.cash = cash # positive or negative int
         self.jailcard = jailcard # 0 or 1
@@ -255,9 +251,8 @@ class ChanceCard(object):
     - you advance to the neareast railroad and pay twice the rental or buy it from the bank;
     - take a ride on the Reading; if you pass go, collect 200.
     '''
-    def __init__(self, text, cardType, movement, cash, jailcard, rail, repairs, goToJail, reading, goTo):
+    def __init__(self, text, movement, cash, jailcard, rail, repairs, goToJail, reading, goTo):
         self.text = text
-        self.cardType = cardType #?
         self.movement = movement # int
         self.cash = cash
         self.jailcard = jailcard #0 or 1?
@@ -283,9 +278,20 @@ class Player(object):
     doubleRent = 1# 1 or 2; flag for the chance card sending to next R.R.
     teleport =0 #indicates if the player was sent over by a Chance card
     inAuction = False #used for auctions
+    
     def __init__ (self, name, cash, human = True):
         self.name = name
         self.cash = cash
         self.human = human
+    
+    def MoveToJail(self, board):
+            print self.name + " goes to JAIL!"
+            #find next jail (you can have several, if you ask me)
+            searchJail = self.location
+            while not isinstance(board[searchJail], Jail):
+                searchJail = (searchJail + 1) % len(board)
+            self.location = searchJail
+            self.inJail = True
+    
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

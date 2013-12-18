@@ -15,27 +15,17 @@ def TaxRate(option, player, board):
             for item in board:
                 if item.ownedBy == player:
                     payment += item.price * taxrate/100.0
-                    if item.placeType == "street":
-                        payment += item.hotels * item.hotelCost + item.houses * item.houseCost
+                    payment += item.hotels * item.hotelCost + item.houses * item.houseCost
             return int(payment)
         elif option == "None":
             return None
         else:
             return int(option)
 
-def MoveToJail(player, board):
-            print player.name + " goes to JAIL!"
-            #find next jail (you can have several, if you ask me)
-            searchJail = player.location
-            while board[searchJail].placeType !="jail":
-                searchJail = (searchJail + 1) % len(board)
-            player.location = searchJail
-            player.inJail = True
-
 def Repairs(houseCost, hotelCost, player, board, bank):
     repairCost = 0
     for item in board:
-        if item.ownedBy == player and item.placeType == "street":
+        if item.ownedBy == player:
             repairCost += item.houses * houseCost + item.hotels * hotelCost
     player.cash -= repairCost
     bank.cardPayments += repairCost #money goes to table
@@ -50,6 +40,9 @@ def MoveMoneyToTable(amount, player, bank):
     #move money from player to table
     player.cash += amount
     bank.cardPayments -= amount
+
+def PlusOne(location, length):
+    return (location + 1) % length
 
 def MoveTable(player, bank):
     #player gets money on the table
@@ -82,3 +75,19 @@ def choose_yes_no(string):
 
 def isOwnedAndMortgaged(item, player, condition):
     return item.ownedBy == player and item.mortgaged == condition
+    
+def BankAllowsUpgrade(item, bank):
+    return (item.houses < 4 and bank.houses > 0) or \
+    (item.houses == 4 and bank.hotels > 0)
+
+def IsUpgradeable(item, myPlayer):
+    return item.ownedBy == myPlayer and item.minUpgrade == item.houses and \
+    item.hotels == 0 and \
+    ((item.houses == 4 and item.hotelCost <= myPlayer.cash) or \
+    (item.houses < 4 and item.houseCost <= myPlayer.cash))
+
+def AllUpgradeConditions(item, bank, myPlayer):
+    return IsUpgradeable(item, myPlayer) and BankAllowsUpgrade(item, bank)
+    
+def BankAllowsDowngrade(item, bank):
+    return (item.hotels == 1 and bank.houses >= 4) or (item.hotels == 0 and bank.houses > 0)

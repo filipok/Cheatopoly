@@ -83,12 +83,12 @@ while bank.money > 0 and len(players) > 1:
                     myPlayer.jailCommCards -= 1
                     #return community card back to the pile
                     communityChest.insert(currentComm,CommunityCard("Get out of jail, free", "chest", 0, 0, 1, 0, 0, 0))
-                    currentComm = (currentComm + 1) % len(communityChest)
+                    currentComm = PlusOne(currentComm, len(communityChest))
                 else:
                     myPlayer.jailChanceCards -= 1
                     #return chance card back to the pile
                     chances.insert(currentChance,ChanceCard("Get out of jail free", "chance", 0, 0, 1, 0, 0, 0, 0, 0))
-                    currentChance = (currentChance + 1) % len(chances)
+                    currentChance = PlusOne(currentChance, len(chances))
                 ResetJail(myPlayer)
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= jailFine: #Else pay
@@ -102,13 +102,13 @@ while bank.money > 0 and len(players) > 1:
             ResetJail(myPlayer)
             print myPlayer.name + " pays anyway $" + str(jailFine) + " to get out of jail after three turns."
         if myPlayer.inJail: #Check if still in jail
-            currentPlayer = (currentPlayer + 1) % len(players)
+            currentPlayer = PlusOne(currentPlayer, len(players))
             continue #end of turn
         if dice[0] == dice[1]: #Check how many doubles in a row
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
-                MoveToJail(myPlayer,board)
-                currentPlayer = (currentPlayer + 1) % len(players)
+                myPlayer.MoveToJail(board)
+                currentPlayer = PlusOne(currentPlayer, len(players))
                 continue
         else:
             myPlayer.doublesInARow = 0
@@ -125,7 +125,7 @@ while bank.money > 0 and len(players) > 1:
     #reset teleport counter now
     myPlayer.teleport = 0
     # if player lands on street, rail or utility:
-    if board[myPlayer.location].placeType in ["street", "rail", "utility"]:
+    if isinstance(board[myPlayer.location], (Street, Railroad, Utility)):
         if board[myPlayer.location].ownedBy == None:
             #You can buy the place
             message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(myPlayer.name, board[myPlayer.location].name, str(myPlayer.cash), str(board[myPlayer.location]))
@@ -191,7 +191,7 @@ while bank.money > 0 and len(players) > 1:
         MoveTable(myPlayer,bank)
     #Go To Jail
     if isinstance(board[myPlayer.location], GoToJail):
-        MoveToJail(myPlayer, board)    
+        myPlayer.MoveToJail(board)    
     #Pay taxes: you can pay either a lump sum or a percentage of total assets.
     #Sometimes,the second option can be "None"
     if isinstance(board[myPlayer.location], Tax):
@@ -223,7 +223,7 @@ while bank.money > 0 and len(players) > 1:
             #decrease index,to compensate for the general increase after IF
             currentComm = (currentComm + len(communityChest) - 1) % len(communityChest)
         elif communityChest[currentComm].goToJail == 1:
-            MoveToJail(myPlayer,board)
+            myPlayer.MoveToJail(board)
         elif communityChest[currentComm].collect == 1:
             for person in players:
                 if person != myPlayer:
@@ -233,7 +233,7 @@ while bank.money > 0 and len(players) > 1:
         elif communityChest[currentComm].repairs == 1:
             Repairs(chestRepairs[0],chestRepairs[1], myPlayer, board, bank)
         #increment community chest card index
-        currentComm = (currentComm + 1) % len(communityChest)
+        currentComm = PlusOne(currentComm, len(communityChest))
     #Chance cards
     if isinstance(board[myPlayer.location], Chance):
         print "Well, " + myPlayer.name + ", you have drawn this card:"
@@ -250,7 +250,7 @@ while bank.money > 0 and len(players) > 1:
             #decrease index,to compensate for the general increase after IF
             currentChance = (currentChance + len(chances) - 1) % len(chances)
         elif chances[currentChance].goToJail == 1:
-            MoveToJail(myPlayer,board)
+            myPlayer.MoveToJail(board)
         elif chances[currentChance].repairs == 1:
             Repairs(chanceRepairs[0],chanceRepairs[1], myPlayer, board, bank)
         elif chances[currentChance].reading == 1:
@@ -273,7 +273,7 @@ while bank.money > 0 and len(players) > 1:
         elif chances[currentChance].rail == 1:
             while not isinstance(board[myPlayer.location], Railroad):
                 #FIXME: infinite loop if no rail!
-                myPlayer.location = (myPlayer.location + 1) % len(board)
+                myPlayer.location = PlusOne(myPlayer.location, len(board))
             print "You have moved to the next railroad: " + board[myPlayer.location].name + ", at pos " + str(myPlayer.location) + "."
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
@@ -296,7 +296,7 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.teleport = 1
                 continue
         #increment chance card index
-        currentChance = (currentChance + 1) % len(chances)
+        currentChance = PlusOne(currentChance, len(chances))
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print myPlayer.name + ", you have the following properties:"
@@ -326,28 +326,20 @@ while bank.money > 0 and len(players) > 1:
             #Print the upgradeable locations
             print "Hey , " + myPlayer.name + "! These are the locations you can upgrade now:"
             for item in board:
-                if isinstance(item, Street) and item.ownedBy == myPlayer and \
-                item.minUpgrade == item.houses and item.hotels == 0:
+                if isinstance(item, Street) and AllUpgradeConditions(item, bank, myPlayer):
                     print item
             choose = choose_int(0, len(board) - 1) #human
-            if  isinstance(board[choose], Street) and \
-            board[choose].ownedBy == myPlayer and \
-            board[choose].minUpgrade == board[choose].houses:
+            if  isinstance(board[choose], Street) and AllUpgradeConditions(board[choose], bank, myPlayer):
                 if board[choose].houses < 4:
-                    if board[choose].houseCost <= myPlayer.cash:
-                        board[choose].houses += 1
-                        MoveMoney(-board[choose].houseCost, myPlayer, bank)
-                        print "You have successfully upgraded " + board[choose].name + "."
-                    else:
-                        print "Sorry,  not enough cash."
+                    board[choose].houses += 1
+                    bank.houses -= 1
+                    MoveMoney(-board[choose].houseCost, myPlayer, bank)
                 else:
-                    if board[choose].hotelCost <= myPlayer.cash:
-                        board[choose].hotels = 1
-                        MoveMoney(-board[choose].hotelCost, myPlayer, bank)
-                        print "You have successfully upgraded " + board[choose].name + "."
-                    else:
-                        print "Sorry,  not enough cash."
-                
+                    board[choose].hotels = 1
+                    bank.hotels -= 1
+                    bank.houses += 4
+                    MoveMoney(-board[choose].hotelCost, myPlayer, bank)
+                print "You have successfully upgraded " + board[choose].name + "."
             #restore to 5
             for item in board:
                 if isinstance(item, Street):
@@ -356,15 +348,18 @@ while bank.money > 0 and len(players) > 1:
             #downgrade
             print "List of properties that you can downgrade:"
             for item in board:
-                if isOwnedAndMortgaged(item, myPlayer, False) and item.houses > 0:
+                if isOwnedAndMortgaged(item, myPlayer, False) and item.houses > 0 and BankAllowsDowngrade(item, bank):
                     print item
             choose = choose_int(0, len(board) - 1) #human        
-            if isOwnedAndMortgaged(board[choose], myPlayer, False) and board[choose].houses > 0:
+            if isOwnedAndMortgaged(board[choose], myPlayer, False) and board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
                 if board[choose].hotels == 1:
                     board[choose].hotels = 0
+                    bank.houses -= 4
+                    bank.hotels += 1
                     MoveMoney(board[choose].hotelCost/2, myPlayer, bank)
                 else:
                     board[choose].houses -= 1
+                    bank.houses += 1
                     MoveMoney(board[choose].houseCost/2, myPlayer, bank)
                 print "You have downgraded " + board[choose].name + "."
         elif choose == "m":
@@ -393,36 +388,24 @@ while bank.money > 0 and len(players) > 1:
             break
         choose = ""
     
-    #print 'We are the {} who say "{}!"'.format('knights', 'Ni')
-    #also move houses, hotels to Place?
-    # when upgrade/downgrade to/from hotel, return/take 4 houses from the bank.
-    #also, update number of houses/hotelsin the bank!!!
-    #? Whenever a mortgaged property changes hands between players, either through a trade, sale or by bankruptcy, the new owner must immediately pay 10% interest on the mortgage and at their option may pay the principal or hold the property. If the player holds the property and later wishes to lift the mortgage they must pay the 10% interest again as well as the principal.
-    #?[nope]If a property is mortgaged, a sale of this property can be forced by another player by offering the bank a some more than the mortgaged price. Thereby forcing the person mortgaging the property to buy it back at that time or relinquish the property to the bank which may then be purchased for sale for offered price.
-    #?[nope]If more players decide to build more houses at the same time than there are houses in the bank, the houses are auctioned off one at a time to the highest bidder.?
-    #upgrade if in jail?
-    
     #Negotiate with other players
-    #Turn end: check if positive balance. if not, remove from game
+    
     #Update display
     #stylecheck
-    #turn 'choose' into a player method
-    #placeType? check for class?
-    #what if "choose" not an int
+    
+    #Turn end: check if positive balance. if not, remove from game
     #should consistently check for player funds
 
-
-    
     #Print current financial status
     print ""
     print "***"
     for player in players:
         print player.name + " has $" +str(player.cash)
-    print "The bank has got $" + str(bank.money) + " left."
+    print "The bank has got $" + str(bank.money) + " left. There are "+ str(bank.houses) + " houses and " + str(bank.hotels) + " hotels available."
     print "There are $" + str(bank.cardPayments) + " left on the table."
     print "***"
     print ""
     #currentPlayer += 1
-    currentPlayer = (currentPlayer + 1) % len(players)
+    currentPlayer = PlusOne(currentPlayer, len(players))
     
     
