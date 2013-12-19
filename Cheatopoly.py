@@ -92,7 +92,7 @@ while bank.money > 0 and len(players) > 1:
                 ResetJail(myPlayer)
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= jailFine: #Else pay
-            choose = myPlayer.PayJailFine(JailFine)
+            choose = myPlayer.PayJailFine(jailFine)
             if choose == 'yes':
                 MoveMoney(-jailFine, myPlayer, bank)
                 ResetJail(myPlayer)
@@ -127,7 +127,7 @@ while bank.money > 0 and len(players) > 1:
     # if player lands on street, rail or utility:
     if isinstance(board[myPlayer.location], (Street, Railroad, Utility)):
         if board[myPlayer.location].ownedBy == None:
-            choose = myPlayer.Buy(self, board) #You can buy the place
+            choose = myPlayer.Buy(board) #You can buy the place
             if choose == "yes":
                 if myPlayer.cash > board[myPlayer.location].price:
                     board[myPlayer.location].newOwner(myPlayer) #assign new owner
@@ -274,6 +274,10 @@ while bank.money > 0 and len(players) > 1:
     for item in board:
         if item.ownedBy == myPlayer:
             print item
+    print "You have $"+ str(myPlayer.cash) + ".",
+    if myPlayer.cash < 0:
+        print "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!"
+    print ""
     choose = ''
     while choose not in ["u", "d", "m","d", "e", "n"]:
         choose = myPlayer.ChooseAction()
@@ -288,18 +292,46 @@ while bank.money > 0 and len(players) > 1:
         elif choose == "n": #exit loop
             break
         choose = ""
+        print "Now you have $"+ str(myPlayer.cash) + "."
     
     #if player has no money and still tries to buy, then auction
     #Negotiate with other players
     
     #Update display
     
-    #save/load game from disk
+    
     
     #stylecheck
     
-    #Turn end: check if positive balance. if not, remove from game
-    #should consistently check for player funds
+    
+    
+    #move hardcoded constants to txt file
+    #maxhotels, maxhouses hardcoded or not?
+    #save/load game from disk
+    
+    #create Game object with all data
+    
+    #Turn end: remove from game if cash < 0
+    if myPlayer.cash < 0:
+        print myPlayer.name + " HAS BEEN ELIMINATED!"
+        for item in board:
+            if isinstance(item, (Street, Railroad, Utility)) and item.ownedBy == myPlayer:
+                item.ownedBy = None
+                if item.hotels == 1:
+                    item.hotels = 0
+                    bank.hotels += 1
+                    item.houses = 0
+                else:
+                    bank.houses += item.houses
+                    item.houses = 0
+        players.pop(currentPlayer)
+        #no need to increment currentPlayer, but set to zero as needed
+        if currentPlayer == len(players):
+            currentPlayer = 0
+    else:
+        #currentPlayer += 1
+        currentPlayer = PlusOne(currentPlayer, len(players))
+
 
     #Print current financial status
     print ""
@@ -310,7 +342,19 @@ while bank.money > 0 and len(players) > 1:
     print "There are $" + str(bank.cardPayments) + " left on the table."
     print "***"
     print ""
-    #currentPlayer += 1
-    currentPlayer = PlusOne(currentPlayer, len(players))
     
+    
+if len(players) == 1:
+    print players[0].name + " HAS WON THE GAME"
+else:
+    bestscore = 0
+    bestPlayer = None
+    for person in players:
+        if person.cash > bestscore:
+            bestPlayer = person
+            bestscore = person.cash
+    if bestPlayer != None:
+        print bestPlayer.name + " HAS WON THE GAME"
+    else:
+        print "INCREDIBLE BUNCH OF LOSERS."
     

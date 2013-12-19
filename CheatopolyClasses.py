@@ -378,7 +378,7 @@ class Player(object):
     
     def ReplyToAuction(self, player, board, auctionPrice, money):
         print "Hello,"+ self.name + "! " + player.name + " did not buy " + board[player.location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + ". Enter your price below."
-        return choose_int(0, money)#money=max bank money
+        return choose_int(0, max(self.cash, 0))#money=max bank money
     
     def StartAuction(self, players, board, money, bank):
         #set auction flag
@@ -416,7 +416,7 @@ class Player(object):
     def UseJailCard(self):
         return choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
     
-    def PayJailFine(self, JailFine):
+    def PayJailFine(self, jailFine):
         return choose_yes_no("Do you want to pay $" + str(jailFine) + " to get out of jail[yes/no] ")
     
     def __repr__(self):
