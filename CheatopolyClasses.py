@@ -86,13 +86,11 @@ class Street(Place):
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
         str(self.location) + "), $: " + str(self.price) + ", r: " + \
-        str(self.rent1) + " " + str(self.rent2) + " " + str(self.rent3) + " " +\
-        str(self.rent4) + " " + str(self.rentH) + ", m: " + \
+        str(self.rent1) + ", " + str(self.rent2) + ", " + str(self.rent3) + \
+        ", " + str(self.rent4) + ", " + str(self.rentH) + ", m: " + \
         str(self.mortgage) + ", h+: " +  str(self.houseCost) + \
-        ", H+: " + str(self.hotelCost) + ", h-: " + \
-        str(self.houseCost/2) + ", H-: " + str(self.hotelCost/2) + \
-        ", dem: " + str(int(self.mortgage * 1.1)) + ", h: " + \
-        str(self.houses) + ", H: " + str(self.hotels)
+        ", H+: " + str(self.hotelCost) + ", h: " + str(self.houses) + \
+        ", H: " + str(self.hotels)
     
 class Railroad(Place):
     '''
@@ -292,6 +290,134 @@ class Player(object):
                 searchJail = (searchJail + 1) % len(board)
             self.location = searchJail
             self.inJail = True
+    
+    def Mortgage(self, board, bank):
+        print "List of properties that you can mortgage:"
+        for item in board:
+            if isOwnedAndMortgaged(item, self, False) and item.houses == 0:
+                print item
+        choose = choose_int(0, len(board) - 1) #human
+        if isOwnedAndMortgaged(board[choose], self, False) and board[choose].houses == 0:
+            MoveMoney(board[choose].mortgage, self, bank)
+            board[choose].mortgaged = True
+            print "You have successfully mortgaged " + board[choose].name + "."
+    
+    def Demortgage(self, board, bank):
+        print "List of properties that you can demortgage:"
+        for item in board:
+            if isOwnedAndMortgaged(item, self, True):
+                print item
+        choose = choose_int(0, len(board) - 1) #human
+        if isOwnedAndMortgaged(board[choose], self, True) and \
+        self.cash >= int(board[choose].mortgage * 1.1):
+            MoveMoney(-int(board[choose].mortgage * 1.1), self, bank)
+            board[choose].mortgaged = False
+            print "You have successfully demortgaged " + board[choose].name + "."
+    
+    def Downgrade(self, board, bank):
+        print "List of properties that you can downgrade:"
+        for item in board:
+            if isOwnedAndMortgaged(item, self, False) and \
+            item.houses > 0 and BankAllowsDowngrade(item, bank):
+                print item
+        choose = choose_int(0, len(board) - 1) #human        
+        if isOwnedAndMortgaged(board[choose], self, False) and \
+        board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
+            if board[choose].hotels == 1:
+                board[choose].hotels = 0
+                bank.houses -= 4
+                bank.hotels += 1
+                MoveMoney(board[choose].hotelCost/2, self, bank)
+            else:
+                board[choose].houses -= 1
+                bank.houses += 1
+                MoveMoney(board[choose].houseCost/2, self, bank)
+            print "You have downgraded " + board[choose].name + "."
+    
+    def Upgrade(self, neighborhoods, board, bank):
+        #Flag the upgradeable locations
+        for neighborhood in neighborhoods.values():
+            minUpgrade = 5
+            for street in neighborhood:
+                if street.ownedBy != self  or street.mortgaged:
+                    #restore to 5
+                    for street in neighborhood:
+                        street.minUpgrade = 5
+                    minUpgrade = 5
+                    break
+                else:
+                    if street.hotels == 0:
+                        minUpgrade = min(minUpgrade, street.houses)
+            for street in neighborhood:
+                if street.ownedBy == self:
+                    street.minUpgrade = minUpgrade
+        #Print the upgradeable locations
+        print "Hey , " + self.name + "! These are the locations you can upgrade now:"
+        for item in board:
+            if isinstance(item, Street) and AllUpgradeConditions(item, bank, self):
+                print item
+        choose = choose_int(0, len(board) - 1) #human
+        if  isinstance(board[choose], Street) and AllUpgradeConditions(board[choose], bank, self):
+            if board[choose].houses < 4:
+                board[choose].houses += 1
+                bank.houses -= 1
+                MoveMoney(-board[choose].houseCost, self, bank)
+            else:
+                board[choose].hotels = 1
+                bank.hotels -= 1
+                bank.houses += 4
+                MoveMoney(-board[choose].hotelCost, self, bank)
+            print "You have successfully upgraded " + board[choose].name + "."
+        #restore to 5
+        for item in board:
+            if isinstance(item, Street):
+                item.minUpgrade = 5
+
+    def ChooseAction(self):
+        return raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
+    
+    def ReplyToAuction(self, player, board, auctionPrice, money):
+        print "Hello,"+ self.name + "! " + player.name + " did not buy " + board[player.location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + ". Enter your price below."
+        return choose_int(0, money)#money=max bank money
+    
+    def StartAuction(self, players, board, money, bank):
+        #set auction flag
+        print "Starting auction..."
+        for person in players:
+            person.inAuction = True
+        self.inAuction = False
+        auctionRunning = True
+        auctionPrice = 0 # the auction starts from zero
+        bestCandidate = None
+        while auctionRunning:
+            stillInPlay = 0
+            for person in players:
+                if person.inAuction and person != bestCandidate:
+                    choose = person.ReplyToAuction(self, board, auctionPrice, money)
+                    if choose > auctionPrice:
+                        bestCandidate = person
+                        auctionPrice = choose
+                        stillInPlay += 1
+                    else:
+                        person.inAuction = False
+            if stillInPlay == 0:
+                auctionRunning = False
+        if bestCandidate == None:
+            print "Sadly, nobody wants that place."
+        else:
+            print "Congratulations, " + bestCandidate.name + "! You have bought " + board[self.location].name + " for $" + str(auctionPrice) + "."
+            MoveMoney(-auctionPrice, bestCandidate, bank)
+            board[self.location].newOwner(bestCandidate)#assign new owner
+ 
+    def Buy(self, board):
+        message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, board[self.location].name, str(self.cash), str(board[self.location]))
+        return choose_yes_no(message)
+    
+    def UseJailCard(self):
+        return choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
+    
+    def PayJailFine(self, JailFine):
+        return choose_yes_no("Do you want to pay $" + str(jailFine) + " to get out of jail[yes/no] ")
     
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

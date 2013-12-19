@@ -77,22 +77,22 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.timeInJail += 1
         #Else use a get ouf of jail card
         if myPlayer.inJail and max(myPlayer.jailCommCards, myPlayer.jailChanceCards) > 0:
-            choose = choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
+            choose = myPlayer.UseJailCard()
             if choose == 'yes':
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
                     #return community card back to the pile
-                    communityChest.insert(currentComm,CommunityCard("Get out of jail, free", "chest", 0, 0, 1, 0, 0, 0))
+                    communityChest.insert(currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
                     currentComm = PlusOne(currentComm, len(communityChest))
                 else:
                     myPlayer.jailChanceCards -= 1
                     #return chance card back to the pile
-                    chances.insert(currentChance,ChanceCard("Get out of jail free", "chance", 0, 0, 1, 0, 0, 0, 0, 0))
+                    chances.insert(currentChance,ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0))
                     currentChance = PlusOne(currentChance, len(chances))
                 ResetJail(myPlayer)
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= jailFine: #Else pay
-            choose = choose_yes_no("Do you want to pay $" + str(jailFine) + " to get out of jail[yes/no] ")
+            choose = myPlayer.PayJailFine(JailFine)
             if choose == 'yes':
                 MoveMoney(-jailFine, myPlayer, bank)
                 ResetJail(myPlayer)
@@ -127,50 +127,21 @@ while bank.money > 0 and len(players) > 1:
     # if player lands on street, rail or utility:
     if isinstance(board[myPlayer.location], (Street, Railroad, Utility)):
         if board[myPlayer.location].ownedBy == None:
-            #You can buy the place
-            message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(myPlayer.name, board[myPlayer.location].name, str(myPlayer.cash), str(board[myPlayer.location]))
-            choose = choose_yes_no(message)
+            choose = myPlayer.Buy(self, board) #You can buy the place
             if choose == "yes":
                 if myPlayer.cash > board[myPlayer.location].price:
                     board[myPlayer.location].newOwner(myPlayer) #assign new owner
                     MoveMoney(-board[myPlayer.location].price, myPlayer, bank)
-                    print "Congratulations, " + myPlayer.name + " has bought: " +  str(board[myPlayer.location]) + "."
+                    print "Congratulations, " + myPlayer.name + "! You have bought: " +  str(board[myPlayer.location]) + "."
                 else:
                     print "Sorry, you do not have the required funds!"
                     import random
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
+                    myPlayer.StartAuction(players, board, money, bank) #launch auction
             else:
-                #auction!
-                #set auction flag
-                print "Starting auction..."
-                for person in players:
-                    person.inAuction = True
-                myPlayer.inAuction = False
-                auctionRunning = True
-                auctionPrice = 0 # the auction starts from zero
-                bestCandidate = None
-                while auctionRunning:
-                    stillInPlay = 0
-                    for person in players:
-                        if person.inAuction and person != bestCandidate:
-                            print "Hello,"+ person.name + "! " + myPlayer.name + " did not buy " + board[myPlayer.location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + ". Enter your price below."
-                            choose = choose_int(0, money)#money=max bank money
-                            if choose > auctionPrice:
-                                bestCandidate = person
-                                auctionPrice = choose
-                                stillInPlay += 1
-                            else:
-                                person.inAuction = False
-                    if stillInPlay == 0:
-                        auctionRunning = False
-                if bestCandidate == None:
-                    print "Sadly, nobody wants that place."
-                else:
-                    print "Congratulations, " + bestCandidate.name + "! You have bought " + board[myPlayer.location].name + " for $" + str(auctionPrice) + "."
-                    MoveMoney(-auctionPrice, bestCandidate, bank)
-                    board[myPlayer.location].newOwner(bestCandidate)#assign new owner
+                myPlayer.StartAuction(players, board, money, bank) #launch auction
         elif board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + board[myPlayer.location].name + "."
@@ -305,92 +276,26 @@ while bank.money > 0 and len(players) > 1:
             print item
     choose = ''
     while choose not in ["u", "d", "m","d", "e", "n"]:
-        choose = raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
-        if choose == "u": #upgrade
-            #Flag the upgradeable locations
-            for neighborhood in neighborhoods.values():
-                minUpgrade = 5
-                for street in neighborhood:
-                    if street.ownedBy != myPlayer  or street.mortgaged:
-                        #restore to 5
-                        for street in neighborhood:
-                            street.minUpgrade = 5
-                        minUpgrade = 5
-                        break
-                    else:
-                        if street.hotels == 0:
-                            minUpgrade = min(minUpgrade, street.houses)
-                for street in neighborhood:
-                    if street.ownedBy == myPlayer:
-                        street.minUpgrade = minUpgrade
-            #Print the upgradeable locations
-            print "Hey , " + myPlayer.name + "! These are the locations you can upgrade now:"
-            for item in board:
-                if isinstance(item, Street) and AllUpgradeConditions(item, bank, myPlayer):
-                    print item
-            choose = choose_int(0, len(board) - 1) #human
-            if  isinstance(board[choose], Street) and AllUpgradeConditions(board[choose], bank, myPlayer):
-                if board[choose].houses < 4:
-                    board[choose].houses += 1
-                    bank.houses -= 1
-                    MoveMoney(-board[choose].houseCost, myPlayer, bank)
-                else:
-                    board[choose].hotels = 1
-                    bank.hotels -= 1
-                    bank.houses += 4
-                    MoveMoney(-board[choose].hotelCost, myPlayer, bank)
-                print "You have successfully upgraded " + board[choose].name + "."
-            #restore to 5
-            for item in board:
-                if isinstance(item, Street):
-                    item.minUpgrade = 5
+        choose = myPlayer.ChooseAction()
+        if choose == "u":
+            myPlayer.Upgrade(neighborhoods, board, bank) #upgrade
         elif choose == "d":
-            #downgrade
-            print "List of properties that you can downgrade:"
-            for item in board:
-                if isOwnedAndMortgaged(item, myPlayer, False) and item.houses > 0 and BankAllowsDowngrade(item, bank):
-                    print item
-            choose = choose_int(0, len(board) - 1) #human        
-            if isOwnedAndMortgaged(board[choose], myPlayer, False) and board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
-                if board[choose].hotels == 1:
-                    board[choose].hotels = 0
-                    bank.houses -= 4
-                    bank.hotels += 1
-                    MoveMoney(board[choose].hotelCost/2, myPlayer, bank)
-                else:
-                    board[choose].houses -= 1
-                    bank.houses += 1
-                    MoveMoney(board[choose].houseCost/2, myPlayer, bank)
-                print "You have downgraded " + board[choose].name + "."
+            myPlayer.Downgrade(board, bank) #downgrade
         elif choose == "m":
-            #mortgage
-            print "List of properties that you can mortgage:"
-            for item in board:
-                if isOwnedAndMortgaged(item, myPlayer, False) and item.houses == 0:
-                    print item
-            choose = choose_int(0, len(board) - 1) #human
-            if isOwnedAndMortgaged(board[choose], myPlayer, False) and board[choose].houses == 0:
-                MoveMoney(board[choose].mortgage, myPlayer, bank)
-                board[choose].mortgaged = True
-                print "You have successfully mortgaged " + board[choose].name + "."
-        elif choose == "e": #demortgage
-            print "List of properties that you can demortgage:"
-            for item in board:
-                if isOwnedAndMortgaged(item, myPlayer, True):
-                    print item
-            choose = choose_int(0, len(board) - 1) #human
-            if isOwnedAndMortgaged(board[choose], myPlayer, True) and \
-            myPlayer.cash >= int(board[choose].mortgage * 1.1):
-                MoveMoney(-int(board[choose].mortgage * 1.1), myPlayer, bank)
-                board[choose].mortgaged = False
-                print "You have successfully demortgaged " + board[choose].name + "."
+            myPlayer.Mortgage(board, bank) #mortgage
+        elif choose == "e":
+            myPlayer.Demortgage(board, bank) #demortgage
         elif choose == "n": #exit loop
             break
         choose = ""
     
+    #if player has no money and still tries to buy, then auction
     #Negotiate with other players
     
     #Update display
+    
+    #save/load game from disk
+    
     #stylecheck
     
     #Turn end: check if positive balance. if not, remove from game
