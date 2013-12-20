@@ -91,3 +91,45 @@ def AllUpgradeConditions(item, bank, myPlayer):
     
 def BankAllowsDowngrade(item, bank):
     return (item.hotels == 1 and bank.houses >= 4) or (item.hotels == 0 and bank.houses > 0)
+
+def DowngradeHotel(player, item, bank):
+    item.hotels = 0
+    bank.houses -= 4
+    bank.hotels += 1
+    MoveMoney(item.hotelCost/2, player, bank)
+
+def DowngradeHouse(player, item, bank):
+    item.houses -= 1
+    bank.houses += 1
+    MoveMoney(item.houseCost/2, player, bank)
+    
+def UpgradeHouse(player, item, bank):
+    item.houses += 1
+    bank.houses -= 1
+    MoveMoney(-item.houseCost, player, bank)
+
+def UpgradeHotel(player, item, bank):
+    item.hotels = 1
+    bank.hotels -= 1
+    bank.houses += 4
+    MoveMoney(-item.hotelCost, player, bank)
+
+def FlagUpgradeableLocations(player, neighborhoods):
+    '''
+    Flag upgradeable locations
+    '''
+    for neighborhood in neighborhoods.values():
+        minUpgrade = 5
+        for street in neighborhood:
+            if street.ownedBy != player  or street.mortgaged:
+                #restore to 5
+                for street in neighborhood:
+                    street.minUpgrade = 5
+                minUpgrade = 5
+                break
+            else:
+                if street.hotels == 0:
+                    minUpgrade = min(minUpgrade, street.houses)
+        for street in neighborhood:
+            if street.ownedBy == player:
+                street.minUpgrade = minUpgrade

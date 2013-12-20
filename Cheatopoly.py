@@ -51,8 +51,10 @@ for i in range(numberPlayers):
     while name in list_of_names:
         name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
     human = choose_yes_no("Is the player human [yes/no]: ")
-    dic = {"yes": True, "no": False}
-    players.append(Player(name, playerCash, dic[human]))
+    if human == "yes":
+        players.append(Player(name, playerCash, True))
+    else:
+        players.append(Cheatoid(name, playerCash,False))
     list_of_names.append(name)
 
 #Initialize bank
@@ -65,7 +67,8 @@ while bank.money > 0 and len(players) > 1:
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
-        raw_input("Hello, " + myPlayer.name +  "! You have $" + str(myPlayer.cash) + ". Press Enter to start turn.")
+        if not isinstance(myPlayer, Cheatoid):
+            raw_input("Hello, " + myPlayer.name +  "! You have $" + str(myPlayer.cash) + ". Press Enter to start turn.")
         dice = Dice() #Roll dice
         print "Dice roll for " + myPlayer.name + ": " +  str(dice[0]) + " " + str(dice[1])
         # Resolve jail status
@@ -77,7 +80,7 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.timeInJail += 1
         #Else use a get ouf of jail card
         if myPlayer.inJail and max(myPlayer.jailCommCards, myPlayer.jailChanceCards) > 0:
-            choose = myPlayer.UseJailCard()
+            choose = myPlayer.UseJailCard(board, players, bank)
             if choose == 'yes':
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
@@ -92,7 +95,7 @@ while bank.money > 0 and len(players) > 1:
                 ResetJail(myPlayer)
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= jailFine: #Else pay
-            choose = myPlayer.PayJailFine(jailFine)
+            choose = myPlayer.PayJailFine(jailFine, board, players, bank)
             if choose == 'yes':
                 MoveMoney(-jailFine, myPlayer, bank)
                 ResetJail(myPlayer)
@@ -139,9 +142,9 @@ while bank.money > 0 and len(players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                    myPlayer.StartAuction(players, board, money, bank) #launch auction
+                    myPlayer.StartAuction(players, board, neighborhoods, money, bank) #launch auction
             else:
-                myPlayer.StartAuction(players, board, money, bank) #launch auction
+                myPlayer.StartAuction(players, board, neighborhoods, money, bank) #launch auction
         elif board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + board[myPlayer.location].name + "."
@@ -274,13 +277,13 @@ while bank.money > 0 and len(players) > 1:
     for item in board:
         if item.ownedBy == myPlayer:
             print item
-    print "You have $"+ str(myPlayer.cash) + ".",
+    print myPlayer.name + " has $"+ str(myPlayer.cash) + ".",
     if myPlayer.cash < 0:
         print "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!"
     print ""
     choose = ''
     while choose not in ["u", "d", "m","d", "e", "n"]:
-        choose = myPlayer.ChooseAction()
+        choose = myPlayer.ChooseAction(board, bank, neighborhoods)
         if choose == "u":
             myPlayer.Upgrade(neighborhoods, board, bank) #upgrade
         elif choose == "d":
@@ -292,7 +295,7 @@ while bank.money > 0 and len(players) > 1:
         elif choose == "n": #exit loop
             break
         choose = ""
-        print "Now you have $"+ str(myPlayer.cash) + "."
+        print "Now " + myPlayer.name + " has $"+ str(myPlayer.cash) + "."
     
     #if player has no money and still tries to buy, then auction
     #Negotiate with other players
