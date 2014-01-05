@@ -23,6 +23,7 @@ class Game(object):
     currentComm = 0
     currentChance = 0
     players = []
+    bank = None
 
 class Bank(object):
     '''
@@ -34,10 +35,10 @@ class Bank(object):
     #cumulated into this account and are paid to the first player getting to
     #Free Parking
     cardPayments = 0
-    def __init__(self, money, houses, hotels):
-        self.money = money
-        self.houses = houses
-        self.hotels = hotels
+    def __init__(self, game):
+        self.money = game.money
+        self.houses = game.houses
+        self.hotels = game.hotels
 
 class Place(object):
     '''
