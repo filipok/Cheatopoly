@@ -23,6 +23,7 @@ class Game(object):
     currentComm = 0
     currentChance = 0
     players = []
+    board = []
     bank = None
 
 class Bank(object):
