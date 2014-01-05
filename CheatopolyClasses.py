@@ -18,6 +18,7 @@ class Game(object):
     
     #Game objects
     neighborhoods = {}
+    communityChest = []
     
 
 class Bank(object):

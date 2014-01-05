@@ -6,7 +6,6 @@ from CheatopolyReadData import *
 thisGame = Game()
 
 board = []
-communityChest = []
 chances = []
 currentComm = 0
 currentChance = 0
@@ -19,11 +18,11 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
-CheatopolyReadData(content, board, chances, communityChest, thisGame)
+CheatopolyReadData(content, board, chances, thisGame)
 #randomize community chest and chance cards
 from random import shuffle
 shuffle(chances)
-shuffle(communityChest)
+shuffle(thisGame.communityChest)
 
 #Cheatopoly Game creation
 print "************************"
@@ -76,8 +75,8 @@ while bank.money > 0 and len(players) > 1:
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
                     #return community card back to the pile
-                    communityChest.insert(currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
-                    currentComm = PlusOne(currentComm, len(communityChest))
+                    thisGame.communityChest.insert(currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
+                    currentComm = PlusOne(currentComm, len(thisGame.communityChest))
                 else:
                     myPlayer.jailChanceCards -= 1
                     #return chance card back to the pile
@@ -171,34 +170,34 @@ while bank.money > 0 and len(players) > 1:
     #Community Chest
     if isinstance(board[myPlayer.location], CommunityChest):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
-        print communityChest[currentComm].text
-        if communityChest[currentComm].goStart == 1:
+        print thisGame.communityChest[currentComm].text
+        if thisGame.communityChest[currentComm].goStart == 1:
             myPlayer.location = 0
             MoveMoney(thisGame.startWage, myPlayer, bank)
             print "You go to Start and only receive $" + str(thisGame.startWage)
-        elif communityChest[currentComm].cash != 0:
-            if communityChest[currentComm].cash > 0:
-                MoveMoney(communityChest[currentComm].cash, myPlayer, bank)
+        elif thisGame.communityChest[currentComm].cash != 0:
+            if thisGame.communityChest[currentComm].cash > 0:
+                MoveMoney(thisGame.communityChest[currentComm].cash, myPlayer, bank)
             else:
-                MoveMoneyToTable(communityChest[currentComm].cash, myPlayer, bank)
-        elif communityChest[currentComm].jailcard == 1:
+                MoveMoneyToTable(thisGame.communityChest[currentComm].cash, myPlayer, bank)
+        elif thisGame.communityChest[currentComm].jailcard == 1:
             myPlayer.jailCommCards += 1
             #remove card from community chest
-            communityChest.pop(currentComm)
+            thisGame.communityChest.pop(currentComm)
             #decrease index,to compensate for the general increase after IF
-            currentComm = (currentComm + len(communityChest) - 1) % len(communityChest)
-        elif communityChest[currentComm].goToJail == 1:
+            currentComm = (currentComm + len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
+        elif thisGame.communityChest[currentComm].goToJail == 1:
             myPlayer.MoveToJail(board)
-        elif communityChest[currentComm].collect == 1:
+        elif thisGame.communityChest[currentComm].collect == 1:
             for person in players:
                 if person != myPlayer:
                     person.cash -= thisGame.collectFine
                     myPlayer.cash += thisGame.collectFine
                     print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
-        elif communityChest[currentComm].repairs == 1:
+        elif thisGame.communityChest[currentComm].repairs == 1:
             Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, board, bank)
         #increment community chest card index
-        currentComm = PlusOne(currentComm, len(communityChest))
+        currentComm = PlusOne(currentComm, len(thisGame.communityChest))
     #Chance cards
     if isinstance(board[myPlayer.location], Chance):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",

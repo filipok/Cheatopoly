@@ -1,7 +1,7 @@
 import os
 from CheatopolyClasses import *
 
-def CheatopolyReadData(content, board, chances, communityChest, game):
+def CheatopolyReadData(content, board, chances, game):
     #Process data.txt
     for i in range(len(content)):
         line = content[i].rstrip().split("\t")
@@ -30,7 +30,7 @@ def CheatopolyReadData(content, board, chances, communityChest, game):
         elif line[0] == "gotojail":
             board.append(GoToJail())
         elif line[0] == "chest":
-            communityChest.append(CommunityCard(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+            game.communityChest.append(CommunityCard(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
         elif line[0] == "chance":
             chances.append(ChanceCard(line[9], int(line[1]), int(line [2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), line[8]))
         elif line[0] == "const":
@@ -64,8 +64,8 @@ def CheatopolyReadData(content, board, chances, communityChest, game):
         f = open(os.path.join(__location__, 'output.txt'), "w")
         for i in range(len(board)):
             f.write(str(board[i]) + "\n")
-        for i in range(len(communityChest)):
-            f.write(str(communityChest[i]) + "\n")
+        for i in range(len(game.communityChest)):
+            f.write(str(game.communityChest[i]) + "\n")
         for i in range(len(chances)):
             f.write(str(chances[i]) + "\n")
         f.close()
