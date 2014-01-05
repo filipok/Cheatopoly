@@ -1,5 +1,7 @@
-def CheatopolyReadData(content, board, neighborhoods,chances, communityChest):
-    from CheatopolyClasses import *
+import os
+from CheatopolyClasses import *
+
+def CheatopolyReadData(content, board, neighborhoods,chances, communityChest, game):
     #Process data.txt
     for i in range(len(content)):
         line = content[i].rstrip().split("\t")
@@ -31,11 +33,33 @@ def CheatopolyReadData(content, board, neighborhoods,chances, communityChest):
             communityChest.append(CommunityCard(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
         elif line[0] == "chance":
             chances.append(ChanceCard(line[9], int(line[1]), int(line [2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), line[8]))
+        elif line[0] == "const":
+            if line[1] == "playerCash":
+                game.playerCash = int(line[2])
+            elif line[1] == "money":
+                game.money = int(line[2])
+            elif line[1] == "houses":
+                game.houses =  int(line[2])
+            elif line[1] == "hotels":
+                game.hotels = int(line[2])
+            elif line[1] == "startWage":
+                game.startWage = int(line[2])
+            elif line[1] == "jailFine":
+                game.jailFine = int(line[2])
+            elif line[1] == "collectFine":
+                game.collectFine = int(line[2])
+            elif line[1] == "chanceRepairsMin":
+                game.chanceRepairs = [int(line[2])]
+            elif line[1] == "chanceRepairsMax":
+                game.chanceRepairs.append(int(line[2]))
+            elif line[1] == "chestRepairsMin":
+                game.chestRepairs = [int(line[2])]
+            elif line[1] == "chestRepairsMax":
+                game.chestRepairs.append(int(line[2]))
         if line[0] in ["street", "start", "chestL", "tax", "rail", "chanceL", "jail", "utility", "park", "gotojail"]:
             board[i].location = i
 
         #test: output  board, community cards and chance cards to output.txt
-        import os
         __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
         f = open(os.path.join(__location__, 'output.txt'), "w")
         for i in range(len(board)):

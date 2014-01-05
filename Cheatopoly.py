@@ -10,6 +10,7 @@ chances = []
 currentComm = 0
 currentChance = 0
 players = []
+thisGame = Game()
 
 # Import data from data.txt
 import os
@@ -17,7 +18,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
-CheatopolyReadData(content, board, neighborhoods,chances, communityChest)
+CheatopolyReadData(content, board, neighborhoods,chances, communityChest, thisGame)
 #randomize community chest and chance cards
 from random import shuffle
 shuffle(chances)
@@ -28,17 +29,6 @@ print "************************"
 print "WELCOME TO CHEATOPOLY!!!"
 print "You can play Cheatopoly in up to 6 players."
 print "************************"
-
-#Hard-coded constants
-playerCash = 1500 #initial amount received by each player
-money = 15140 #although some rules say infinite bank money: https://en.wikibooks.org/wiki/Monopoly/Official_Rules
-houses = 32 # https://en.wikibooks.org/wiki/Monopoly/Official_Rules
-hotels = 12 # https://en.wikibooks.org/wiki/Monopoly/Official_Rules
-startWage = 200 # what you get when you pass Go
-jailFine = 50 # cost to get out of jail
-collectFine = 50 #amount to collect from each player with the Collect card
-chanceRepairs = [25, 100]
-chestRepairs = [45,115]
 
 #Get number of players
 print "Please enter a number of players between 2 and 6:"
@@ -52,13 +42,13 @@ for i in range(numberPlayers):
         name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
     human = choose_yes_no("Is the player human [yes/no]: ")
     if human == "yes":
-        players.append(Player(name, playerCash, True))
+        players.append(Player(name, thisGame.playerCash, True))
     else:
-        players.append(Cheatoid(name, playerCash,False))
+        players.append(Cheatoid(name, thisGame.playerCash,False))
     list_of_names.append(name)
 
 #Initialize bank
-bank =  Bank(money, houses, hotels)
+bank =  Bank(thisGame.money, thisGame.houses, thisGame.hotels)
 
 #The player turns are generated in a while loop
 currentPlayer = 0 # initialize current player
@@ -74,7 +64,7 @@ while bank.money > 0 and len(players) > 1:
         # Resolve jail status
         if myPlayer.inJail: #Check for doubles while in jail
             if dice[0] == dice[1]:
-                ResetJail(myPlayer)
+                myPlayer.ResetJail()
                 print myPlayer.name + " has got a double: " + str(dice[0]) + " " +str(dice[1]) + "."
             else:
                 myPlayer.timeInJail += 1
@@ -92,18 +82,18 @@ while bank.money > 0 and len(players) > 1:
                     #return chance card back to the pile
                     chances.insert(currentChance,ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0))
                     currentChance = PlusOne(currentChance, len(chances))
-                ResetJail(myPlayer)
+                myPlayer.ResetJail()
                 print myPlayer.name + " gets out of jail."
-        if myPlayer.inJail and myPlayer.cash >= jailFine: #Else pay
-            choose = myPlayer.PayJailFine(jailFine, board, players, bank)
+        if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine: #Else pay
+            choose = myPlayer.PayJailFine(thisGame.jailFine, board, players, bank)
             if choose == 'yes':
-                MoveMoney(-jailFine, myPlayer, bank)
-                ResetJail(myPlayer)
-                print myPlayer.name + " pays $" + str(jailFine) + " to get out of jail."
+                MoveMoney(-thisGame.jailFine, myPlayer, bank)
+                myPlayer.ResetJail()
+                print myPlayer.name + " pays $" + str(thisGame.jailFine) + " to get out of jail."
         if myPlayer.timeInJail == 3: #Else if already three turns in jail:
-            MoveMoney(-jailFine, myPlayer, bank)
-            ResetJail(myPlayer)
-            print myPlayer.name + " pays anyway $" + str(jailFine) + " to get out of jail after three turns."
+            MoveMoney(-thisGame.jailFine, myPlayer, bank)
+            myPlayer.ResetJail()
+            print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
         if myPlayer.inJail: #Check if still in jail
             currentPlayer = PlusOne(currentPlayer, len(players))
             continue #end of turn
@@ -120,11 +110,11 @@ while bank.money > 0 and len(players) > 1:
         print myPlayer.name + " advances to " + str(myPlayer.location) + \
         " (" + board[myPlayer.location].name + ")."
         if myPlayer.location == 0: #Did we pass Go? +startWage/2*startWage
-            MoveMoney(2*startWage, myPlayer, bank)
-            print myPlayer.name + " is a lucky punk and gets $" + str(2*startWage) + "."
+            MoveMoney(2*thisGame.startWage, myPlayer, bank)
+            print myPlayer.name + " is a lucky punk and gets $" + str(2*thisGame.startWage) + "."
         elif myPlayer.location - dice[0] - dice[1] < 0:
-            MoveMoney(startWage, myPlayer, bank)
-            print myPlayer.name + " gets $" + str(startWage) + "."
+            MoveMoney(thisGame.startWage, myPlayer, bank)
+            print myPlayer.name + " gets $" + str(thisGame.startWage) + "."
     #reset teleport counter now
     myPlayer.teleport = 0
     # if player lands on street, rail or utility:
@@ -142,9 +132,9 @@ while bank.money > 0 and len(players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                    myPlayer.StartAuction(players, board, neighborhoods, money, bank) #launch auction
+                    myPlayer.StartAuction(players, board, neighborhoods, bank) #launch auction
             else:
-                myPlayer.StartAuction(players, board, neighborhoods, money, bank) #launch auction
+                myPlayer.StartAuction(players, board, neighborhoods, bank) #launch auction
         elif board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + board[myPlayer.location].name + "."
@@ -179,12 +169,12 @@ while bank.money > 0 and len(players) > 1:
         MoveMoneyToTable(-tax, myPlayer, bank)
     #Community Chest
     if isinstance(board[myPlayer.location], CommunityChest):
-        print "Well, " + myPlayer.name + ", you have drawn this card:"
+        print "Well, " + myPlayer.name + ", you have drawn this card: ",
         print communityChest[currentComm].text
         if communityChest[currentComm].goStart == 1:
             myPlayer.location = 0
-            MoveMoney(startWage, myPlayer, bank)
-            print "You go to Start and only receive $" + str(startWage)
+            MoveMoney(thisGame.startWage, myPlayer, bank)
+            print "You go to Start and only receive $" + str(thisGame.startWage)
         elif communityChest[currentComm].cash != 0:
             if communityChest[currentComm].cash > 0:
                 MoveMoney(communityChest[currentComm].cash, myPlayer, bank)
@@ -201,16 +191,16 @@ while bank.money > 0 and len(players) > 1:
         elif communityChest[currentComm].collect == 1:
             for person in players:
                 if person != myPlayer:
-                    person.cash -= collectFine
-                    myPlayer.cash += collectFine
-                    print person.name + " pays $" + str(collectFine) +" to " + myPlayer.name + "."
+                    person.cash -= thisGame.collectFine
+                    myPlayer.cash += thisGame.collectFine
+                    print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
         elif communityChest[currentComm].repairs == 1:
-            Repairs(chestRepairs[0],chestRepairs[1], myPlayer, board, bank)
+            Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, board, bank)
         #increment community chest card index
         currentComm = PlusOne(currentComm, len(communityChest))
     #Chance cards
     if isinstance(board[myPlayer.location], Chance):
-        print "Well, " + myPlayer.name + ", you have drawn this card:"
+        print "Well, " + myPlayer.name + ", you have drawn this card: ",
         print chances[currentChance].text
         if chances[currentChance].cash != 0:
             if chances[currentChance].cash > 0:
@@ -226,7 +216,7 @@ while bank.money > 0 and len(players) > 1:
         elif chances[currentChance].goToJail == 1:
             myPlayer.MoveToJail(board)
         elif chances[currentChance].repairs == 1:
-            Repairs(chanceRepairs[0],chanceRepairs[1], myPlayer, board, bank)
+            Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer, board, bank)
         elif chances[currentChance].reading == 1:
             #find Reading location
             for item in board:
@@ -234,8 +224,8 @@ while bank.money > 0 and len(players) > 1:
                     destination = item.location #what if not found?
                     break
             if destination < myPlayer.location:
-                print "You pass Go and collect $" + str(startWage) + "."
-                MoveMoney(startWage, myPlayer, bank)
+                print "You pass Go and collect $" + str(thisGame.startWage) + "."
+                MoveMoney(thisGame.startWage, myPlayer, bank)
             myPlayer.location = destination
             print "You move to Reading Railroad, at location " + str(destination) + "."
             myPlayer.teleport = 1
@@ -255,15 +245,15 @@ while bank.money > 0 and len(players) > 1:
         elif chances[currentChance].goTo != 0:
             if chances[currentChance].goTo == "1":
                 myPlayer.location = 0
-                MoveMoney(startWage, myPlayer, bank)
-                print "You move to Go and only get $" + str(startWage) + "."
+                MoveMoney(thisGame.startWage, myPlayer, bank)
+                print "You move to Go and only get $" + str(thisGame.startWage) + "."
             else:
                 for item in board:
                     if item.name == chances[currentChance].goTo:
                         #you get $200 if you pass Go.
                         if myPlayer.location > item.location:
-                            MoveMoney(startWage, myPlayer, bank)
-                            print "You get $" + str(startWage)
+                            MoveMoney(thisGame.startWage, myPlayer, bank)
+                            print "You get $" + str(thisGame.startWage)
                         myPlayer.location = item.location
                         break
                 print "You move to " + board[myPlayer.location].name + " at pos " + str(myPlayer.location) + "."

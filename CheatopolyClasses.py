@@ -1,5 +1,22 @@
 from CheatopolyFunctions import *
 
+class Game(object):
+    '''
+    This class contains all game constant.
+    Todo: move all game objects to this class.
+    '''
+    #Default values
+    playerCash = 1500 #initial amount received by each player
+    money = 15140 #although some rules say infinite bank money: https://en.wikibooks.org/wiki/Monopoly/Official_Rules
+    houses = 32 # https://en.wikibooks.org/wiki/Monopoly/Official_Rules
+    hotels = 12 # https://en.wikibooks.org/wiki/Monopoly/Official_Rules
+    startWage = 200 # what you get when you pass Go
+    jailFine = 50 # cost to get out of jail
+    collectFine = 50 #amount to collect from each player with the Collect card
+    chanceRepairs = [25, 100]
+    chestRepairs = [45,115]
+    
+
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
@@ -357,7 +374,7 @@ class Player(object):
         print "Hello,"+ self.name + "! " + player.name + " did not buy " + board[player.location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + ". Enter your price below."
         return choose_int(0, max(self.cash, 0))
     
-    def StartAuction(self, players, board, neighborhoods, money, bank):
+    def StartAuction(self, players, board, neighborhoods, bank):
         #set auction flag
         print "Starting auction..."
         for person in players:
@@ -395,6 +412,11 @@ class Player(object):
     
     def PayJailFine(self, jailFine, board, players, bank):
         return choose_yes_no("Do you want to pay $" + str(jailFine) + " to get out of jail[yes/no] ")
+    
+    def ResetJail(self):
+        self.inJail = False
+        self.timeInJail = 0
+        self.doublesInARow = 0
     
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

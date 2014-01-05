@@ -51,12 +51,6 @@ def MoveTable(player, bank):
     player.cash += bank.cardPayments
     bank.cardPayments = 0
 
-
-def ResetJail(player):
-    player.inJail = False
-    player.timeInJail = 0
-    player.doublesInARow = 0
-    
 def choose_int(fro, to):
     choose = -1
     while choose < fro or choose > to:
