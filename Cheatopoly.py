@@ -3,14 +3,15 @@ from CheatopolyFunctions import *
 from CheatopolyReadData import *
 
 #Create basic data structure
-neighborhoods = {}
+thisGame = Game()
+
 board = []
 communityChest = []
 chances = []
 currentComm = 0
 currentChance = 0
 players = []
-thisGame = Game()
+
 
 # Import data from data.txt
 import os
@@ -18,7 +19,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
-CheatopolyReadData(content, board, neighborhoods,chances, communityChest, thisGame)
+CheatopolyReadData(content, board, chances, communityChest, thisGame)
 #randomize community chest and chance cards
 from random import shuffle
 shuffle(chances)
@@ -132,15 +133,15 @@ while bank.money > 0 and len(players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                    myPlayer.StartAuction(players, board, neighborhoods, bank) #launch auction
+                    myPlayer.StartAuction(players, board, thisGame.neighborhoods, bank) #launch auction
             else:
-                myPlayer.StartAuction(players, board, neighborhoods, bank) #launch auction
+                myPlayer.StartAuction(players, board, thisGame.neighborhoods, bank) #launch auction
         elif board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + board[myPlayer.location].name + "."
         else:
             #Finally, you pay rent (if not mortgaged)
-            rentDue = board[myPlayer.location].rent(neighborhoods,board)
+            rentDue = board[myPlayer.location].rent(thisGame.neighborhoods,board)
             if myPlayer.doubleRent == 2:
                 rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
                 myPlayer.doubleRent = 1
@@ -273,9 +274,9 @@ while bank.money > 0 and len(players) > 1:
     print ""
     choose = ''
     while choose not in ["u", "d", "m","d", "e", "n"]:
-        choose = myPlayer.ChooseAction(board, bank, neighborhoods)
+        choose = myPlayer.ChooseAction(board, bank, thisGame.neighborhoods)
         if choose == "u":
-            myPlayer.Upgrade(neighborhoods, board, bank) #upgrade
+            myPlayer.Upgrade(thisGame.neighborhoods, board, bank) #upgrade
         elif choose == "d":
             myPlayer.Downgrade(board, bank) #downgrade
         elif choose == "m":
@@ -296,7 +297,7 @@ while bank.money > 0 and len(players) > 1:
     
     #stylecheck
     
-    
+    #no possibility to upgrade while in jail?
     
     #move hardcoded constants to txt file
     #maxhotels, maxhouses hardcoded or not?

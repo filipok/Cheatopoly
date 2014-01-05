@@ -1,16 +1,16 @@
 import os
 from CheatopolyClasses import *
 
-def CheatopolyReadData(content, board, neighborhoods,chances, communityChest, game):
+def CheatopolyReadData(content, board, chances, communityChest, game):
     #Process data.txt
     for i in range(len(content)):
         line = content[i].rstrip().split("\t")
         if line[0] == "street":
             board.append(Street(line[12], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), int(line[8]), int(line[9]), int(line[10]), line[11]))
-            if line[11] in neighborhoods:
-                neighborhoods[line[11]].append(board[-1])
+            if line[11] in game.neighborhoods:
+                game.neighborhoods[line[11]].append(board[-1])
             else:
-                neighborhoods[line[11]] = [board[-1]]
+                game.neighborhoods[line[11]] = [board[-1]]
         elif line[0] == "start":
             board.append(Start())
         elif line[0] == "chestL":

@@ -2,7 +2,7 @@ from CheatopolyFunctions import *
 
 class Game(object):
     '''
-    This class contains all game constant.
+    This class contains all game constants.
     Todo: move all game objects to this class.
     '''
     #Default values
@@ -15,6 +15,9 @@ class Game(object):
     collectFine = 50 #amount to collect from each player with the Collect card
     chanceRepairs = [25, 100]
     chestRepairs = [45,115]
+    
+    #Game objects
+    neighborhoods = {}
     
 
 class Bank(object):
