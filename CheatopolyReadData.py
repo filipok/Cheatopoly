@@ -1,7 +1,7 @@
 import os
 from CheatopolyClasses import *
 
-def CheatopolyReadData(content, board, chances, game):
+def CheatopolyReadData(content, board, game):
     #Process data.txt
     for i in range(len(content)):
         line = content[i].rstrip().split("\t")
@@ -32,7 +32,7 @@ def CheatopolyReadData(content, board, chances, game):
         elif line[0] == "chest":
             game.communityChest.append(CommunityCard(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
         elif line[0] == "chance":
-            chances.append(ChanceCard(line[9], int(line[1]), int(line [2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), line[8]))
+            game.chances.append(ChanceCard(line[9], int(line[1]), int(line [2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), line[8]))
         elif line[0] == "const":
             if line[1] == "playerCash":
                 game.playerCash = int(line[2])
@@ -66,6 +66,6 @@ def CheatopolyReadData(content, board, chances, game):
             f.write(str(board[i]) + "\n")
         for i in range(len(game.communityChest)):
             f.write(str(game.communityChest[i]) + "\n")
-        for i in range(len(chances)):
-            f.write(str(chances[i]) + "\n")
+        for i in range(len(game.chances)):
+            f.write(str(game.chances[i]) + "\n")
         f.close()

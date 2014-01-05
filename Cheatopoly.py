@@ -6,8 +6,6 @@ from CheatopolyReadData import *
 thisGame = Game()
 
 board = []
-chances = []
-currentComm = 0
 currentChance = 0
 players = []
 
@@ -18,10 +16,10 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
-CheatopolyReadData(content, board, chances, thisGame)
+CheatopolyReadData(content, board, thisGame)
 #randomize community chest and chance cards
 from random import shuffle
-shuffle(chances)
+shuffle(thisGame.chances)
 shuffle(thisGame.communityChest)
 
 #Cheatopoly Game creation
@@ -75,13 +73,13 @@ while bank.money > 0 and len(players) > 1:
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
                     #return community card back to the pile
-                    thisGame.communityChest.insert(currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
-                    currentComm = PlusOne(currentComm, len(thisGame.communityChest))
+                    thisGame.communityChest.insert(thisGame.currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
+                    thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
                 else:
                     myPlayer.jailChanceCards -= 1
                     #return chance card back to the pile
-                    chances.insert(currentChance,ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0))
-                    currentChance = PlusOne(currentChance, len(chances))
+                    thisGame.chances.insert(currentChance,ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0))
+                    currentChance = PlusOne(currentChance, len(thisGame.chances))
                 myPlayer.ResetJail()
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine: #Else pay
@@ -170,54 +168,54 @@ while bank.money > 0 and len(players) > 1:
     #Community Chest
     if isinstance(board[myPlayer.location], CommunityChest):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
-        print thisGame.communityChest[currentComm].text
-        if thisGame.communityChest[currentComm].goStart == 1:
+        print thisGame.communityChest[thisGame.currentComm].text
+        if thisGame.communityChest[thisGame.currentComm].goStart == 1:
             myPlayer.location = 0
             MoveMoney(thisGame.startWage, myPlayer, bank)
             print "You go to Start and only receive $" + str(thisGame.startWage)
-        elif thisGame.communityChest[currentComm].cash != 0:
-            if thisGame.communityChest[currentComm].cash > 0:
-                MoveMoney(thisGame.communityChest[currentComm].cash, myPlayer, bank)
+        elif thisGame.communityChest[thisGame.currentComm].cash != 0:
+            if thisGame.communityChest[thisGame.currentComm].cash > 0:
+                MoveMoney(thisGame.communityChest[thisGame.currentComm].cash, myPlayer, bank)
             else:
-                MoveMoneyToTable(thisGame.communityChest[currentComm].cash, myPlayer, bank)
-        elif thisGame.communityChest[currentComm].jailcard == 1:
+                MoveMoneyToTable(thisGame.communityChest[thisGame.currentComm].cash, myPlayer, bank)
+        elif thisGame.communityChest[thisGame.currentComm].jailcard == 1:
             myPlayer.jailCommCards += 1
             #remove card from community chest
-            thisGame.communityChest.pop(currentComm)
+            thisGame.communityChest.pop(thisGame.currentComm)
             #decrease index,to compensate for the general increase after IF
-            currentComm = (currentComm + len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
-        elif thisGame.communityChest[currentComm].goToJail == 1:
+            thisGame.currentComm = (thisGame.currentComm + len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
+        elif thisGame.communityChest[thisGame.currentComm].goToJail == 1:
             myPlayer.MoveToJail(board)
-        elif thisGame.communityChest[currentComm].collect == 1:
+        elif thisGame.communityChest[thisGame.currentComm].collect == 1:
             for person in players:
                 if person != myPlayer:
                     person.cash -= thisGame.collectFine
                     myPlayer.cash += thisGame.collectFine
                     print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
-        elif thisGame.communityChest[currentComm].repairs == 1:
+        elif thisGame.communityChest[thisGame.currentComm].repairs == 1:
             Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, board, bank)
         #increment community chest card index
-        currentComm = PlusOne(currentComm, len(thisGame.communityChest))
+        thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
     if isinstance(board[myPlayer.location], Chance):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
-        print chances[currentChance].text
-        if chances[currentChance].cash != 0:
-            if chances[currentChance].cash > 0:
-                MoveMoney(chances[currentChance].cash, myPlayer, bank)
+        print thisGame.chances[currentChance].text
+        if thisGame.chances[currentChance].cash != 0:
+            if thisGame.chances[currentChance].cash > 0:
+                MoveMoney(thisGame.chances[currentChance].cash, myPlayer, bank)
             else:
-                MoveMoneyToTable(chances[currentChance].cash, myPlayer, bank)
-        elif chances[currentChance].jailcard == 1:
+                MoveMoneyToTable(thisGame.chances[currentChance].cash, myPlayer, bank)
+        elif thisGame.chances[currentChance].jailcard == 1:
             myPlayer.jailChanceCards += 1
             #remove card from community chest
-            chances.pop(currentChance)
+            thisGame.chances.pop(currentChance)
             #decrease index,to compensate for the general increase after IF
-            currentChance = (currentChance + len(chances) - 1) % len(chances)
-        elif chances[currentChance].goToJail == 1:
+            currentChance = (currentChance + len(thisGame.chances) - 1) % len(thisGame.chances)
+        elif thisGame.chances[currentChance].goToJail == 1:
             myPlayer.MoveToJail(board)
-        elif chances[currentChance].repairs == 1:
+        elif thisGame.chances[currentChance].repairs == 1:
             Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer, board, bank)
-        elif chances[currentChance].reading == 1:
+        elif thisGame.chances[currentChance].reading == 1:
             #find Reading location
             for item in board:
                 if item.name == "Reading Railroad":
@@ -230,11 +228,11 @@ while bank.money > 0 and len(players) > 1:
             print "You move to Reading Railroad, at location " + str(destination) + "."
             myPlayer.teleport = 1
             continue
-        elif chances[currentChance].movement != 0:
-            myPlayer.location = (myPlayer.location + len(board) + chances[currentChance].movement) % len(board)
+        elif thisGame.chances[currentChance].movement != 0:
+            myPlayer.location = (myPlayer.location + len(board) + thisGame.chances[currentChance].movement) % len(board)
             myPlayer.teleport = 1
             continue
-        elif chances[currentChance].rail == 1:
+        elif thisGame.chances[currentChance].rail == 1:
             while not isinstance(board[myPlayer.location], Railroad):
                 #FIXME: infinite loop if no rail!
                 myPlayer.location = PlusOne(myPlayer.location, len(board))
@@ -242,14 +240,14 @@ while bank.money > 0 and len(players) > 1:
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
             continue
-        elif chances[currentChance].goTo != 0:
-            if chances[currentChance].goTo == "1":
+        elif thisGame.chances[currentChance].goTo != 0:
+            if thisGame.chances[currentChance].goTo == "1":
                 myPlayer.location = 0
                 MoveMoney(thisGame.startWage, myPlayer, bank)
                 print "You move to Go and only get $" + str(thisGame.startWage) + "."
             else:
                 for item in board:
-                    if item.name == chances[currentChance].goTo:
+                    if item.name == thisGame.chances[currentChance].goTo:
                         #you get $200 if you pass Go.
                         if myPlayer.location > item.location:
                             MoveMoney(thisGame.startWage, myPlayer, bank)
@@ -260,7 +258,7 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.teleport = 1
                 continue
         #increment chance card index
-        currentChance = PlusOne(currentChance, len(chances))
+        currentChance = PlusOne(currentChance, len(thisGame.chances))
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print myPlayer.name + ", you have the following properties:"
@@ -292,17 +290,11 @@ while bank.money > 0 and len(players) > 1:
     
     #Update display
     
-    
-    
     #stylecheck
     
     #no possibility to upgrade while in jail?
     
-    #move hardcoded constants to txt file
-    #maxhotels, maxhouses hardcoded or not?
     #save/load game from disk
-    
-    #create Game object with all data
     
     #Turn end: remove from game if cash < 0
     if myPlayer.cash < 0:
