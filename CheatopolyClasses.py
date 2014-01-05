@@ -21,6 +21,7 @@ class Game(object):
     communityChest = []
     chances = []
     currentComm = 0
+    currentChance = 0
     
 
 class Bank(object):
