@@ -5,8 +5,9 @@ from CheatopolyReadData import *
 #Create basic data structure
 thisGame = Game()
 board = []
-players = []
 
+#Initialize bank
+bank =  Bank(thisGame.money, thisGame.houses, thisGame.hotels)
 
 # Import data from data.txt
 import os
@@ -38,18 +39,17 @@ for i in range(numberPlayers):
         name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
     human = choose_yes_no("Is the player human [yes/no]: ")
     if human == "yes":
-        players.append(Player(name, thisGame.playerCash, True))
+        thisGame.players.append(Player(name, thisGame.playerCash, True))
     else:
-        players.append(Cheatoid(name, thisGame.playerCash,False))
+        thisGame.players.append(Cheatoid(name, thisGame.playerCash,False))
     list_of_names.append(name)
 
-#Initialize bank
-bank =  Bank(thisGame.money, thisGame.houses, thisGame.hotels)
+
 
 #The player turns are generated in a while loop
 currentPlayer = 0 # initialize current player
-while bank.money > 0 and len(players) > 1:
-    myPlayer = players[currentPlayer]
+while bank.money > 0 and len(thisGame.players) > 1:
+    myPlayer = thisGame.players[currentPlayer] #shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
@@ -66,7 +66,7 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.timeInJail += 1
         #Else use a get ouf of jail card
         if myPlayer.inJail and max(myPlayer.jailCommCards, myPlayer.jailChanceCards) > 0:
-            choose = myPlayer.UseJailCard(board, players, bank)
+            choose = myPlayer.UseJailCard(board, thisGame.players, bank)
             if choose == 'yes':
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
@@ -81,7 +81,7 @@ while bank.money > 0 and len(players) > 1:
                 myPlayer.ResetJail()
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine: #Else pay
-            choose = myPlayer.PayJailFine(thisGame.jailFine, board, players, bank)
+            choose = myPlayer.PayJailFine(thisGame.jailFine, board, thisGame.players, bank)
             if choose == 'yes':
                 MoveMoney(-thisGame.jailFine, myPlayer, bank)
                 myPlayer.ResetJail()
@@ -91,13 +91,13 @@ while bank.money > 0 and len(players) > 1:
             myPlayer.ResetJail()
             print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
         if myPlayer.inJail: #Check if still in jail
-            currentPlayer = PlusOne(currentPlayer, len(players))
+            currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
             continue #end of turn
         if dice[0] == dice[1]: #Check how many doubles in a row
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
                 myPlayer.MoveToJail(board)
-                currentPlayer = PlusOne(currentPlayer, len(players))
+                currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
                 continue
         else:
             myPlayer.doublesInARow = 0
@@ -128,9 +128,9 @@ while bank.money > 0 and len(players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                    myPlayer.StartAuction(players, board, thisGame.neighborhoods, bank) #launch auction
+                    myPlayer.StartAuction(thisGame.players, board, thisGame.neighborhoods, bank) #launch auction
             else:
-                myPlayer.StartAuction(players, board, thisGame.neighborhoods, bank) #launch auction
+                myPlayer.StartAuction(thisGame.players, board, thisGame.neighborhoods, bank) #launch auction
         elif board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + board[myPlayer.location].name + "."
@@ -185,7 +185,7 @@ while bank.money > 0 and len(players) > 1:
         elif thisGame.communityChest[thisGame.currentComm].goToJail == 1:
             myPlayer.MoveToJail(board)
         elif thisGame.communityChest[thisGame.currentComm].collect == 1:
-            for person in players:
+            for person in thisGame.players:
                 if person != myPlayer:
                     person.cash -= thisGame.collectFine
                     myPlayer.cash += thisGame.collectFine
@@ -307,19 +307,19 @@ while bank.money > 0 and len(players) > 1:
                 else:
                     bank.houses += item.houses
                     item.houses = 0
-        players.pop(currentPlayer)
+        thisGame.players.pop(currentPlayer)
         #no need to increment currentPlayer, but set to zero as needed
-        if currentPlayer == len(players):
+        if currentPlayer == len(thisGame.players):
             currentPlayer = 0
     else:
         #currentPlayer += 1
-        currentPlayer = PlusOne(currentPlayer, len(players))
+        currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
 
 
     #Print current financial status
     print ""
     print "***"
-    for player in players:
+    for player in thisGame.players:
         print player.name + " has $" +str(player.cash)
     print "The bank has got $" + str(bank.money) + " left. There are "+ str(bank.houses) + " houses and " + str(bank.hotels) + " hotels available."
     print "There are $" + str(bank.cardPayments) + " left on the table."
@@ -327,12 +327,12 @@ while bank.money > 0 and len(players) > 1:
     print ""
     
     
-if len(players) == 1:
-    print players[0].name + " HAS WON THE GAME"
+if len(thisGame.players) == 1:
+    print thisGame.players[0].name + " HAS WON THE GAME"
 else:
     bestscore = 0
     bestPlayer = None
-    for person in players:
+    for person in thisGame.players:
         if person.cash > bestscore:
             bestPlayer = person
             bestscore = person.cash

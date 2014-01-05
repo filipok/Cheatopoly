@@ -22,7 +22,7 @@ class Game(object):
     chances = []
     currentComm = 0
     currentChance = 0
-    
+    players = []
 
 class Bank(object):
     '''
