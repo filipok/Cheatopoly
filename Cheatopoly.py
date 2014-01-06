@@ -1,10 +1,6 @@
+from random import shuffle
 from CheatopolyClasses import *
 from CheatopolyFunctions import *
-from CheatopolyReadData import *
-
-#Create game
-thisGame = Game()
-thisGame.bank =  Bank(thisGame) #initialize bank
 
 # Import data from data.txt
 import os
@@ -12,13 +8,15 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 ff = open(os.path.join(__location__, 'data.txt'));
 with ff as f:
     content = f.readlines()
-CheatopolyReadData(content, thisGame)
+
+#Create game
+thisGame = Game()
+thisGame.bank =  Bank(thisGame) #initialize bank
+thisGame.ReadData(content) #process data.txt
 #randomize community chest and chance cards
-from random import shuffle
 shuffle(thisGame.chances)
 shuffle(thisGame.communityChest)
 
-#Cheatopoly Game creation
 print "************************"
 print "WELCOME TO CHEATOPOLY!!!"
 print "You can play Cheatopoly in up to 6 players."

@@ -25,6 +25,64 @@ class Game(object):
     players = []
     board = []
     bank = None
+    
+    def ReadData(self, content):
+        #Process data.txt
+        for i in range(len(content)):
+            line = content[i].rstrip().split("\t")
+            if line[0] == "street":
+                self.board.append(Street(line[12], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), int(line[8]), int(line[9]), int(line[10]), line[11]))
+                if line[11] in self.neighborhoods:
+                    self.neighborhoods[line[11]].append(self.board[-1])
+                else:
+                    self.neighborhoods[line[11]] = [self.board[-1]]
+            elif line[0] == "start":
+                self.board.append(Start())
+            elif line[0] == "chestL":
+                self.board.append(CommunityChest())
+            elif line[0] == "tax":
+                self.board.append(Tax(line[3], line[1], line[2], line[4]))
+            elif line[0] == "rail":
+                self.board.append(Railroad(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+            elif line[0] == "chanceL":
+                self.board.append(Chance())
+            elif line[0] == "jail":
+                self.board.append(Jail())
+            elif line[0] == "utility":
+                self.board.append(Utility(line[3], int(line[1]), int(line[2])))
+            elif line[0] == "park":
+                self.board.append(FreeParking())
+            elif line[0] == "gotojail":
+                self.board.append(GoToJail())
+            elif line[0] == "chest":
+                self.communityChest.append(CommunityCard(line[7], int(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+            elif line[0] == "chance":
+                self.chances.append(ChanceCard(line[9], int(line[1]), int(line [2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), int(line[7]), line[8]))
+            elif line[0] == "const":
+                if line[1] == "playerCash":
+                    self.playerCash = int(line[2])
+                elif line[1] == "money":
+                    self.money = int(line[2])
+                elif line[1] == "houses":
+                    self.houses =  int(line[2])
+                elif line[1] == "hotels":
+                    self.hotels = int(line[2])
+                elif line[1] == "startWage":
+                    self.startWage = int(line[2])
+                elif line[1] == "jailFine":
+                    self.jailFine = int(line[2])
+                elif line[1] == "collectFine":
+                    self.collectFine = int(line[2])
+                elif line[1] == "chanceRepairsMin":
+                    self.chanceRepairs = [int(line[2])]
+                elif line[1] == "chanceRepairsMax":
+                    self.chanceRepairs.append(int(line[2]))
+                elif line[1] == "chestRepairsMin":
+                    self.chestRepairs = [int(line[2])]
+                elif line[1] == "chestRepairsMax":
+                    self.chestRepairs.append(int(line[2]))
+            if line[0] in ["street", "start", "chestL", "tax", "rail", "chanceL", "jail", "utility", "park", "gotojail"]:
+                self.board[i].location = i
 
 class Bank(object):
     '''
