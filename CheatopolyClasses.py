@@ -83,6 +83,21 @@ class Game(object):
                     self.chestRepairs.append(int(line[2]))
             if line[0] in ["street", "start", "chestL", "tax", "rail", "chanceL", "jail", "utility", "park", "gotojail"]:
                 self.board[i].location = i
+    
+    def InitializePlayers(self):
+        print "Please enter a number of players between 2 and 6:"
+        numPlayers = choose_int(2, 6)
+        list_of_names = ['']
+        for i in range(numPlayers):
+            name  = ''
+            while name in list_of_names:
+                name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
+            human = choose_yes_no("Is the player human [yes/no]: ")
+            if human == "yes":
+                self.players.append(Player(name, self.playerCash, True))
+            else:
+                self.players.append(Cheatoid(name, self.playerCash,False))
+            list_of_names.append(name)
 
 class Bank(object):
     '''

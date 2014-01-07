@@ -22,24 +22,8 @@ print "WELCOME TO CHEATOPOLY!!!"
 print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
-#Get number of players
-print "Please enter a number of players between 2 and 6:"
-numberPlayers = choose_int(2, 6)
-
 #Initialize players
-list_of_names = ['']
-for i in range(numberPlayers):
-    name  = ''
-    while name in list_of_names:
-        name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
-    human = choose_yes_no("Is the player human [yes/no]: ")
-    if human == "yes":
-        thisGame.players.append(Player(name, thisGame.playerCash, True))
-    else:
-        thisGame.players.append(Cheatoid(name, thisGame.playerCash,False))
-    list_of_names.append(name)
-
-
+thisGame.InitializePlayers()
 
 #The player turns are generated in a while loop
 currentPlayer = 0 # initialize current player
