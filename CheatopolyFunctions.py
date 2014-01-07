@@ -127,3 +127,7 @@ def FlagUpgradeableLocations(player, neighborhoods):
         for street in neighborhood:
             if street.ownedBy == player:
                 street.minUpgrade = minUpgrade
+
+def ReturnCardAndIncrement(cardSet, position, card):
+        cardSet.insert(position, card)
+        return PlusOne(cardSet, len(cardSet))

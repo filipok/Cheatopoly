@@ -99,7 +99,7 @@ class Game(object):
             else:
                 self.players.append(Cheatoid(name, self.playerCash,False))
             list_of_names.append(name)
-
+    
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
@@ -505,6 +505,19 @@ class Player(object):
         self.inJail = False
         self.timeInJail = 0
         self.doublesInARow = 0
+    
+    def ReturnCardLeaveJail(self, game):
+        #return community/chance card back to the pile
+        if self.jailCommCards > self.jailChanceCards:
+            toInsert = CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0)
+            self.jailCommCards -= 1
+            game.currentComm = ReturnCardAndIncrement(game.communityChest, game.currentComm, toInsert)
+        else:
+            toInsert= ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0)
+            self.jailChanceCards -= 1
+            game.currentChance = ReturnCardAndIncrement(game.chances, game.currentChance, toInsert)
+        self.ResetJail()
+        print self.name + " gets out of jail."
     
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

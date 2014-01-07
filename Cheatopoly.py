@@ -48,19 +48,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if myPlayer.inJail and max(myPlayer.jailCommCards, myPlayer.jailChanceCards) > 0:
             choose = myPlayer.UseJailCard(thisGame)
             if choose == 'yes':
-                if myPlayer.jailCommCards > myPlayer.jailChanceCards:
-                    myPlayer.jailCommCards -= 1
-                    #return community card back to the pile
-                    thisGame.communityChest.insert(thisGame.currentComm,CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0))
-                    thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
-                else:
-                    myPlayer.jailChanceCards -= 1
-                    #return chance card back to the pile
-                    thisGame.chances.insert(thisGame.currentChance,ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0))
-                    thisGame.currentChance = PlusOne(thisGame.currentChance, len(thisGame.chances))
-                myPlayer.ResetJail()
-                print myPlayer.name + " gets out of jail."
-        if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine: #Else pay
+                myPlayer.ReturnCardLeaveJail(thisGame)
+        #Else pay
+        if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine:
             choose = myPlayer.PayJailFine(thisGame)
             if choose == 'yes':
                 MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
