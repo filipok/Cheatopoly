@@ -163,7 +163,7 @@ class Street(Place):
     def newOwner(self, player):
         #change street owner
         self.ownedBy = player
-    def rent(self,neighborhoods,board):
+    def rent(self, game):
         if self.hotels == 1:
             return self.rentH
         elif self.houses == 4:
@@ -177,7 +177,7 @@ class Street(Place):
         else:
             #no hotels,no houses:
             #check for ownership of entire neighborhood
-            for item in neighborhoods[self.neighborhood]:
+            for item in game.neighborhoods[self.neighborhood]:
                 if item.ownedBy != self.ownedBy:
                     return self.rent0
             return 2*self.rent0
@@ -210,9 +210,9 @@ class Railroad(Place):
     def newOwner(self, player):
         #change railroad owner
         self.ownedBy = player
-    def rent(self,neighborhoods, board):
+    def rent(self, game):
         counter = 0
-        for item in board:
+        for item in game.board:
             if isinstance(item, Railroad) and item.ownedBy == self.ownedBy:
                 counter += 1
         if counter == 4:
@@ -244,12 +244,12 @@ class Utility(Place):
     def newOwner(self, player):
         #change utility owner
         self.ownedBy = player
-    def rent(self,neighborhoods, board):
+    def rent(self, game):
         print "Let us roll the dice for rent!"
         dice = Dice()
         print "Dice: " +  str(dice[0]) + " " + str(dice[1])
         counter = 0
-        for item in board:
+        for item in game.board:
             if isinstance(item, Utility) and item.ownedBy == self.ownedBy:
                 counter += 1
         if counter == 1:
@@ -374,7 +374,7 @@ class Player(object):
     jailChanceCards = 0
     doublesInARow = 0
     doubleRent = 1# 1 or 2; flag for the chance card sending to next R.R.
-    teleport =0 #indicates if the player was sent over by a Chance card
+    teleport =0 #indicates whether the player was sent over by a Chance card
     inAuction = False #used for auctions
     
     def __init__ (self, name, cash, human):

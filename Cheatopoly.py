@@ -25,15 +25,16 @@ print "************************"
 #Initialize players
 thisGame.InitializePlayers()
 
-#The player turns are generated in a while loop
 currentPlayer = 0 # initialize current player
+#Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     myPlayer = thisGame.players[currentPlayer] #shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
         if not isinstance(myPlayer, Cheatoid):
-            raw_input("Hello, " + myPlayer.name +  "! You have $" + str(myPlayer.cash) + ". Press Enter to start turn.")
+            raw_input("Hello, " + myPlayer.name +  "! You have $" + \
+            str(myPlayer.cash) + ". Press Enter to start turn.")
         dice = Dice() #Roll dice
         print "Dice roll for " + myPlayer.name + ": " +  str(dice[0]) + " " + str(dice[1])
         # Resolve jail status
@@ -115,7 +116,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             print "You (" + myPlayer.name + ") already own " + thisGame.board[myPlayer.location].name + "."
         else:
             #Finally, you pay rent (if not mortgaged)
-            rentDue = thisGame.board[myPlayer.location].rent(thisGame.neighborhoods, thisGame.board)
+            rentDue = thisGame.board[myPlayer.location].rent(thisGame)
             if myPlayer.doubleRent == 2:
                 rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
                 myPlayer.doubleRent = 1
