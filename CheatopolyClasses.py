@@ -1,3 +1,4 @@
+import random
 from CheatopolyFunctions import *
 
 class Game(object):
@@ -452,14 +453,17 @@ class Player(object):
     def ChooseAction(self, board, bank, neighborhoods):
         return raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
     
-    def ReplyToAuction(self, player, board, neighborhoods, auctionPrice):
-        print "Hello,"+ self.name + "! " + player.name + " did not buy " + board[player.location].name + ". Do you want to buy it instead? Last price is " + str(auctionPrice) + ". Enter your price below."
+    def ReplyToAuction(self, player, game, auctionPrice):
+        print "Hello,"+ self.name + "! " + player.name + " did not buy " + \
+        game.board[player.location].name + \
+        ". Do you want to buy it instead? Last price is " + \
+        str(auctionPrice) + ". Enter your price below."
         return choose_int(0, max(self.cash, 0))
     
-    def StartAuction(self, players, board, neighborhoods, bank):
+    def StartAuction(self, game):
         #set auction flag
         print "Starting auction..."
-        for person in players:
+        for person in game.players:
             person.inAuction = True
         self.inAuction = False
         auctionRunning = True
@@ -467,9 +471,9 @@ class Player(object):
         bestCandidate = None
         while auctionRunning:
             stillInPlay = 0
-            for person in players:
+            for person in game.players:
                 if person.inAuction and person != bestCandidate:
-                    choose = person.ReplyToAuction(self, board, neighborhoods, auctionPrice)
+                    choose = person.ReplyToAuction(self, game, auctionPrice)
                     if isinstance(choose, int) and choose > auctionPrice:
                         bestCandidate = person
                         auctionPrice = choose
@@ -481,9 +485,11 @@ class Player(object):
         if bestCandidate == None:
             print "Sadly, nobody wants that place."
         else:
-            print "Congratulations, " + bestCandidate.name + "! You have bought " + board[self.location].name + " for $" + str(auctionPrice) + "."
-            MoveMoney(-auctionPrice, bestCandidate, bank)
-            board[self.location].newOwner(bestCandidate)#assign new owner
+            print "Congratulations, " + bestCandidate.name + \
+            "! You have bought " + game.board[self.location].name + \
+            " for $" + str(auctionPrice) + "."
+            MoveMoney(-auctionPrice, bestCandidate, game.bank)
+            game.board[self.location].newOwner(bestCandidate)#assign new owner
  
     def Buy(self, board):
         message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, board[self.location].name, str(self.cash), str(board[self.location]))
@@ -611,7 +617,7 @@ class Cheatoid(Player):
         self.successfulDemortgage = True
         return "n"    
     
-    def ReplyToAuction(self, player, board, neighborhoods, auctionPrice):
+    def ReplyToAuction(self, player, game, auctionPrice):
         '''
         Returns a new auction price (int)
         
@@ -619,19 +625,20 @@ class Cheatoid(Player):
         If yes,then aim high.
         If not, then aim low
         '''
-        for neighborhood in neighborhoods.values():
+        for neighborhood in game.neighborhoods.values():
             myNeighborhood = True
-            if board[player.location] in neighborhood:
+            if game.board[player.location] in neighborhood:
                 for street in neighborhood:
                     if street.ownedBy != None and street.ownedBy != self:
                         myNeighborhood = False
                 break
-        import random
-        a = random.randint(-board[player.location].price/10, board[player.location].price/10)
-        if isinstance(board[player.location], Street) and myNeighborhood:
-            return min(auctionPrice + 1, board[player.location].rentH + a, self.cash)
+        a = random.randint(-game.board[player.location].price/10, game.board[player.location].price/10)
+        if isinstance(game.board[player.location], Street) and myNeighborhood:
+            reply = min(auctionPrice + 1, game.board[player.location].rentH + a, self.cash)
         else:
-            return min(auctionPrice + 1, board[player.location].price + a, self.cash)
+            reply = min(auctionPrice + 1, game.board[player.location].price + a, self.cash)
+        print self.name + " bids " + str(reply) + "."
+        return reply
     
     def Buy(self, board):
         '''

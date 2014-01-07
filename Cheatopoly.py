@@ -108,9 +108,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     a = random.randint(1, 4)
                     if a == 1:
                         print "Beggar...!"
-                    myPlayer.StartAuction(thisGame.players, thisGame.board, thisGame.neighborhoods, thisGame.bank) #launch auction
+                    myPlayer.StartAuction(thisGame) #launch auction
             else:
-                myPlayer.StartAuction(thisGame.players, thisGame.board, thisGame.neighborhoods, thisGame.bank) #launch auction
+                myPlayer.StartAuction(thisGame) #launch auction
         elif thisGame.board[myPlayer.location].ownedBy == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + thisGame.board[myPlayer.location].name + "."
