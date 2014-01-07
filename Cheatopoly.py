@@ -46,7 +46,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 myPlayer.timeInJail += 1
         #Else use a get ouf of jail card
         if myPlayer.inJail and max(myPlayer.jailCommCards, myPlayer.jailChanceCards) > 0:
-            choose = myPlayer.UseJailCard(thisGame.board, thisGame.players, thisGame.bank)
+            choose = myPlayer.UseJailCard(thisGame)
             if choose == 'yes':
                 if myPlayer.jailCommCards > myPlayer.jailChanceCards:
                     myPlayer.jailCommCards -= 1
@@ -61,7 +61,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 myPlayer.ResetJail()
                 print myPlayer.name + " gets out of jail."
         if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine: #Else pay
-            choose = myPlayer.PayJailFine(thisGame.jailFine, thisGame.board, thisGame.players, thisGame.bank)
+            choose = myPlayer.PayJailFine(thisGame)
             if choose == 'yes':
                 MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
                 myPlayer.ResetJail()

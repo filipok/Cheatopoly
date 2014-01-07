@@ -489,11 +489,11 @@ class Player(object):
         message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, board[self.location].name, str(self.cash), str(board[self.location]))
         return choose_yes_no(message)
     
-    def UseJailCard(self, board):
+    def UseJailCard(self, game):
         return choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
     
-    def PayJailFine(self, jailFine, board, players, bank):
-        return choose_yes_no("Do you want to pay $" + str(jailFine) + " to get out of jail[yes/no] ")
+    def PayJailFine(self, game):
+        return choose_yes_no("Do you want to pay $" + str(game.jailFine) + " to get out of jail[yes/no] ")
     
     def ResetJail(self):
         self.inJail = False
@@ -639,7 +639,7 @@ class Cheatoid(Player):
         '''
         return "yes" #always try to buy
     
-    def UseJailCard(self, board, players, bank):
+    def UseJailCard(self, game):
         '''
         Returns "yes"/"no"
         The main program already checks wether the player has a jail card.
@@ -649,7 +649,7 @@ class Cheatoid(Player):
         mine = 0
         empty = 0
         theirs = 0
-        for item in board:
+        for item in game.board:
             if isinstance(item, (Street, Railroad, Utility)):
                 if item.ownedBy == None:
                     empty += 1
@@ -657,17 +657,17 @@ class Cheatoid(Player):
                     mine += 1
                 else:
                     theirs += 1
-        if len(players)< 4 and empty > 0 and self.cash > 125 and \
-        bank.hotels > 8: #rudimentary
+        if len(game.players)< 4 and empty > 0 and self.cash > 125 and \
+        game.bank.hotels > 8: #rudimentary
             return "yes"
         else:
             return "no" #better stay in jail
     
-    def PayJailFine(self, jailFine, board, players, bank):
+    def PayJailFine(self, game):
         '''
         Returns "yes"/"no"
         '''
-        return self.UseJailCard(board, players, bank) #the easy way
+        return self.UseJailCard(game) #the easy way
     
     def __repr__(self):
         return "Player " + self.name + ", is NOT human."
