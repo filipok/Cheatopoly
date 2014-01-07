@@ -535,6 +535,18 @@ class Player(object):
         self.ResetJail()
         print self.name + " gets out of jail."
     
+    def PayRent(self, place, game):
+        rentDue = place.rent(game)
+        if self.doubleRent == 2:
+            rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
+            self.doubleRent = 1
+        if not place.mortgaged:
+            print place.name +  " is owned by " + place.ownedBy.name + ", you (" + self.name + ") must pay rent amounting to: " + str(rentDue) + "."
+            self.cash -= rentDue
+            place.ownedBy.cash += rentDue
+        else:
+            print place.name +  " is owned by " + place.ownedBy.name + ", but is mortgaged and you pay nothing."
+    
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 

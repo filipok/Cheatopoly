@@ -101,16 +101,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             print "You (" + myPlayer.name + ") already own " + thisPlace.name + "."
         else:
             #Finally, you pay rent (if not mortgaged)
-            rentDue = thisPlace.rent(thisGame)
-            if myPlayer.doubleRent == 2:
-                rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
-                myPlayer.doubleRent = 1
-            if not thisPlace.mortgaged:
-                print thisPlace.name +  " is owned by " + thisPlace.ownedBy.name + ", you (" + myPlayer.name + ") must pay rent amounting to: " + str(rentDue) + "."
-                myPlayer.cash -= rentDue
-                thisPlace.ownedBy.cash += rentDue
-            else:
-                print thisPlace.name +  " is owned by " + thisPlace.ownedBy.name + ", but is mortgaged and you pay nothing."
+            myPlayer.PayRent(thisPlace, thisGame)
     #Free Parking
     if isinstance(thisPlace, FreeParking):
         MoveTable(myPlayer,thisGame.bank)
