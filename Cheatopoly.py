@@ -1,3 +1,4 @@
+import random
 from random import shuffle
 from CheatopolyClasses import *
 from CheatopolyFunctions import *
@@ -55,15 +56,19 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             if choose == 'yes':
                 MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
                 myPlayer.ResetJail()
-                print myPlayer.name + " pays $" + str(thisGame.jailFine) + " to get out of jail."
-        if myPlayer.timeInJail == 3: #Else if already three turns in jail:
+                print myPlayer.name + " pays $" + str(thisGame.jailFine) + \
+                " to get out of jail."
+        #Else if already three turns in jail:
+        if myPlayer.timeInJail == 3:
             MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
             myPlayer.ResetJail()
             print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
-        if myPlayer.inJail: #Check if still in jail
+        #Check if still in jail
+        if myPlayer.inJail:
             currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
             continue #end of turn
-        if dice[0] == dice[1]: #Check how many doubles in a row
+        #Check how many doubles in a row
+        if dice[0] == dice[1]:
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
                 myPlayer.MoveToJail(thisGame.board)
@@ -75,7 +80,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % len(thisGame.board)
         print myPlayer.name + " advances to " + str(myPlayer.location) + \
         " (" + thisGame.board[myPlayer.location].name + ")."
-        if myPlayer.location == 0: #Did we pass Go? +startWage/2*startWage
+        #Did we pass Go? +startWage/2*startWage
+        if myPlayer.location == 0:
             MoveMoney(2*thisGame.startWage, myPlayer, thisGame.bank)
             print myPlayer.name + " is a lucky punk and gets $" + str(2*thisGame.startWage) + "."
         elif myPlayer.location - dice[0] - dice[1] < 0:
@@ -83,50 +89,39 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             print myPlayer.name + " gets $" + str(thisGame.startWage) + "."
     #reset teleport counter now
     myPlayer.teleport = 0
+    thisPlace = thisGame.board[myPlayer.location] #shorthand
     # if player lands on street, rail or utility:
-    if isinstance(thisGame.board[myPlayer.location], (Street, Railroad, Utility)):
-        if thisGame.board[myPlayer.location].ownedBy == None:
-            choose = myPlayer.Buy(thisGame.board) #You can buy the place
-            if choose == "yes":
-                if myPlayer.cash > thisGame.board[myPlayer.location].price:
-                    thisGame.board[myPlayer.location].newOwner(myPlayer) #assign new owner
-                    MoveMoney(-thisGame.board[myPlayer.location].price, myPlayer, thisGame.bank)
-                    print "Congratulations, " + myPlayer.name + "! You have bought: " +  str(thisGame.board[myPlayer.location]) + "."
-                else:
-                    print "Sorry, you do not have the required funds!"
-                    import random
-                    a = random.randint(1, 4)
-                    if a == 1:
-                        print "Beggar...!"
-                    myPlayer.StartAuction(thisGame) #launch auction
-            else:
-                myPlayer.StartAuction(thisGame) #launch auction
-        elif thisGame.board[myPlayer.location].ownedBy == myPlayer:
+    if isinstance(thisPlace, (Street, Railroad, Utility)):
+        if thisPlace.ownedBy == None:
+            #You can buy the place
+            choose = myPlayer.Buy(thisGame.board)
+            thisGame.NewOwnerOrAuction(choose, myPlayer, thisPlace)
+        elif thisPlace.ownedBy == myPlayer:
             #If you already own that place
-            print "You (" + myPlayer.name + ") already own " + thisGame.board[myPlayer.location].name + "."
+            print "You (" + myPlayer.name + ") already own " + thisPlace.name + "."
         else:
             #Finally, you pay rent (if not mortgaged)
-            rentDue = thisGame.board[myPlayer.location].rent(thisGame)
+            rentDue = thisPlace.rent(thisGame)
             if myPlayer.doubleRent == 2:
                 rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
                 myPlayer.doubleRent = 1
-            if not thisGame.board[myPlayer.location].mortgaged:
-                print thisGame.board[myPlayer.location].name +  " is owned by " + thisGame.board[myPlayer.location].ownedBy.name + ", you (" + myPlayer.name + ") must pay rent amounting to: " + str(rentDue) + "."
+            if not thisPlace.mortgaged:
+                print thisPlace.name +  " is owned by " + thisPlace.ownedBy.name + ", you (" + myPlayer.name + ") must pay rent amounting to: " + str(rentDue) + "."
                 myPlayer.cash -= rentDue
-                thisGame.board[myPlayer.location].ownedBy.cash += rentDue
+                thisPlace.ownedBy.cash += rentDue
             else:
-                print thisGame.board[myPlayer.location].name +  " is owned by " + thisGame.board[myPlayer.location].ownedBy.name + ", but is mortgaged and you pay nothing."
+                print thisPlace.name +  " is owned by " + thisPlace.ownedBy.name + ", but is mortgaged and you pay nothing."
     #Free Parking
-    if isinstance(thisGame.board[myPlayer.location], FreeParking):
+    if isinstance(thisPlace, FreeParking):
         MoveTable(myPlayer,thisGame.bank)
     #Go To Jail
-    if isinstance(thisGame.board[myPlayer.location], GoToJail):
+    if isinstance(thisPlace, GoToJail):
         myPlayer.MoveToJail(thisGame.board)    
     #Pay taxes: you can pay either a lump sum or a percentage of total assets.
     #Sometimes,the second option can be "None"
-    if isinstance(thisGame.board[myPlayer.location], Tax):
-        tax1 = TaxRate(thisGame.board[myPlayer.location].option1, myPlayer, thisGame.board)
-        tax2 = TaxRate(thisGame.board[myPlayer.location].option2, myPlayer, thisGame.board)
+    if isinstance(thisPlace, Tax):
+        tax1 = TaxRate(thisPlace.option1, myPlayer, thisGame.board)
+        tax2 = TaxRate(thisPlace.option2, myPlayer, thisGame.board)
         if tax1 == None or tax2 == None:
             tax = max(tax1,tax2)
         else:
@@ -134,7 +129,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         print "Well done, " + myPlayer.name + ", you pay taxes amounting to: $" + str(tax)
         MoveMoneyToTable(-tax, myPlayer, thisGame.bank)
     #Community Chest
-    if isinstance(thisGame.board[myPlayer.location], CommunityChest):
+    if isinstance(thisPlace, CommunityChest):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
         print thisGame.communityChest[thisGame.currentComm].text
         if thisGame.communityChest[thisGame.currentComm].goStart == 1:
@@ -165,7 +160,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         #increment community chest card index
         thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
-    if isinstance(thisGame.board[myPlayer.location], Chance):
+    if isinstance(thisPlace, Chance):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
         print thisGame.chances[thisGame.currentChance].text
         if thisGame.chances[thisGame.currentChance].cash != 0:
@@ -201,10 +196,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.teleport = 1
             continue
         elif thisGame.chances[thisGame.currentChance].rail == 1:
-            while not isinstance(thisGame.board[myPlayer.location], Railroad):
+            while not isinstance(thisPlace, Railroad):
                 #FIXME: infinite loop if no rail!
                 myPlayer.location = PlusOne(myPlayer.location, len(thisGame.board))
-            print "You have moved to the next railroad: " + thisGame.board[myPlayer.location].name + ", at pos " + str(myPlayer.location) + "."
+            print "You have moved to the next railroad: " + thisPlace.name + ", at pos " + str(myPlayer.location) + "."
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
             continue
@@ -222,7 +217,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                             print "You get $" + str(thisGame.startWage)
                         myPlayer.location = item.location
                         break
-                print "You move to " + thisGame.board[myPlayer.location].name + " at pos " + str(myPlayer.location) + "."
+                print "You move to " + thisPlace.name + " at pos " + str(myPlayer.location) + "."
                 myPlayer.teleport = 1
                 continue
         #increment chance card index

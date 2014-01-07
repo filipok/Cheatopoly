@@ -100,6 +100,22 @@ class Game(object):
                 self.players.append(Cheatoid(name, self.playerCash,False))
             list_of_names.append(name)
     
+    def NewOwnerOrAuction(self, choose, player, place):
+        if choose == "yes":
+            if player.cash > place.price:
+                place.newOwner(player) #assign new owner
+                MoveMoney(-place.price, player, self.bank)
+                print "Congratulations, " + player.name + \
+                "! You have bought: " +  str(place) + "."
+            else:
+                print "Sorry, you do not have the required funds!"
+                a = random.randint(1, 4)
+                if a == 1:
+                    print "Beggar...!"
+                player.StartAuction(self) #launch auction
+        else:
+            player.StartAuction(self) #launch auction
+
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
