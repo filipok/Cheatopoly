@@ -547,6 +547,18 @@ class Player(object):
         else:
             print place.name +  " is owned by " + place.ownedBy.name + ", but is mortgaged and you pay nothing."
     
+    def PayTax(self, place, game):
+        #Yyou can pay either a lump sum or a percentage of total assets.
+        #Sometimes,the second option can be "None"
+        tax1 = TaxRate(place.option1, self, game.board)
+        tax2 = TaxRate(place.option2, self, game.board)
+        if tax1 == None or tax2 == None:
+            tax = max(tax1,tax2)
+        else:
+            tax = min(tax1,tax2)
+        print "Well done, " + self.name + ", you pay taxes amounting to: $" + str(tax)
+        MoveMoneyToTable(-tax, self, game.bank)
+    
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 

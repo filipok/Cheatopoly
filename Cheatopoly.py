@@ -94,7 +94,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, (Street, Railroad, Utility)):
         if thisPlace.ownedBy == None:
             #You can buy the place
-            choose = myPlayer.Buy(thisGame.board)
+            choose = myPlayer.Buy(thisGame.board) #make a choice
             thisGame.NewOwnerOrAuction(choose, myPlayer, thisPlace)
         elif thisPlace.ownedBy == myPlayer:
             #If you already own that place
@@ -108,17 +108,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
         myPlayer.MoveToJail(thisGame.board)    
-    #Pay taxes: you can pay either a lump sum or a percentage of total assets.
-    #Sometimes,the second option can be "None"
+    #Pay taxes: 
     if isinstance(thisPlace, Tax):
-        tax1 = TaxRate(thisPlace.option1, myPlayer, thisGame.board)
-        tax2 = TaxRate(thisPlace.option2, myPlayer, thisGame.board)
-        if tax1 == None or tax2 == None:
-            tax = max(tax1,tax2)
-        else:
-            tax = min(tax1,tax2)
-        print "Well done, " + myPlayer.name + ", you pay taxes amounting to: $" + str(tax)
-        MoveMoneyToTable(-tax, myPlayer, thisGame.bank)
+        myPlayer.PayTax(thisPlace, thisGame)
     #Community Chest
     if isinstance(thisPlace, CommunityChest):
         print "Well, " + myPlayer.name + ", you have drawn this card: ",
