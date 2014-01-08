@@ -32,6 +32,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     myPlayer = thisGame.players[currentPlayer] #shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
+    print "check teleport"
     if myPlayer.teleport == 0:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name +  "! You have $" + \
@@ -113,23 +114,18 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         myPlayer.PayTax(thisPlace, thisGame)
     #Community Chest
     if isinstance(thisPlace, CommunityChest):
-        print "Well, " + myPlayer.name + ", you have drawn this card: ",
+        print myPlayer.name + ", you have drawn this Community Chest card: ",
         print thisGame.communityChest[thisGame.currentComm].text
         if thisGame.communityChest[thisGame.currentComm].goStart == 1:
-            myPlayer.location = 0
-            MoveMoney(thisGame.startWage, myPlayer, thisGame.bank)
-            print "You go to Start and only receive $" + str(thisGame.startWage)
+            myPlayer.MoveToStart(thisGame)
         elif thisGame.communityChest[thisGame.currentComm].cash != 0:
-            if thisGame.communityChest[thisGame.currentComm].cash > 0:
-                MoveMoney(thisGame.communityChest[thisGame.currentComm].cash, myPlayer, thisGame.bank)
-            else:
-                MoveMoneyToTable(thisGame.communityChest[thisGame.currentComm].cash, myPlayer, thisGame.bank)
+            myPlayer.PayCardMoney(thisGame.communityChest[thisGame.currentComm].cash, thisGame)
         elif thisGame.communityChest[thisGame.currentComm].jailcard == 1:
             myPlayer.jailCommCards += 1
-            #remove card from community chest
+            #remove card & decrease index,to compensate for increase after IF
             thisGame.communityChest.pop(thisGame.currentComm)
-            #decrease index,to compensate for the general increase after IF
-            thisGame.currentComm = (thisGame.currentComm + len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
+            thisGame.currentComm = (thisGame.currentComm + \
+            len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
         elif thisGame.communityChest[thisGame.currentComm].goToJail == 1:
             myPlayer.MoveToJail(thisGame.board)
         elif thisGame.communityChest[thisGame.currentComm].collect == 1:
@@ -139,28 +135,25 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     myPlayer.cash += thisGame.collectFine
                     print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
         elif thisGame.communityChest[thisGame.currentComm].repairs == 1:
-            Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, thisGame.board, thisGame.bank)
+            Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, thisGame)
         #increment community chest card index
         thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
     if isinstance(thisPlace, Chance):
-        print "Well, " + myPlayer.name + ", you have drawn this card: ",
+        print myPlayer.name + ", you have drawn this Chance card: ",
         print thisGame.chances[thisGame.currentChance].text
         if thisGame.chances[thisGame.currentChance].cash != 0:
-            if thisGame.chances[thisGame.currentChance].cash > 0:
-                MoveMoney(thisGame.chances[thisGame.currentChance].cash, myPlayer, thisGame.bank)
-            else:
-                MoveMoneyToTable(thisGame.chances[thisGame.currentChance].cash, myPlayer, thisGame.bank)
+            myPlayer.PayCardMoney(thisGame.chances[thisGame.currentChance].cash, thisGame)
         elif thisGame.chances[thisGame.currentChance].jailcard == 1:
             myPlayer.jailChanceCards += 1
-            #remove card from community chest
+            #remove card & decrease index,to compensate for increase after IF
             thisGame.chances.pop(thisGame.currentChance)
-            #decrease index,to compensate for the general increase after IF
-            thisGame.currentChance = (thisGame.currentChance + len(thisGame.chances) - 1) % len(thisGame.chances)
+            thisGame.currentChance = (thisGame.currentChance + \
+            len(thisGame.chances) - 1) % len(thisGame.chances)
         elif thisGame.chances[thisGame.currentChance].goToJail == 1:
             myPlayer.MoveToJail(thisGame.board)
         elif thisGame.chances[thisGame.currentChance].repairs == 1:
-            Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer, thisGame.board, thisGame.bank)
+            Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer, thisGame)
         elif thisGame.chances[thisGame.currentChance].reading == 1:
             #find Reading location
             for item in thisGame.board:
@@ -188,9 +181,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             continue
         elif thisGame.chances[thisGame.currentChance].goTo != 0:
             if thisGame.chances[thisGame.currentChance].goTo == "1":
-                myPlayer.location = 0
-                MoveMoney(thisGame.startWage, myPlayer, thisGame.bank)
-                print "You move to Go and only get $" + str(thisGame.startWage) + "."
+                myPlayer.MoveToStart(thisGame)
             else:
                 for item in thisGame.board:
                     if item.name == thisGame.chances[thisGame.currentChance].goTo:
@@ -231,15 +222,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         choose = ""
         print "Now " + myPlayer.name + " has $"+ str(myPlayer.cash) + "."
     
-    #if player has no money and still tries to buy, then auction
     #Negotiate with other players
-    
     #Update display
-    
     #stylecheck
-    
     #no possibility to upgrade while in jail?
-    
     #save/load game from disk
     
     #Turn end: remove from game if cash < 0
@@ -262,7 +248,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     else:
         #currentPlayer += 1
         currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
-
 
     #Print current financial status
     print ""

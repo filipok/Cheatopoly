@@ -22,13 +22,13 @@ def TaxRate(option, player, board):
         else:
             return int(option)
 
-def Repairs(houseCost, hotelCost, player, board, bank):
+def Repairs(houseCost, hotelCost, player, game):
     repairCost = 0
-    for item in board:
+    for item in game.board:
         if item.ownedBy == player:
             repairCost += item.houses * houseCost + item.hotels * hotelCost
     player.cash -= repairCost
-    bank.cardPayments += repairCost #money goes to table
+    game.bank.cardPayments += repairCost #money goes to table
     print "Your repair costs have amounted to $" + str(repairCost) + "."
 
 def MoveMoney(amount, player, bank):
@@ -130,4 +130,4 @@ def FlagUpgradeableLocations(player, neighborhoods):
 
 def ReturnCardAndIncrement(cardSet, position, card):
         cardSet.insert(position, card)
-        return PlusOne(cardSet, len(cardSet))
+        return PlusOne(position, len(cardSet))

@@ -559,6 +559,17 @@ class Player(object):
         print "Well done, " + self.name + ", you pay taxes amounting to: $" + str(tax)
         MoveMoneyToTable(-tax, self, game.bank)
     
+    def MoveToStart(self, game):
+        self.location = 0
+        MoveMoney(game.startWage, self, game.bank)
+        print "You go to Start and only receive $" + str(game.startWage)
+    
+    def PayCardMoney(self, cash, game):
+        if cash > 0:
+            MoveMoney(cash, self, game.bank)
+        else:
+            MoveMoneyToTable(cash, self, game.bank)
+    
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 
@@ -730,7 +741,7 @@ class Cheatoid(Player):
         return self.UseJailCard(game) #the easy way
     
     def __repr__(self):
-        return "Player " + self.name + ", is NOT human."
+        return "Player " + self.name + " is NOT human."
 
     
     
