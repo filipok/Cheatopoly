@@ -301,6 +301,10 @@ class Street(Place):
         ((self.houses == 4 and self.hotelCost <= myPlayer.cash) or \
         (self.houses < 4 and self.houseCost <= myPlayer.cash))
         
+    def BankAllowsUpgrade(self, bank):
+        return (self.houses < 4 and bank.houses > 0) or \
+        (self.houses == 4 and bank.hotels > 0)
+    
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
         str(self.location) + "), $: " + str(self.price) + ", r: " + \
