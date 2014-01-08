@@ -4,15 +4,6 @@ def Dice():
     b = random.randint(1, 6)
     return [a, b]
 
-def Repairs(houseCost, hotelCost, player, game):
-    repairCost = 0
-    for item in game.board:
-        if item.ownedBy == player:
-            repairCost += item.houses * houseCost + item.hotels * hotelCost
-    player.cash -= repairCost
-    game.bank.cardPayments += repairCost #money goes to table
-    print "Your repair costs have amounted to $" + str(repairCost) + "."
-
 def MoveMoney(amount, player, bank):
     #move money from/to player to/from bank
     player.cash += amount

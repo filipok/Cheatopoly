@@ -24,8 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-thisGame.InitializePlayers()
-#thisGame.MockPlayers()
+#thisGame.InitializePlayers()
+thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -135,7 +135,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     myPlayer.cash += thisGame.collectFine
                     print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
         elif thisGame.communityChest[thisGame.currentComm].repairs == 1:
-            Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer, thisGame)
+            thisGame.Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer)
         #increment community chest card index
         thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
@@ -153,7 +153,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.chances[thisGame.currentChance].goToJail == 1:
             myPlayer.MoveToJail(thisGame.board)
         elif thisGame.chances[thisGame.currentChance].repairs == 1:
-            Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer, thisGame)
+            thisGame.Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer)
         elif thisGame.chances[thisGame.currentChance].reading == 1:
             #find Reading location
             for item in thisGame.board:

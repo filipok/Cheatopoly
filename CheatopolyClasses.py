@@ -163,6 +163,15 @@ class Game(object):
             else:
                 return int(option)
 
+    def Repairs(self, houseCost, hotelCost, player):
+        repairCost = 0
+        for item in self.board:
+            if item.ownedBy == player:
+                repairCost += item.houses * houseCost + item.hotels * hotelCost
+        player.cash -= repairCost
+        self.bank.cardPayments += repairCost #money goes to table
+        print "Your repair costs have amounted to $" + str(repairCost) + "."
+
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
