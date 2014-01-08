@@ -113,7 +113,7 @@ class Game(object):
         if choose == "yes":
             if player.cash > place.price:
                 place.newOwner(player) #assign new owner
-                MoveMoney(-place.price, player, self.bank)
+                self.bank.MoveMoney(-place.price, player)
                 print "Congratulations, " + player.name + \
                 "! You have bought: " +  str(place) + "."
             else:
@@ -186,6 +186,11 @@ class Bank(object):
         self.money = game.money
         self.houses = game.houses
         self.hotels = game.hotels
+
+    def MoveMoney(self, amount, player):
+        #move money from/to player to/from bank
+        player.cash += amount
+        self.money -= amount
 
 class Place(object):
     '''
@@ -471,7 +476,7 @@ class Player(object):
                 print item
         choose = choose_int(0, len(board) - 1) #human
         if isOwnedAndMortgaged(board[choose], self, False) and board[choose].houses == 0:
-            MoveMoney(board[choose].mortgage, self, bank)
+            bank.MoveMoney(board[choose].mortgage, self)
             board[choose].mortgaged = True
             print "You have successfully mortgaged " + board[choose].name + "."
     
@@ -483,7 +488,7 @@ class Player(object):
         choose = choose_int(0, len(board) - 1) #human
         if isOwnedAndMortgaged(board[choose], self, True) and \
         self.cash >= int(board[choose].mortgage * 1.1):
-            MoveMoney(-int(board[choose].mortgage * 1.1), self, bank)
+            bank.MoveMoney(-int(board[choose].mortgage * 1.1), self)
             board[choose].mortgaged = False
             print "You have successfully demortgaged " + board[choose].name + "."
     
@@ -560,7 +565,7 @@ class Player(object):
             print "Congratulations, " + bestCandidate.name + \
             "! You have bought " + game.board[self.location].name + \
             " for $" + str(auctionPrice) + "."
-            MoveMoney(-auctionPrice, bestCandidate, game.bank)
+            game.bank.MoveMoney(-auctionPrice, bestCandidate)
             game.board[self.location].newOwner(bestCandidate)#assign new owner
  
     def Buy(self, board):
@@ -617,12 +622,12 @@ class Player(object):
     
     def MoveToStart(self, game):
         self.location = 0
-        MoveMoney(game.startWage, self, game.bank)
+        game.bank.MoveMoney(game.startWage, self)
         print "You go to Start and only receive $" + str(game.startWage)
     
     def PayCardMoney(self, cash, game):
         if cash > 0:
-            MoveMoney(cash, self, game.bank)
+            game.bank.MoveMoney(cash, self)
         else:
             MoveMoneyToTable(cash, self, game.bank)
     
@@ -647,7 +652,7 @@ class Cheatoid(Player):
         self.successfulMortgage = False
         for item in board:
             if isOwnedAndMortgaged(item, self, False) and item.houses == 0:
-                MoveMoney(item.mortgage, self, bank)
+                bank.MoveMoney(item.mortgage, self)
                 item.mortgaged = True
                 print self.name + " has successfully mortgaged " + item.name + "."
                 self.successfulMortgage = True
@@ -661,7 +666,7 @@ class Cheatoid(Player):
         for item in reversed(board):
             if isOwnedAndMortgaged(item, self, True) and \
             self.cash >= int(item.mortgage * 1.1):
-                MoveMoney(-int(item.mortgage * 1.1), self, bank)
+                bank.MoveMoney(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False
                 print self.name + " has successfully demortgaged " + item.name + "."
                 self.successfulDemortgage = True

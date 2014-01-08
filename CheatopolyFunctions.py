@@ -4,11 +4,6 @@ def Dice():
     b = random.randint(1, 6)
     return [a, b]
 
-def MoveMoney(amount, player, bank):
-    #move money from/to player to/from bank
-    player.cash += amount
-    bank.money -= amount
-
 def MoveMoneyToTable(amount, player, bank):
     #move money from player to table
     player.cash += amount
@@ -63,23 +58,23 @@ def DowngradeHotel(player, item, bank):
     item.hotels = 0
     bank.houses -= 4
     bank.hotels += 1
-    MoveMoney(item.hotelCost/2, player, bank)
+    bank.MoveMoney(item.hotelCost/2, player)
 
 def DowngradeHouse(player, item, bank):
     item.houses -= 1
     bank.houses += 1
-    MoveMoney(item.houseCost/2, player, bank)
+    bank.MoveMoney(item.houseCost/2, player)
     
 def UpgradeHouse(player, item, bank):
     item.houses += 1
     bank.houses -= 1
-    MoveMoney(-item.houseCost, player, bank)
+    bank.MoveMoney(-item.houseCost, player)
 
 def UpgradeHotel(player, item, bank):
     item.hotels = 1
     bank.hotels -= 1
     bank.houses += 4
-    MoveMoney(-item.hotelCost, player, bank)
+    bank.MoveMoney(-item.hotelCost, player)
 
 def ReturnCardAndIncrement(cardSet, position, card):
         cardSet.insert(position, card)

@@ -24,8 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-#thisGame.InitializePlayers()
-thisGame.MockPlayers()
+thisGame.InitializePlayers()
+#thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -55,13 +55,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine:
             choose = myPlayer.PayJailFine(thisGame)
             if choose == 'yes':
-                MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
+                thisGame.bank.MoveMoney(-thisGame.jailFine, myPlayer)
                 myPlayer.ResetJail()
                 print myPlayer.name + " pays $" + str(thisGame.jailFine) + \
                 " to get out of jail."
         #Else if already three turns in jail:
         if myPlayer.timeInJail == 3:
-            MoveMoney(-thisGame.jailFine, myPlayer, thisGame.bank)
+            thisGame.bank.MoveMoney(-thisGame.jailFine, myPlayer)
             myPlayer.ResetJail()
             print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
         #Check if still in jail
@@ -83,10 +83,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         " (" + thisGame.board[myPlayer.location].name + ")."
         #Did we pass Go? +startWage/2*startWage
         if myPlayer.location == 0:
-            MoveMoney(2*thisGame.startWage, myPlayer, thisGame.bank)
+            thisGame.bank.MoveMoney(2*thisGame.startWage, myPlayer)
             print myPlayer.name + " is a lucky punk and gets $" + str(2*thisGame.startWage) + "."
         elif myPlayer.location - dice[0] - dice[1] < 0:
-            MoveMoney(thisGame.startWage, myPlayer, thisGame.bank)
+            thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
             print myPlayer.name + " gets $" + str(thisGame.startWage) + "."
     #reset teleport counter now
     myPlayer.teleport = 0
@@ -162,7 +162,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     break
             if destination < myPlayer.location:
                 print "You pass Go and collect $" + str(thisGame.startWage) + "."
-                MoveMoney(thisGame.startWage, myPlayer, thisGame.bank)
+                thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
             myPlayer.location = destination
             print "You move to Reading Railroad, at location " + str(destination) + "."
             myPlayer.teleport = 1
@@ -187,7 +187,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     if item.name == thisGame.chances[thisGame.currentChance].goTo:
                         #you get $200 if you pass Go.
                         if myPlayer.location > item.location:
-                            MoveMoney(thisGame.startWage, myPlayer, thisGame.bank)
+                            thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
                             print "You get $" + str(thisGame.startWage)
                         myPlayer.location = item.location
                         break
