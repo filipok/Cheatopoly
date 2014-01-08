@@ -22,9 +22,6 @@ def choose_yes_no(string):
         choose = raw_input(string).lower() #human
     return choose
     
-def AllUpgradeConditions(item, bank, myPlayer):
-    return item.IsUpgradeableBy(myPlayer) and item.BankAllowsUpgrade(bank)
-    
 def BankAllowsDowngrade(item, bank):
     return (item.hotels == 1 and bank.houses >= 4) or (item.hotels == 0 and bank.houses > 0)
 

@@ -24,8 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-thisGame.InitializePlayers()
-#thisGame.MockPlayers()
+#thisGame.InitializePlayers()
+thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop

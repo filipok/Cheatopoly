@@ -101,9 +101,9 @@ class Game(object):
             list_of_names.append(name)
     
     def MockPlayers(self):
-        print "Using 6 Borgs..."
-        numPlayers = 6
-        for i in range(6):
+        print "Please enter a number of Borg players between 2 and 6:"
+        numPlayers = choose_int(2, 6)
+        for i in range(numPlayers):
             name = "Borg" + str(i+1)
             print "Adding " + name + "..."
             self.players.append(Cheatoid(name, self.playerCash,False))
@@ -304,7 +304,10 @@ class Street(Place):
     def BankAllowsUpgrade(self, bank):
         return (self.houses < 4 and bank.houses > 0) or \
         (self.houses == 4 and bank.hotels > 0)
-    
+
+    def AllUpgradeConditions(self, bank, myPlayer):
+        return self.IsUpgradeableBy(myPlayer) and self.BankAllowsUpgrade(bank)
+        
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
         str(self.location) + "), $: " + str(self.price) + ", r: " + \
@@ -558,10 +561,10 @@ class Player(object):
         #Print the upgradeable locations
         print "Hey , " + self.name + "! These are the locations you can upgrade now:"
         for item in game.board:
-            if isinstance(item, Street) and AllUpgradeConditions(item, game.bank, self):
+            if isinstance(item, Street) and item.AllUpgradeConditions(game.bank, self):
                 print item
         choose = choose_int(0, len(game.board) - 1) #human
-        if  isinstance(game.board[choose], Street) and AllUpgradeConditions(game.board[choose], game.bank, self):
+        if  isinstance(game.board[choose], Street) and game.board[choose].AllUpgradeConditions(game.bank, self):
             if game.board[choose].houses < 4:
                 game.board[choose].UpgradeHouse(self, game.bank)
             else:
@@ -747,7 +750,7 @@ class Cheatoid(Player):
         while upgradeDone == False and level < 5:
             for item in game.board:
                 if isinstance(item, Street) and item.ownedBy == self and \
-                item.houses == level and AllUpgradeConditions(item, game.bank, self):
+                item.houses == level and item.AllUpgradeConditions(game.bank, self):
                     #upgrade
                     if level < 4:
                         item.UpgradeHouse(self, game.bank)
