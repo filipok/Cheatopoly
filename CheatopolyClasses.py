@@ -294,6 +294,12 @@ class Street(Place):
         bank.hotels -= 1
         bank.houses += 4
         bank.MoveMoney(-self.hotelCost, player)
+
+    def IsUpgradeableBy(self, myPlayer):
+        return self.ownedBy == myPlayer and self.minUpgrade == self.houses and \
+        self.hotels == 0 and \
+        ((self.houses == 4 and self.hotelCost <= myPlayer.cash) or \
+        (self.houses < 4 and self.houseCost <= myPlayer.cash))
         
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \

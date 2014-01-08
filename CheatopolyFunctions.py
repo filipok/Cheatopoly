@@ -26,14 +26,8 @@ def BankAllowsUpgrade(item, bank):
     return (item.houses < 4 and bank.houses > 0) or \
     (item.houses == 4 and bank.hotels > 0)
 
-def IsUpgradeable(item, myPlayer):
-    return item.ownedBy == myPlayer and item.minUpgrade == item.houses and \
-    item.hotels == 0 and \
-    ((item.houses == 4 and item.hotelCost <= myPlayer.cash) or \
-    (item.houses < 4 and item.houseCost <= myPlayer.cash))
-
 def AllUpgradeConditions(item, bank, myPlayer):
-    return IsUpgradeable(item, myPlayer) and BankAllowsUpgrade(item, bank)
+    return item.IsUpgradeableBy(myPlayer) and BankAllowsUpgrade(item, bank)
     
 def BankAllowsDowngrade(item, bank):
     return (item.hotels == 1 and bank.houses >= 4) or (item.hotels == 0 and bank.houses > 0)
