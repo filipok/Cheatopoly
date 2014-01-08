@@ -1,7 +1,6 @@
 import random
 from random import shuffle
 from CheatopolyClasses import *
-from CheatopolyFunctions import *
 
 # Import data from data.txt
 import os
@@ -24,8 +23,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-thisGame.InitializePlayers()
-#thisGame.MockPlayers()
+#thisGame.InitializePlayers()
+thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -66,14 +65,14 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
         #Check if still in jail
         if myPlayer.inJail:
-            currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
+            currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
             continue #end of turn
         #Check how many doubles in a row
         if dice[0] == dice[1]:
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
                 myPlayer.MoveToJail(thisGame)
-                currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
+                currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
                 continue
         else:
             myPlayer.doublesInARow = 0
@@ -137,7 +136,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.communityChest[thisGame.currentComm].repairs == 1:
             thisGame.Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer)
         #increment community chest card index
-        thisGame.currentComm = PlusOne(thisGame.currentComm, len(thisGame.communityChest))
+        thisGame.currentComm = thisGame.PlusOne(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
     if isinstance(thisPlace, Chance):
         print myPlayer.name + ", you have drawn this Chance card: ",
@@ -174,7 +173,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.chances[thisGame.currentChance].rail == 1:
             while not isinstance(thisPlace, Railroad):
                 #FIXME: infinite loop if no rail!
-                myPlayer.location = PlusOne(myPlayer.location, len(thisGame.board))
+                myPlayer.location = thisGame.PlusOne(myPlayer.location, len(thisGame.board))
             print "You have moved to the next railroad: " + thisPlace.name + ", at pos " + str(myPlayer.location) + "."
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
@@ -195,7 +194,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 myPlayer.teleport = 1
                 continue
         #increment chance card index
-        thisGame.currentChance = PlusOne(thisGame.currentChance, len(thisGame.chances))
+        thisGame.currentChance = thisGame.PlusOne(thisGame.currentChance, len(thisGame.chances))
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print myPlayer.name + ", you have the following properties:"
@@ -247,7 +246,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             currentPlayer = 0
     else:
         #currentPlayer += 1
-        currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
+        currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
 
     #Print current financial status
     print ""

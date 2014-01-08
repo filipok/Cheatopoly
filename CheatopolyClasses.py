@@ -1,5 +1,4 @@
 import random
-from CheatopolyFunctions import *
 
 class Game(object):
     '''
@@ -87,13 +86,13 @@ class Game(object):
     
     def InitializePlayers(self):
         print "Please enter a number of players between 2 and 6:"
-        numPlayers = choose_int(2, 6)
+        numPlayers = self.choose_int(2, 6)
         list_of_names = ['']
         for i in range(numPlayers):
             name  = ''
             while name in list_of_names:
                 name =  raw_input("Please enter a unique name for player " + str(i+1) + ": ")
-            human = choose_yes_no("Is the player human [yes/no]: ")
+            human = self.choose_yes_no("Is the player human [yes/no]: ")
             if human == "yes":
                 self.players.append(Player(name, self.playerCash, True))
             else:
@@ -102,7 +101,7 @@ class Game(object):
     
     def MockPlayers(self):
         print "Please enter a number of Borg players between 2 and 6:"
-        numPlayers = choose_int(2, 6)
+        numPlayers = self.choose_int(2, 6)
         for i in range(numPlayers):
             name = "Borg" + str(i+1)
             print "Adding " + name + "..."
@@ -176,6 +175,29 @@ class Game(object):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
         return [a, b]
+
+    def PlusOne(self, location, length):
+        return (location + 1) % length
+    
+    def choose_int(self, fro, to):
+        choose = -1
+        while choose < fro or choose > to:
+            try:
+                choose = int(raw_input("Enter number [" + str(fro) + " - "+ str(to) + "]: ")) #human
+            except ValueError:
+                print "Oops!  That was no valid number.  Try again..."
+        return choose
+    
+    def choose_yes_no(self, string):
+        choose = ''
+        while choose not in ["yes", "no"]:
+            choose = raw_input(string).lower() #human
+        return choose
+        
+    def ReturnCardAndIncrement(self, cardSet, position, card):
+            cardSet.insert(position, card)
+            return self.PlusOne(position, len(cardSet))
+
 
 class Bank(object):
     '''
@@ -530,7 +552,7 @@ class Player(object):
         for item in game.board:
             if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
                 print item
-        choose = choose_int(0, len(board) - 1) #human
+        choose = game.choose_int(0, len(game.board) - 1) #human
         if game.board[choose].isOwnedAndMortgaged(self, False) and game.board[choose].houses == 0:
             game.bank.MoveMoney(game.board[choose].mortgage, self)
             game.board[choose].mortgaged = True
@@ -541,7 +563,7 @@ class Player(object):
         for item in game.board:
             if item.isOwnedAndMortgaged(self, True):
                 print item
-        choose = choose_int(0, len(board) - 1) #human
+        choose = game.choose_int(0, len(game.board) - 1) #human
         if game.board[choose].isOwnedAndMortgaged(self, True) and \
         self.cash >= int(game.board[choose].mortgage * 1.1):
             game.bank.MoveMoney(-int(game.board[choose].mortgage * 1.1), self)
@@ -554,7 +576,7 @@ class Player(object):
             if item.isOwnedAndMortgaged(self, False) and \
             item.houses > 0 and item.BankAllowsDowngrade(game.bank):
                 print item
-        choose = choose_int(0, len(game.board) - 1) #human        
+        choose = game.choose_int(0, len(game.board) - 1) #human        
         if game.board[choose].isOwnedAndMortgaged(self, False) and \
         game.board[choose].houses > 0 and game.board[choose].BankAllowsDowngrade(game.bank):
             if game.board[choose].hotels == 1:
@@ -571,7 +593,7 @@ class Player(object):
         for item in game.board:
             if isinstance(item, Street) and item.AllUpgradeConditions(game.bank, self):
                 print item
-        choose = choose_int(0, len(game.board) - 1) #human
+        choose = game.choose_int(0, len(game.board) - 1) #human
         if  isinstance(game.board[choose], Street) and game.board[choose].AllUpgradeConditions(game.bank, self):
             if game.board[choose].houses < 4:
                 game.board[choose].UpgradeHouse(self, game.bank)
@@ -591,7 +613,7 @@ class Player(object):
         game.board[player.location].name + \
         ". Do you want to buy it instead? Last price is " + \
         str(auctionPrice) + ". Enter your price below."
-        return choose_int(0, max(self.cash, 0))
+        return game.choose_int(0, max(self.cash, 0))
     
     def StartAuction(self, game):
         #set auction flag
@@ -626,13 +648,13 @@ class Player(object):
  
     def Buy(self, game):
         message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, game.board[self.location].name, str(self.cash), str(game.board[self.location]))
-        return choose_yes_no(message)
+        return game.choose_yes_no(message)
     
     def UseJailCard(self, game):
-        return choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
+        return game.choose_yes_no("Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
     
     def PayJailFine(self, game):
-        return choose_yes_no("Do you want to pay $" + str(game.jailFine) + " to get out of jail[yes/no] ")
+        return game.choose_yes_no("Do you want to pay $" + str(game.jailFine) + " to get out of jail[yes/no] ")
     
     def ResetJail(self):
         self.inJail = False
@@ -644,11 +666,11 @@ class Player(object):
         if self.jailCommCards > self.jailChanceCards:
             toInsert = CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0)
             self.jailCommCards -= 1
-            game.currentComm = ReturnCardAndIncrement(game.communityChest, game.currentComm, toInsert)
+            game.currentComm = game.ReturnCardAndIncrement(game.communityChest, game.currentComm, toInsert)
         else:
             toInsert= ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0)
             self.jailChanceCards -= 1
-            game.currentChance = ReturnCardAndIncrement(game.chances, game.currentChance, toInsert)
+            game.currentChance = game.ReturnCardAndIncrement(game.chances, game.currentChance, toInsert)
         self.ResetJail()
         print self.name + " gets out of jail."
     
