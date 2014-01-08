@@ -192,6 +192,11 @@ class Bank(object):
         player.cash += amount
         self.money -= amount
 
+    def MoveMoneyToTable(self, amount, player):
+        #move money from player to table
+        player.cash += amount
+        self.cardPayments -= amount
+    
 class Place(object):
     '''
     There are several types of places on the Monopoly board:
@@ -618,7 +623,7 @@ class Player(object):
         else:
             tax = min(tax1,tax2)
         print "Well done, " + self.name + ", you pay taxes amounting to: $" + str(tax)
-        MoveMoneyToTable(-tax, self, game.bank)
+        game.bank.MoveMoneyToTable(-tax, self)
     
     def MoveToStart(self, game):
         self.location = 0
@@ -629,7 +634,7 @@ class Player(object):
         if cash > 0:
             game.bank.MoveMoney(cash, self)
         else:
-            MoveMoneyToTable(cash, self, game.bank)
+            game.bank.MoveMoneyToTable(cash, self)
     
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

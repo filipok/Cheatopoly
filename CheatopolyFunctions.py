@@ -4,11 +4,6 @@ def Dice():
     b = random.randint(1, 6)
     return [a, b]
 
-def MoveMoneyToTable(amount, player, bank):
-    #move money from player to table
-    player.cash += amount
-    bank.cardPayments -= amount
-
 def PlusOne(location, length):
     return (location + 1) % length
 
