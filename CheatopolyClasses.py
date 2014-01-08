@@ -225,6 +225,8 @@ class Place(object):
     hotelCost = 0
     houseCost = 0
 
+    def isOwnedAndMortgaged(self, player, condition):
+        return self.ownedBy == player and self.mortgaged == condition
 
 class Street(Place):
     '''
@@ -505,10 +507,10 @@ class Player(object):
     def Mortgage(self, board, bank):
         print "List of properties that you can mortgage:"
         for item in board:
-            if isOwnedAndMortgaged(item, self, False) and item.houses == 0:
+            if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
                 print item
         choose = choose_int(0, len(board) - 1) #human
-        if isOwnedAndMortgaged(board[choose], self, False) and board[choose].houses == 0:
+        if board[choose].isOwnedAndMortgaged(self, False) and board[choose].houses == 0:
             bank.MoveMoney(board[choose].mortgage, self)
             board[choose].mortgaged = True
             print "You have successfully mortgaged " + board[choose].name + "."
@@ -516,10 +518,10 @@ class Player(object):
     def Demortgage(self, board, bank):
         print "List of properties that you can demortgage:"
         for item in board:
-            if isOwnedAndMortgaged(item, self, True):
+            if item.isOwnedAndMortgaged(self, True):
                 print item
         choose = choose_int(0, len(board) - 1) #human
-        if isOwnedAndMortgaged(board[choose], self, True) and \
+        if board[choose].isOwnedAndMortgaged(self, True) and \
         self.cash >= int(board[choose].mortgage * 1.1):
             bank.MoveMoney(-int(board[choose].mortgage * 1.1), self)
             board[choose].mortgaged = False
@@ -528,11 +530,11 @@ class Player(object):
     def Downgrade(self, board, bank):
         print "List of properties that you can downgrade:"
         for item in board:
-            if isOwnedAndMortgaged(item, self, False) and \
+            if item.isOwnedAndMortgaged(self, False) and \
             item.houses > 0 and BankAllowsDowngrade(item, bank):
                 print item
         choose = choose_int(0, len(board) - 1) #human        
-        if isOwnedAndMortgaged(board[choose], self, False) and \
+        if board[choose].isOwnedAndMortgaged(self, False) and \
         board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
             if board[choose].hotels == 1:
                 board[choose].DowngradeHotel(self, bank)
@@ -684,7 +686,7 @@ class Cheatoid(Player):
         '''
         self.successfulMortgage = False
         for item in board:
-            if isOwnedAndMortgaged(item, self, False) and item.houses == 0:
+            if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
                 bank.MoveMoney(item.mortgage, self)
                 item.mortgaged = True
                 print self.name + " has successfully mortgaged " + item.name + "."
@@ -697,7 +699,7 @@ class Cheatoid(Player):
         '''
         self.successfulDemortgage = False
         for item in reversed(board):
-            if isOwnedAndMortgaged(item, self, True) and \
+            if item.isOwnedAndMortgaged(self, True) and \
             self.cash >= int(item.mortgage * 1.1):
                 bank.MoveMoney(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False

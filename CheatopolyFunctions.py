@@ -21,10 +21,6 @@ def choose_yes_no(string):
     while choose not in ["yes", "no"]:
         choose = raw_input(string).lower() #human
     return choose
-                
-
-def isOwnedAndMortgaged(item, player, condition):
-    return item.ownedBy == player and item.mortgaged == condition
     
 def BankAllowsUpgrade(item, bank):
     return (item.houses < 4 and bank.houses > 0) or \
