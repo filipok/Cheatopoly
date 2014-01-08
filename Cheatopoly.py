@@ -72,7 +72,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if dice[0] == dice[1]:
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
-                myPlayer.MoveToJail(thisGame.board)
+                myPlayer.MoveToJail(thisGame)
                 currentPlayer = PlusOne(currentPlayer, len(thisGame.players))
                 continue
         else:
@@ -95,7 +95,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, (Street, Railroad, Utility)):
         if thisPlace.ownedBy == None:
             #You can buy the place
-            choose = myPlayer.Buy(thisGame.board) #make a choice
+            choose = myPlayer.Buy(thisGame) #make a choice
             thisGame.NewOwnerOrAuction(choose, myPlayer, thisPlace)
         elif thisPlace.ownedBy == myPlayer:
             #If you already own that place
@@ -108,7 +108,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         thisGame.bank.MoveTable(myPlayer)
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
-        myPlayer.MoveToJail(thisGame.board)    
+        myPlayer.MoveToJail(thisGame)    
     #Pay taxes: 
     if isinstance(thisPlace, Tax):
         myPlayer.PayTax(thisPlace, thisGame)
@@ -127,7 +127,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             thisGame.currentComm = (thisGame.currentComm + \
             len(thisGame.communityChest) - 1) % len(thisGame.communityChest)
         elif thisGame.communityChest[thisGame.currentComm].goToJail == 1:
-            myPlayer.MoveToJail(thisGame.board)
+            myPlayer.MoveToJail(thisGame)
         elif thisGame.communityChest[thisGame.currentComm].collect == 1:
             for person in thisGame.players:
                 if person != myPlayer:
@@ -151,7 +151,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             thisGame.currentChance = (thisGame.currentChance + \
             len(thisGame.chances) - 1) % len(thisGame.chances)
         elif thisGame.chances[thisGame.currentChance].goToJail == 1:
-            myPlayer.MoveToJail(thisGame.board)
+            myPlayer.MoveToJail(thisGame)
         elif thisGame.chances[thisGame.currentChance].repairs == 1:
             thisGame.Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer)
         elif thisGame.chances[thisGame.currentChance].reading == 1:
@@ -208,15 +208,15 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     print ""
     choose = ''
     while choose not in ["u", "d", "m","d", "e", "n"]:
-        choose = myPlayer.ChooseAction(thisGame.board, thisGame.bank, thisGame.neighborhoods)
+        choose = myPlayer.ChooseAction()
         if choose == "u":
             myPlayer.Upgrade(thisGame) #upgrade
         elif choose == "d":
-            myPlayer.Downgrade(thisGame.board, thisGame.bank) #downgrade
+            myPlayer.Downgrade(thisGame) #downgrade
         elif choose == "m":
-            myPlayer.Mortgage(thisGame.board, thisGame.bank) #mortgage
+            myPlayer.Mortgage(thisGame) #mortgage
         elif choose == "e":
-            myPlayer.Demortgage(thisGame.board, thisGame.bank) #demortgage
+            myPlayer.Demortgage(thisGame) #demortgage
         elif choose == "n": #exit loop
             break
         choose = ""

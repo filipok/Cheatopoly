@@ -289,7 +289,7 @@ class Street(Place):
         bank.houses += 1
         bank.MoveMoney(self.houseCost/2, player)
         
-    def UpgradeHouse(self,player, bank):
+    def UpgradeHouse(self, player, bank):
         self.houses += 1
         bank.houses -= 1
         bank.MoveMoney(-self.houseCost, player)
@@ -516,52 +516,52 @@ class Player(object):
         self.cash = cash
         self.human = human
     
-    def MoveToJail(self, board):
+    def MoveToJail(self, game):
             print self.name + " goes to JAIL!"
             #find next jail (you can have several, if you ask me)
             searchJail = self.location
-            while not isinstance(board[searchJail], Jail):
-                searchJail = (searchJail + 1) % len(board)
+            while not isinstance(game.board[searchJail], Jail):
+                searchJail = (searchJail + 1) % len(game.board)
             self.location = searchJail
             self.inJail = True
     
-    def Mortgage(self, board, bank):
+    def Mortgage(self, game):
         print "List of properties that you can mortgage:"
-        for item in board:
+        for item in game.board:
             if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
                 print item
         choose = choose_int(0, len(board) - 1) #human
-        if board[choose].isOwnedAndMortgaged(self, False) and board[choose].houses == 0:
-            bank.MoveMoney(board[choose].mortgage, self)
-            board[choose].mortgaged = True
-            print "You have successfully mortgaged " + board[choose].name + "."
+        if game.board[choose].isOwnedAndMortgaged(self, False) and game.board[choose].houses == 0:
+            game.bank.MoveMoney(game.board[choose].mortgage, self)
+            game.board[choose].mortgaged = True
+            print "You have successfully mortgaged " + game.board[choose].name + "."
     
-    def Demortgage(self, board, bank):
+    def Demortgage(self, game):
         print "List of properties that you can demortgage:"
-        for item in board:
+        for item in game.board:
             if item.isOwnedAndMortgaged(self, True):
                 print item
         choose = choose_int(0, len(board) - 1) #human
-        if board[choose].isOwnedAndMortgaged(self, True) and \
-        self.cash >= int(board[choose].mortgage * 1.1):
-            bank.MoveMoney(-int(board[choose].mortgage * 1.1), self)
-            board[choose].mortgaged = False
-            print "You have successfully demortgaged " + board[choose].name + "."
+        if game.board[choose].isOwnedAndMortgaged(self, True) and \
+        self.cash >= int(game.board[choose].mortgage * 1.1):
+            game.bank.MoveMoney(-int(game.board[choose].mortgage * 1.1), self)
+            game.board[choose].mortgaged = False
+            print "You have successfully demortgaged " + game.board[choose].name + "."
     
-    def Downgrade(self, board, bank):
+    def Downgrade(self, game):
         print "List of properties that you can downgrade:"
-        for item in board:
+        for item in game.board:
             if item.isOwnedAndMortgaged(self, False) and \
-            item.houses > 0 and item.BankAllowsDowngrade(bank):
+            item.houses > 0 and item.BankAllowsDowngrade(game.bank):
                 print item
-        choose = choose_int(0, len(board) - 1) #human        
-        if board[choose].isOwnedAndMortgaged(self, False) and \
-        board[choose].houses > 0 and board[choose].BankAllowsDowngrade(bank):
-            if board[choose].hotels == 1:
-                board[choose].DowngradeHotel(self, bank)
+        choose = choose_int(0, len(game.board) - 1) #human        
+        if game.board[choose].isOwnedAndMortgaged(self, False) and \
+        game.board[choose].houses > 0 and game.board[choose].BankAllowsDowngrade(game.bank):
+            if game.board[choose].hotels == 1:
+                game.board[choose].DowngradeHotel(self, game.bank)
             else:
-                board[choose].DowngradeHouse(self, bank)
-            print "You have downgraded " + board[choose].name + "."
+                game.board[choose].DowngradeHouse(self, game.bank)
+            print "You have downgraded " + game.board[choose].name + "."
     
     def Upgrade(self, game):
         #Flag the upgradeable locations
@@ -583,7 +583,7 @@ class Player(object):
             if isinstance(item, Street):
                 item.minUpgrade = 5
 
-    def ChooseAction(self, board, bank, neighborhoods):
+    def ChooseAction(self):
         return raw_input("Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
     
     def ReplyToAuction(self, player, game, auctionPrice):
@@ -624,8 +624,8 @@ class Player(object):
             game.bank.MoveMoney(-auctionPrice, bestCandidate)
             game.board[self.location].newOwner(bestCandidate)#assign new owner
  
-    def Buy(self, board):
-        message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, board[self.location].name, str(self.cash), str(board[self.location]))
+    def Buy(self, game):
+        message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(self.name, game.board[self.location].name, str(self.cash), str(game.board[self.location]))
         return choose_yes_no(message)
     
     def UseJailCard(self, game):
@@ -701,46 +701,46 @@ class Cheatoid(Player):
     successfulUpgrade = True
     successfulDemortgage = True
     
-    def Mortgage(self, board, bank):
+    def Mortgage(self, game):
         '''
         Changes mortgage status
         '''
         self.successfulMortgage = False
-        for item in board:
+        for item in game.board:
             if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
-                bank.MoveMoney(item.mortgage, self)
+                game.bank.MoveMoney(item.mortgage, self)
                 item.mortgaged = True
                 print self.name + " has successfully mortgaged " + item.name + "."
                 self.successfulMortgage = True
                 break
     
-    def Demortgage(self, board, bank):
+    def Demortgage(self, game):
         '''
         Changes mortgage status
         '''
         self.successfulDemortgage = False
-        for item in reversed(board):
+        for item in reversed(game.board):
             if item.isOwnedAndMortgaged(self, True) and \
             self.cash >= int(item.mortgage * 1.1):
-                bank.MoveMoney(-int(item.mortgage * 1.1), self)
+                game.bank.MoveMoney(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False
                 print self.name + " has successfully demortgaged " + item.name + "."
                 self.successfulDemortgage = True
                 break
     
-    def Downgrade(self, board, bank):
+    def Downgrade(self, game):
         '''
         Changes house/hotel values
         '''
         self.successfulDowngrade = False
-        for item in board:
+        for item in game.board:
             if item.ownedBy == self and item.hotels == 1:
-                item.DowngradeHotel(self, bank)
+                item.DowngradeHotel(self, game.bank)
                 print self.name + " has downgraded " + item.name + "."
                 self.successfulDowngrade = True
                 break
             elif item.ownedBy == self and item.houses > 0: #only in streets >0
-                item.DowngradeHouse(self, bank)
+                item.DowngradeHouse(self, game.bank)
                 print self.name + " has downgraded " + item.name + "."
                 self.successfulDowngrade = True
                 break
@@ -777,7 +777,7 @@ class Cheatoid(Player):
                 item.minUpgrade = 5
 
     
-    def ChooseAction(self, board, bank, neighborhoods):
+    def ChooseAction(self):
         '''
         Computer chooses between [u]pgrade / [d]owngrade / [m]ortgage / 
         d[e]mortgage / do [n]othing
@@ -821,7 +821,7 @@ class Cheatoid(Player):
         print self.name + " bids " + str(reply) + "."
         return reply
     
-    def Buy(self, board):
+    def Buy(self, game):
         '''
         Returns "yes"/"no"
         '''
@@ -859,6 +859,3 @@ class Cheatoid(Player):
     
     def __repr__(self):
         return "Player " + self.name + " is NOT human."
-
-    
-    
