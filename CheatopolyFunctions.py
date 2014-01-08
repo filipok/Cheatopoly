@@ -4,24 +4,6 @@ def Dice():
     b = random.randint(1, 6)
     return [a, b]
 
-def TaxRate(option, player, board):
-        '''
-        A function to calculate taxes for a certain player and one tax system.
-        It returns None when fed with the "None" option.
-        '''
-        if option[-1] == "%":
-            taxrate = int(option[:-1])
-            payment = player.cash * taxrate/100.0 #add percentage of cash
-            for item in board:
-                if item.ownedBy == player:
-                    payment += item.price * taxrate/100.0
-                    payment += item.hotels * item.hotelCost + item.houses * item.houseCost
-            return int(payment)
-        elif option == "None":
-            return None
-        else:
-            return int(option)
-
 def Repairs(houseCost, hotelCost, player, game):
     repairCost = 0
     for item in game.board:

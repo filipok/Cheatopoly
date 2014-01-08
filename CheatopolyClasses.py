@@ -145,6 +145,23 @@ class Game(object):
                 if street.ownedBy == player:
                     street.minUpgrade = minUpgrade
 
+    def TaxRate(self, option, player):
+            '''
+            A function to calculate taxes for a certain player and one tax system.
+            It returns None when fed with the "None" option.
+            '''
+            if option[-1] == "%":
+                taxrate = int(option[:-1])
+                payment = player.cash * taxrate/100.0 #add percentage of cash
+                for item in self.board:
+                    if item.ownedBy == player:
+                        payment += item.price * taxrate/100.0
+                        payment += item.hotels * item.hotelCost + item.houses * item.houseCost
+                return int(payment)
+            elif option == "None":
+                return None
+            else:
+                return int(option)
 
 class Bank(object):
     '''
@@ -580,8 +597,8 @@ class Player(object):
     def PayTax(self, place, game):
         #Yyou can pay either a lump sum or a percentage of total assets.
         #Sometimes,the second option can be "None"
-        tax1 = TaxRate(place.option1, self, game.board)
-        tax2 = TaxRate(place.option2, self, game.board)
+        tax1 = game.TaxRate(place.option1, self)
+        tax2 = game.TaxRate(place.option2, self)
         if tax1 == None or tax2 == None:
             tax = max(tax1,tax2)
         else:
