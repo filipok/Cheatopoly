@@ -176,7 +176,6 @@ class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
     Source: http://boardgames.about.com/od/monopolyfaq/f/bank_money.htm
-    There is also a limited number of houses and hotels.[how many?]
     '''
     #payments made by players as defined in community/chance cards are 
     #cumulated into this account and are paid to the first player getting to
@@ -197,6 +196,13 @@ class Bank(object):
         player.cash += amount
         self.cardPayments -= amount
     
+    def MoveTable(self, player):
+        #player gets money on the table
+        print "Congratulations, " + player.name + "! You have landed on Free Parking!"
+        print "You get $" + str(self.cardPayments) + " from the community and chance card payments."
+        player.cash += self.cardPayments
+        self.cardPayments = 0
+
 class Place(object):
     '''
     There are several types of places on the Monopoly board:

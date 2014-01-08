@@ -105,7 +105,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.PayRent(thisPlace, thisGame)
     #Free Parking
     if isinstance(thisPlace, FreeParking):
-        MoveTable(myPlayer,thisGame.bank)
+        thisGame.bank.MoveTable(myPlayer)
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
         myPlayer.MoveToJail(thisGame.board)    

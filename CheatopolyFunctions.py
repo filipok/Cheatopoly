@@ -7,13 +7,6 @@ def Dice():
 def PlusOne(location, length):
     return (location + 1) % length
 
-def MoveTable(player, bank):
-    #player gets money on the table
-    print "Congratulations, " + player.name + "! You have landed on Free Parking!"
-    print "You get $" + str(bank.cardPayments) + " from the community and chance card payments."
-    player.cash += bank.cardPayments
-    bank.cardPayments = 0
-
 def choose_int(fro, to):
     choose = -1
     while choose < fro or choose > to:
