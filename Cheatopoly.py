@@ -24,8 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-#thisGame.InitializePlayers()
-thisGame.MockPlayers()
+thisGame.InitializePlayers()
+#thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -37,7 +37,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name +  "! You have $" + \
             str(myPlayer.cash) + ". Press Enter to start turn.")
-        dice = Dice() #Roll dice
+        dice = thisGame.Dice() #Roll dice
         print "Dice roll for " + myPlayer.name + ": " +  str(dice[0]) + " " + str(dice[1])
         # Resolve jail status
         if myPlayer.inJail: #Check for doubles while in jail

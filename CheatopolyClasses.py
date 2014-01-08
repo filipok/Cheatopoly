@@ -172,6 +172,11 @@ class Game(object):
         self.bank.cardPayments += repairCost #money goes to table
         print "Your repair costs have amounted to $" + str(repairCost) + "."
 
+    def Dice(self):
+        a = random.randint(1, 6)
+        b = random.randint(1, 6)
+        return [a, b]
+
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
@@ -375,7 +380,7 @@ class Utility(Place):
         self.ownedBy = player
     def rent(self, game):
         print "Let us roll the dice for rent!"
-        dice = Dice()
+        dice = game.Dice()
         print "Dice: " +  str(dice[0]) + " " + str(dice[1])
         counter = 0
         for item in game.board:

@@ -1,9 +1,3 @@
-def Dice():
-    import random
-    a = random.randint(1, 6)
-    b = random.randint(1, 6)
-    return [a, b]
-
 def PlusOne(location, length):
     return (location + 1) % length
 
