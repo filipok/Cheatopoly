@@ -108,26 +108,6 @@ def UpgradeHotel(player, item, bank):
     bank.houses += 4
     MoveMoney(-item.hotelCost, player, bank)
 
-def FlagUpgradeableLocations(player, neighborhoods):
-    '''
-    Flag upgradeable locations
-    '''
-    for neighborhood in neighborhoods.values():
-        minUpgrade = 5
-        for street in neighborhood:
-            if street.ownedBy != player  or street.mortgaged:
-                #restore to 5
-                for street in neighborhood:
-                    street.minUpgrade = 5
-                minUpgrade = 5
-                break
-            else:
-                if street.hotels == 0:
-                    minUpgrade = min(minUpgrade, street.houses)
-        for street in neighborhood:
-            if street.ownedBy == player:
-                street.minUpgrade = minUpgrade
-
 def ReturnCardAndIncrement(cardSet, position, card):
         cardSet.insert(position, card)
         return PlusOne(position, len(cardSet))

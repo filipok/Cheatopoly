@@ -24,8 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-#thisGame.InitializePlayers()
-thisGame.MockPlayers()
+thisGame.InitializePlayers()
+#thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -210,7 +210,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     while choose not in ["u", "d", "m","d", "e", "n"]:
         choose = myPlayer.ChooseAction(thisGame.board, thisGame.bank, thisGame.neighborhoods)
         if choose == "u":
-            myPlayer.Upgrade(thisGame.neighborhoods, thisGame.board, thisGame.bank) #upgrade
+            myPlayer.Upgrade(thisGame) #upgrade
         elif choose == "d":
             myPlayer.Downgrade(thisGame.board, thisGame.bank) #downgrade
         elif choose == "m":

@@ -125,6 +125,27 @@ class Game(object):
         else:
             player.StartAuction(self) #launch auction
 
+    def FlagUpgradeableLocations(self, player):
+        '''
+        Flag upgradeable locations
+        '''
+        for neighborhood in self.neighborhoods.values():
+            minUpgrade = 5
+            for street in neighborhood:
+                if street.ownedBy != player  or street.mortgaged:
+                    #restore to 5
+                    for street in neighborhood:
+                        street.minUpgrade = 5
+                    minUpgrade = 5
+                    break
+                else:
+                    if street.hotels == 0:
+                        minUpgrade = min(minUpgrade, street.houses)
+            for street in neighborhood:
+                if street.ownedBy == player:
+                    street.minUpgrade = minUpgrade
+
+
 class Bank(object):
     '''
     In standard editions of Monopoly the Bank has USD 15,140.
@@ -455,23 +476,23 @@ class Player(object):
                 DowngradeHouse(self, board[choose], bank)
             print "You have downgraded " + board[choose].name + "."
     
-    def Upgrade(self, neighborhoods, board, bank):
+    def Upgrade(self, game):
         #Flag the upgradeable locations
-        FlagUpgradeableLocations(self, neighborhoods)
+        game.FlagUpgradeableLocations(self)
         #Print the upgradeable locations
         print "Hey , " + self.name + "! These are the locations you can upgrade now:"
-        for item in board:
-            if isinstance(item, Street) and AllUpgradeConditions(item, bank, self):
+        for item in game.board:
+            if isinstance(item, Street) and AllUpgradeConditions(item, game.bank, self):
                 print item
-        choose = choose_int(0, len(board) - 1) #human
-        if  isinstance(board[choose], Street) and AllUpgradeConditions(board[choose], bank, self):
-            if board[choose].houses < 4:
-                UpgradeHouse(self, board[choose], bank)
+        choose = choose_int(0, len(game.board) - 1) #human
+        if  isinstance(game.board[choose], Street) and AllUpgradeConditions(game.board[choose], game.bank, self):
+            if game.board[choose].houses < 4:
+                UpgradeHouse(self, game.board[choose], game.bank)
             else:
-                UpgradeHotel(self, board[choose], bank)
-            print "You have successfully upgraded " + board[choose].name + "."
+                UpgradeHotel(self, game.board[choose], game.bank)
+            print "You have successfully upgraded " + game.board[choose].name + "."
         #restore to 5
-        for item in board:
+        for item in game.board:
             if isinstance(item, Street):
                 item.minUpgrade = 5
 
@@ -638,33 +659,33 @@ class Cheatoid(Player):
                 break
                 
     
-    def Upgrade(self, neighborhoods, board, bank):
+    def Upgrade(self, game):
         '''
         Changes house/hotel values
         '''
         self.successfulUpgrade = False
         #Flag the upgradeable locations
-        FlagUpgradeableLocations(self, neighborhoods)
+        game.FlagUpgradeableLocations(self)
         level = 0
         upgradeDone = False
         while upgradeDone == False and level < 5:
-            for item in board:
+            for item in game.board:
                 if isinstance(item, Street) and item.ownedBy == self and \
-                item.houses == level and AllUpgradeConditions(item, bank, self):
+                item.houses == level and AllUpgradeConditions(item, game.bank, self):
                     #upgrade
                     if level < 4:
-                        UpgradeHouse(self, item, bank)
+                        UpgradeHouse(self, item, game.bank)
                         print self.name + " has successfully upgraded " + item.name + "."
                         upgradeDone = True
                         self.successfulUpgrade = True
                     elif item.hotels == 0:
-                        UpgradeHotel(self, item, bank)
+                        UpgradeHotel(self, item, game.bank)
                         print self.name + " has successfully upgraded " + item.name + "."
                         upgradeDone = True
                         self.successfulUpgrade = True
             level += 1
         #restore to 5
-        for item in board:
+        for item in game.board:
             if isinstance(item, Street):
                 item.minUpgrade = 5
 
