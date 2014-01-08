@@ -42,28 +42,6 @@ def AllUpgradeConditions(item, bank, myPlayer):
 def BankAllowsDowngrade(item, bank):
     return (item.hotels == 1 and bank.houses >= 4) or (item.hotels == 0 and bank.houses > 0)
 
-def DowngradeHotel(player, item, bank):
-    item.hotels = 0
-    bank.houses -= 4
-    bank.hotels += 1
-    bank.MoveMoney(item.hotelCost/2, player)
-
-def DowngradeHouse(player, item, bank):
-    item.houses -= 1
-    bank.houses += 1
-    bank.MoveMoney(item.houseCost/2, player)
-    
-def UpgradeHouse(player, item, bank):
-    item.houses += 1
-    bank.houses -= 1
-    bank.MoveMoney(-item.houseCost, player)
-
-def UpgradeHotel(player, item, bank):
-    item.hotels = 1
-    bank.hotels -= 1
-    bank.houses += 4
-    bank.MoveMoney(-item.hotelCost, player)
-
 def ReturnCardAndIncrement(cardSet, position, card):
         cardSet.insert(position, card)
         return PlusOne(position, len(cardSet))

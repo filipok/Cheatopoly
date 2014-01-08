@@ -271,6 +271,28 @@ class Street(Place):
                     return self.rent0
             return 2*self.rent0
             
+    def DowngradeHotel(self, player, bank):
+        self.hotels = 0
+        bank.houses -= 4
+        bank.hotels += 1
+        bank.MoveMoney(self.hotelCost/2, player)
+    
+    def DowngradeHouse(self, player, bank):
+        self.houses -= 1
+        bank.houses += 1
+        bank.MoveMoney(self.houseCost/2, player)
+        
+    def UpgradeHouse(self,player, bank):
+        self.houses += 1
+        bank.houses -= 1
+        bank.MoveMoney(-self.houseCost, player)
+    
+    def UpgradeHotel(self, player, bank):
+        self.hotels = 1
+        bank.hotels -= 1
+        bank.houses += 4
+        bank.MoveMoney(-self.hotelCost, player)
+        
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
         str(self.location) + "), $: " + str(self.price) + ", r: " + \
@@ -513,9 +535,9 @@ class Player(object):
         if isOwnedAndMortgaged(board[choose], self, False) and \
         board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
             if board[choose].hotels == 1:
-                DowngradeHotel(self, board[choose], bank)
+                board[choose].DowngradeHotel(self, bank)
             else:
-                DowngradeHouse(self, board[choose], bank)
+                board[choose].DowngradeHouse(self, bank)
             print "You have downgraded " + board[choose].name + "."
     
     def Upgrade(self, game):
@@ -529,9 +551,9 @@ class Player(object):
         choose = choose_int(0, len(game.board) - 1) #human
         if  isinstance(game.board[choose], Street) and AllUpgradeConditions(game.board[choose], game.bank, self):
             if game.board[choose].houses < 4:
-                UpgradeHouse(self, game.board[choose], game.bank)
+                game.board[choose].UpgradeHouse(self, game.bank)
             else:
-                UpgradeHotel(self, game.board[choose], game.bank)
+                game.board[choose].UpgradeHotel(self, game.bank)
             print "You have successfully upgraded " + game.board[choose].name + "."
         #restore to 5
         for item in game.board:
@@ -690,12 +712,12 @@ class Cheatoid(Player):
         self.successfulDowngrade = False
         for item in board:
             if item.ownedBy == self and item.hotels == 1:
-                DowngradeHotel(self, item, bank)
+                item.DowngradeHotel(self, bank)
                 print self.name + " has downgraded " + item.name + "."
                 self.successfulDowngrade = True
                 break
             elif item.ownedBy == self and item.houses > 0: #only in streets >0
-                DowngradeHouse(self, item, bank)
+                item.DowngradeHouse(self, bank)
                 print self.name + " has downgraded " + item.name + "."
                 self.successfulDowngrade = True
                 break
@@ -716,12 +738,12 @@ class Cheatoid(Player):
                 item.houses == level and AllUpgradeConditions(item, game.bank, self):
                     #upgrade
                     if level < 4:
-                        UpgradeHouse(self, item, game.bank)
+                        item.UpgradeHouse(self, game.bank)
                         print self.name + " has successfully upgraded " + item.name + "."
                         upgradeDone = True
                         self.successfulUpgrade = True
                     elif item.hotels == 0:
-                        UpgradeHotel(self, item, game.bank)
+                        item.UpgradeHotel(self, game.bank)
                         print self.name + " has successfully upgraded " + item.name + "."
                         upgradeDone = True
                         self.successfulUpgrade = True
