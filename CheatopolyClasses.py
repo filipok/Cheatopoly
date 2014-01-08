@@ -100,6 +100,15 @@ class Game(object):
                 self.players.append(Cheatoid(name, self.playerCash,False))
             list_of_names.append(name)
     
+    def MockPlayers(self):
+        print "Using 6 Borgs..."
+        numPlayers = 6
+        for i in range(6):
+            name = "Borg" + str(i+1)
+            print "Adding " + name + "..."
+            self.players.append(Cheatoid(name, self.playerCash,False))
+        print self.players
+    
     def NewOwnerOrAuction(self, choose, player, place):
         if choose == "yes":
             if player.cash > place.price:

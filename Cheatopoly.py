@@ -24,7 +24,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-thisGame.InitializePlayers()
+#thisGame.InitializePlayers()
+thisGame.MockPlayers()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -32,7 +33,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     myPlayer = thisGame.players[currentPlayer] #shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
-    print "check teleport"
     if myPlayer.teleport == 0:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name +  "! You have $" + \
