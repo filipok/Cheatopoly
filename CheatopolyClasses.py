@@ -307,7 +307,10 @@ class Street(Place):
 
     def AllUpgradeConditions(self, bank, myPlayer):
         return self.IsUpgradeableBy(myPlayer) and self.BankAllowsUpgrade(bank)
-        
+
+    def BankAllowsDowngrade(self, bank):
+        return (self.hotels == 1 and bank.houses >= 4) or (self.hotels == 0 and bank.houses > 0)
+                
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
         str(self.location) + "), $: " + str(self.price) + ", r: " + \
@@ -544,11 +547,11 @@ class Player(object):
         print "List of properties that you can downgrade:"
         for item in board:
             if item.isOwnedAndMortgaged(self, False) and \
-            item.houses > 0 and BankAllowsDowngrade(item, bank):
+            item.houses > 0 and item.BankAllowsDowngrade(bank):
                 print item
         choose = choose_int(0, len(board) - 1) #human        
         if board[choose].isOwnedAndMortgaged(self, False) and \
-        board[choose].houses > 0 and BankAllowsDowngrade(board[choose], bank):
+        board[choose].houses > 0 and board[choose].BankAllowsDowngrade(bank):
             if board[choose].hotels == 1:
                 board[choose].DowngradeHotel(self, bank)
             else:
