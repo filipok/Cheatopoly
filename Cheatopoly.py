@@ -12,7 +12,7 @@ with ff as f:
 #Create game
 thisGame = Game()
 thisGame.bank =  Bank(thisGame) #initialize bank
-thisGame.ReadData(content) #process data.txt
+thisGame.load(content) #process data.txt
 #randomize community chest and chance cards
 shuffle(thisGame.chances)
 shuffle(thisGame.communityChest)
@@ -23,8 +23,8 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-#thisGame.InitializePlayers()
-thisGame.MockPlayers()
+#thisGame.initialize_players()
+thisGame.mock_players()
 
 currentPlayer = 0 # initialize current player
 #Player turns are generated in a while loop
@@ -36,7 +36,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name +  "! You have $" + \
             str(myPlayer.cash) + ". Press Enter to start turn.")
-        dice = thisGame.Dice() #Roll dice
+        dice = thisGame.dice() #Roll dice
         print "Dice roll for " + myPlayer.name + ": " +  str(dice[0]) + " " + str(dice[1])
         # Resolve jail status
         if myPlayer.inJail: #Check for doubles while in jail
@@ -51,28 +51,28 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             if choose == 'yes':
                 myPlayer.ReturnCardLeaveJail(thisGame)
         #Else pay
-        if myPlayer.inJail and myPlayer.cash >= thisGame.jailFine:
+        if myPlayer.inJail and myPlayer.cash >= thisGame.jail_fine:
             choose = myPlayer.PayJailFine(thisGame)
             if choose == 'yes':
-                thisGame.bank.MoveMoney(-thisGame.jailFine, myPlayer)
+                thisGame.bank.move_money(-thisGame.jail_fine, myPlayer)
                 myPlayer.ResetJail()
-                print myPlayer.name + " pays $" + str(thisGame.jailFine) + \
+                print myPlayer.name + " pays $" + str(thisGame.jail_fine) + \
                 " to get out of jail."
         #Else if already three turns in jail:
         if myPlayer.timeInJail == 3:
-            thisGame.bank.MoveMoney(-thisGame.jailFine, myPlayer)
+            thisGame.bank.move_money(-thisGame.jail_fine, myPlayer)
             myPlayer.ResetJail()
-            print myPlayer.name + " pays anyway $" + str(thisGame.jailFine) + " to get out of jail after three turns."
+            print myPlayer.name + " pays anyway $" + str(thisGame.jail_fine) + " to get out of jail after three turns."
         #Check if still in jail
         if myPlayer.inJail:
-            currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
+            currentPlayer = thisGame.add_one(currentPlayer, len(thisGame.players))
             continue #end of turn
         #Check how many doubles in a row
         if dice[0] == dice[1]:
             myPlayer.doublesInARow += 1
             if myPlayer.doublesInARow == 3:
                 myPlayer.MoveToJail(thisGame)
-                currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
+                currentPlayer = thisGame.add_one(currentPlayer, len(thisGame.players))
                 continue
         else:
             myPlayer.doublesInARow = 0
@@ -80,23 +80,23 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % len(thisGame.board)
         print myPlayer.name + " advances to " + str(myPlayer.location) + \
         " (" + thisGame.board[myPlayer.location].name + ")."
-        #Did we pass Go? +startWage/2*startWage
+        #Did we pass Go? +start_wage/2*start_wage
         if myPlayer.location == 0:
-            thisGame.bank.MoveMoney(2*thisGame.startWage, myPlayer)
-            print myPlayer.name + " is a lucky punk and gets $" + str(2*thisGame.startWage) + "."
+            thisGame.bank.move_money(2*thisGame.start_wage, myPlayer)
+            print myPlayer.name + " is a lucky punk and gets $" + str(2*thisGame.start_wage) + "."
         elif myPlayer.location - dice[0] - dice[1] < 0:
-            thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
-            print myPlayer.name + " gets $" + str(thisGame.startWage) + "."
+            thisGame.bank.move_money(thisGame.start_wage, myPlayer)
+            print myPlayer.name + " gets $" + str(thisGame.start_wage) + "."
     #reset teleport counter now
     myPlayer.teleport = 0
     thisPlace = thisGame.board[myPlayer.location] #shorthand
     # if player lands on street, rail or utility:
     if isinstance(thisPlace, (Street, Railroad, Utility)):
-        if thisPlace.ownedBy == None:
+        if thisPlace.owned_by == None:
             #You can buy the place
             choose = myPlayer.Buy(thisGame) #make a choice
-            thisGame.NewOwnerOrAuction(choose, myPlayer, thisPlace)
-        elif thisPlace.ownedBy == myPlayer:
+            thisGame.buy_or_auction(choose, myPlayer, thisPlace)
+        elif thisPlace.owned_by == myPlayer:
             #If you already own that place
             print "You (" + myPlayer.name + ") already own " + thisPlace.name + "."
         else:
@@ -104,7 +104,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.PayRent(thisPlace, thisGame)
     #Free Parking
     if isinstance(thisPlace, FreeParking):
-        thisGame.bank.MoveTable(myPlayer)
+        thisGame.bank.move_table(myPlayer)
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
         myPlayer.MoveToJail(thisGame)    
@@ -130,13 +130,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.communityChest[thisGame.currentComm].collect == 1:
             for person in thisGame.players:
                 if person != myPlayer:
-                    person.cash -= thisGame.collectFine
-                    myPlayer.cash += thisGame.collectFine
-                    print person.name + " pays $" + str(thisGame.collectFine) +" to " + myPlayer.name + "."
+                    person.cash -= thisGame.collect_fine
+                    myPlayer.cash += thisGame.collect_fine
+                    print person.name + " pays $" + str(thisGame.collect_fine) +" to " + myPlayer.name + "."
         elif thisGame.communityChest[thisGame.currentComm].repairs == 1:
-            thisGame.Repairs(thisGame.chestRepairs[0], thisGame.chestRepairs[1], myPlayer)
+            thisGame.repairs(thisGame.chest_repairs[0], thisGame.chest_repairs[1], myPlayer)
         #increment community chest card index
-        thisGame.currentComm = thisGame.PlusOne(thisGame.currentComm, len(thisGame.communityChest))
+        thisGame.currentComm = thisGame.add_one(thisGame.currentComm, len(thisGame.communityChest))
     #Chance cards
     if isinstance(thisPlace, Chance):
         print myPlayer.name + ", you have drawn this Chance card: ",
@@ -152,7 +152,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.chances[thisGame.currentChance].goToJail == 1:
             myPlayer.MoveToJail(thisGame)
         elif thisGame.chances[thisGame.currentChance].repairs == 1:
-            thisGame.Repairs(thisGame.chanceRepairs[0],thisGame.chanceRepairs[1], myPlayer)
+            thisGame.repairs(thisGame.chance_repairs[0],thisGame.chance_repairs[1], myPlayer)
         elif thisGame.chances[thisGame.currentChance].reading == 1:
             #find Reading location
             for item in thisGame.board:
@@ -160,8 +160,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     destination = item.location #what if not found?
                     break
             if destination < myPlayer.location:
-                print "You pass Go and collect $" + str(thisGame.startWage) + "."
-                thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
+                print "You pass Go and collect $" + str(thisGame.start_wage) + "."
+                thisGame.bank.move_money(thisGame.start_wage, myPlayer)
             myPlayer.location = destination
             print "You move to Reading Railroad, at location " + str(destination) + "."
             myPlayer.teleport = 1
@@ -173,7 +173,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif thisGame.chances[thisGame.currentChance].rail == 1:
             while not isinstance(thisPlace, Railroad):
                 #FIXME: infinite loop if no rail!
-                myPlayer.location = thisGame.PlusOne(myPlayer.location, len(thisGame.board))
+                myPlayer.location = thisGame.add_one(myPlayer.location, len(thisGame.board))
             print "You have moved to the next railroad: " + thisPlace.name + ", at pos " + str(myPlayer.location) + "."
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
@@ -186,20 +186,20 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     if item.name == thisGame.chances[thisGame.currentChance].goTo:
                         #you get $200 if you pass Go.
                         if myPlayer.location > item.location:
-                            thisGame.bank.MoveMoney(thisGame.startWage, myPlayer)
-                            print "You get $" + str(thisGame.startWage)
+                            thisGame.bank.move_money(thisGame.start_wage, myPlayer)
+                            print "You get $" + str(thisGame.start_wage)
                         myPlayer.location = item.location
                         break
                 print "You move to " + thisPlace.name + " at pos " + str(myPlayer.location) + "."
                 myPlayer.teleport = 1
                 continue
         #increment chance card index
-        thisGame.currentChance = thisGame.PlusOne(thisGame.currentChance, len(thisGame.chances))
+        thisGame.currentChance = thisGame.add_one(thisGame.currentChance, len(thisGame.chances))
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print myPlayer.name + ", you have the following properties:"
     for item in thisGame.board:
-        if item.ownedBy == myPlayer:
+        if item.owned_by == myPlayer:
             print item
     print myPlayer.name + " has $"+ str(myPlayer.cash) + ".",
     if myPlayer.cash < 0:
@@ -231,8 +231,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if myPlayer.cash < 0:
         print myPlayer.name + " HAS BEEN ELIMINATED!"
         for item in thisGame.board:
-            if isinstance(item, (Street, Railroad, Utility)) and item.ownedBy == myPlayer:
-                item.ownedBy = None
+            if isinstance(item, (Street, Railroad, Utility)) and item.owned_by == myPlayer:
+                item.owned_by = None
                 if item.hotels == 1:
                     item.hotels = 0
                     thisGame.bank.hotels += 1
@@ -246,7 +246,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             currentPlayer = 0
     else:
         #currentPlayer += 1
-        currentPlayer = thisGame.PlusOne(currentPlayer, len(thisGame.players))
+        currentPlayer = thisGame.add_one(currentPlayer, len(thisGame.players))
 
     #Print current financial status
     print ""
@@ -254,7 +254,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     for player in thisGame.players:
         print player.name + " has $" +str(player.cash)
     print "The bank has got $" + str(thisGame.bank.money) + " left. There are "+ str(thisGame.bank.houses) + " houses and " + str(thisGame.bank.hotels) + " hotels available."
-    print "There are $" + str(thisGame.bank.cardPayments) + " left on the table."
+    print "There are $" + str(thisGame.bank.card_payments) + " left on the table."
     print "***"
     print ""
     
