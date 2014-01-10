@@ -199,6 +199,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 #FIXME: infinite loop if no rail!
                 myPlayer.location = thisGame.add_one(myPlayer.location,
                                                      len(thisGame.board))
+                thisPlace = thisGame.board[myPlayer.location]  # Updt shorthand
             print "You have moved to the next railroad: " + thisPlace.name + \
                   ", at pos " + str(myPlayer.location) + "."
             myPlayer.doubleRent = 2
