@@ -11,8 +11,8 @@ with ff as f:
 
 #Create game
 thisGame = Game()
-thisGame.bank = Bank(thisGame)  # Initialize bank
 thisGame.load(content)  # Process data.txt
+thisGame.bank = Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
 shuffle(thisGame.chances)
 shuffle(thisGame.community_chest)
@@ -258,7 +258,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #no possibility to upgrade while in jail?
     #save/load game from disk
     # add turn counter and print it at the end
-    
+
     #Turn end: remove from game if cash < 0
     if myPlayer.cash < 0:
         print myPlayer.name + " HAS BEEN ELIMINATED!"
