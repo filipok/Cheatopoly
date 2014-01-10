@@ -257,7 +257,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #stylecheck
     #no possibility to upgrade while in jail?
     #save/load game from disk
-
+    # add turn counter and print it at the end
+    
     #Turn end: remove from game if cash < 0
     if myPlayer.cash < 0:
         print myPlayer.name + " HAS BEEN ELIMINATED!"
