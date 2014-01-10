@@ -20,10 +20,10 @@ class Game(object):
 
     #Game objects
     neighborhoods = {}
-    communityChest = []
+    community_chest = []
     chances = []
-    currentComm = 0
-    currentChance = 0
+    current_comm = 0
+    current_chance = 0
     players = []
     board = []
     bank = None
@@ -67,7 +67,7 @@ class Game(object):
             elif line[0] == "gotojail":
                 self.board.append(GoToJail())
             elif line[0] == "chest":
-                self.communityChest.append(
+                self.community_chest.append(
                     CommunityCard(line[7], int(line[1]), int(line[2]),
                                   int(line[3]), int(line[4]), int(line[5]),
                                   int(line[6])))
@@ -132,7 +132,7 @@ class Game(object):
     def buy_or_auction(self, choose, player, place):
         if choose == "yes":
             if player.cash > place.price:
-                place.newOwner(player)  # Assign new owner
+                place.new_owner(player)  # Assign new owner
                 self.bank.move_money(-place.price, player)
                 print "Congratulations, " + player.name + \
                       "! You have bought: " + str(place) + "."
@@ -141,9 +141,9 @@ class Game(object):
                 a = random.randint(1, 4)
                 if a == 1:
                     print "Beggar...!"
-                player.StartAuction(self)  # Launch auction
+                player.start_auction(self)  # Launch auction
         else:
-            player.StartAuction(self)  # Launch auction
+            player.start_auction(self)  # Launch auction
 
     def flag_upgradeable_places(self, player):
         """ Flag upgradeable locations
@@ -176,8 +176,8 @@ class Game(object):
             for item in self.board:
                 if item.owned_by == player:
                     payment += item.price * tax_percent / 100.0
-                    payment += item.hotels * item.hotelCost + \
-                        item.houses * item.houseCost
+                    payment += item.hotels * item.hotel_cost + \
+                        item.houses * item.house_cost
             return int(payment)
         elif option == "None":
             return None
@@ -222,7 +222,7 @@ class Game(object):
             choose = raw_input(string).lower()
         return choose
 
-    def return_card_and_add_one(self, card_set, position, card):
+    def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
         return self.add_one(position, len(card_set))
 
@@ -282,30 +282,27 @@ class Place(object):
     mortgaged = False
     houses = 0
     hotels = 0
-    hotelCost = 0
-    houseCost = 0
+    hotel_cost = 0
+    house_cost = 0
 
-    def isOwnedAndMortgaged(self, player, condition):
+    def is_owned_and_mortgaged(self, player, condition):
         #FIXME: self.mortgaged is true/false; remove condition parameter
         return self.owned_by == player and self.mortgaged == condition
 
 
 class Street(Place):
-    '''
-    Each street is a place and has a name and a price.
+    """Each street is a place and has a name and a price.
     The rent depends on the number of houses (0-4, plus a hotel) .
     The costs of the houses and hotels is specific to the street
     Also, there is a mortgage value and the street belongs to a neighborhood.
-    '''
-    #initially there are no houses or hotels on the street
+    Initially there are no houses or hotels on the street.
+
+    """
+
     min_upgrade = 5
 
-    def __init__(self, name, price, rent0, rent1, rent2, rent3, \
-                 rent4, rentH, mortgage, houseCost, hotelCost, neighborhood):
-        """
-
-        @rtype : object
-        """
+    def __init__(self, name, price, rent0, rent1, rent2, rent3, rent4, rent_h,
+                 mortgage, house_cost, hotel_cost, neighborhood):
         self.name = name
         self.price = price
         self.rent0 = rent0
@@ -313,19 +310,19 @@ class Street(Place):
         self.rent2 = rent2
         self.rent3 = rent3
         self.rent4 = rent4
-        self.rentH = rentH
+        self.rent_h = rent_h
         self.mortgage = mortgage
-        self.houseCost = houseCost
-        self.hotelCost = hotelCost
+        self.house_cost = house_cost
+        self.hotel_cost = hotel_cost
         self.neighborhood = neighborhood
 
-    def newOwner(self, player):
+    def new_owner(self, player):
         #change street owner
         self.owned_by = player
 
     def rent(self, game):
         if self.hotels == 1:
-            return self.rentH
+            return self.rent_h
         elif self.houses == 4:
             return self.rent4
         elif self.houses == 3:
@@ -335,73 +332,72 @@ class Street(Place):
         elif self.houses == 1:
             return self.rent1
         else:
-            #no hotels,no houses:
-            #check for ownership of entire neighborhood
+            #Ifno hotels, no houses:
+            #check for ownership of an entire neighborhood
             for item in game.neighborhoods[self.neighborhood]:
                 if item.owned_by != self.owned_by:
                     return self.rent0
             return 2 * self.rent0
 
-    def DowngradeHotel(self, player, bank):
+    def downgrade_hotel(self, player, bank):
         self.hotels = 0
         bank.houses -= 4
         bank.hotels += 1
-        bank.move_money(self.hotelCost / 2, player)
+        bank.move_money(self.hotel_cost / 2, player)
 
-    def DowngradeHouse(self, player, bank):
+    def downgrade_house(self, player, bank):
         self.houses -= 1
         bank.houses += 1
-        bank.move_money(self.houseCost / 2, player)
+        bank.move_money(self.house_cost / 2, player)
 
-    def UpgradeHouse(self, player, bank):
+    def upgrade_house(self, player, bank):
         self.houses += 1
         bank.houses -= 1
-        bank.move_money(-self.houseCost, player)
+        bank.move_money(-self.house_cost, player)
 
-    def UpgradeHotel(self, player, bank):
+    def upgrade_hotel(self, player, bank):
         self.hotels = 1
         bank.hotels -= 1
         bank.houses += 4
-        bank.move_money(-self.hotelCost, player)
+        bank.move_money(-self.hotel_cost, player)
 
-    def IsUpgradeableBy(self, myPlayer):
-        return self.owned_by == myPlayer and self.min_upgrade == self.houses and \
-               self.hotels == 0 and \
-               ((self.houses == 4 and self.hotelCost <= myPlayer.cash) or \
-                (self.houses < 4 and self.houseCost <= myPlayer.cash))
+    def is_upgradeable_by(self, player):
+        return self.owned_by == player and \
+            self.min_upgrade == self.houses and self.hotels == 0 and \
+            ((self.houses == 4 and self.hotel_cost <= player.cash) or
+            (self.houses < 4 and self.house_cost <= player.cash))
 
-    def BankAllowsUpgrade(self, bank):
+    def bank_allows_upgrade(self, bank):
         return (self.houses < 4 and bank.houses > 0) or \
-               (self.houses == 4 and bank.hotels > 0)
+            (self.houses == 4 and bank.hotels > 0)
 
-    def AllUpgradeConditions(self, bank, myPlayer):
-        return self.IsUpgradeableBy(myPlayer) and self.BankAllowsUpgrade(bank)
+    def all_upgrade_conditions(self, bank, player):
+        return self.is_upgradeable_by(player) and \
+            self.bank_allows_upgrade(bank)
 
-    def BankAllowsDowngrade(self, bank):
+    def bank_allows_downgrade(self, bank):
         return (self.hotels == 1 and bank.houses >= 4) or (
             self.hotels == 0 and bank.houses > 0)
 
     def __repr__(self):
         return self.name + ", " + self.neighborhood + " (" + \
-               str(self.location) + "), $: " + str(self.price) + ", r: " + \
-               str(self.rent1) + ", " + str(self.rent2) + ", " + str(
-            self.rent3) + \
-               ", " + str(self.rent4) + ", " + str(self.rentH) + ", m: " + \
-               str(self.mortgage) + ", h+: " + str(self.houseCost) + \
-               ", H+: " + str(self.hotelCost) + ", h: " + str(self.houses) + \
-               ", H: " + str(self.hotels)
+            str(self.location) + "), $: " + str(self.price) + ", r: " + \
+            str(self.rent1) + ", " + str(self.rent2) + ", " + \
+            str(self.rent3) + ", " + str(self.rent4) + ", " + \
+            str(self.rent_h) + ", m: " + str(self.mortgage) + ", h+: " + \
+            str(self.house_cost) + ", H+: " + str(self.hotel_cost) + \
+            ", h: " + str(self.houses) + ", H: " + str(self.hotels)
 
 
 class Railroad(Place):
-    '''
+    """
     Railroad rents depend on the number of railroads owned.
     There is also a mortgage value.
     The rents and mortgage values are identical for all railroads.
     They are still defined in __init__().
-    '''
+    """
 
-    def __init__(self, name, price, rent1, rent2, rent3, rent4, \
-                 mortgage):
+    def __init__(self, name, price, rent1, rent2, rent3, rent4, mortgage):
         self.name = name
         self.price = price
         self.rent1 = rent1
@@ -410,7 +406,7 @@ class Railroad(Place):
         self.rent4 = rent4
         self.mortgage = mortgage
 
-    def newOwner(self, player):
+    def new_owner(self, player):
         #change railroad owner
         self.owned_by = player
 
@@ -430,27 +426,27 @@ class Railroad(Place):
 
     def __repr__(self):
         return self.name + " (" + str(self.location) + "), price: " + \
-               str(self.price) + ", rents: " + str(self.rent1) + " " + \
-               str(self.rent2) + " " + str(self.rent3) + " " + str(
-            self.rent4) + \
-               ", mortgage: " + str(self.mortgage) + "; demortgage: " + \
-               str(int(self.mortgage * 1.1))
+            str(self.price) + ", rents: " + str(self.rent1) + " " + \
+            str(self.rent2) + " " + str(self.rent3) + " " + str(self.rent4) + \
+            ", mortgage: " + str(self.mortgage) + "; demortgage: " + \
+            str(int(self.mortgage * 1.1))
 
 
 class Utility(Place):
-    '''
+    """
     Utility rents depend on the dice values:
         - if one utility is owned, four times the dice value;
         - if both utilities are owned, 10 times the dice value.
     They also have a mortgage value.
-    '''
+    """
 
     def __init__(self, name, price, mortgage):
         self.name = name
         self.price = price
         self.mortgage = mortgage
 
-    def newOwner(self, player):
+    def new_owner(self, player):
+        #FIXME: move new_owner to Place
         #change utility owner
         self.owned_by = player
 
@@ -469,36 +465,36 @@ class Utility(Place):
 
     def __repr__(self):
         return self.name + " (" + str(self.location) + "), price: " + \
-               str(self.price) + ", mortgage: " + str(self.mortgage) + \
-               "; demortgage: " + str(int(self.mortgage * 1.1))
+            str(self.price) + ", mortgage: " + str(self.mortgage) + \
+            "; demortgage: " + str(int(self.mortgage * 1.1))
 
 
 class CommunityChest(Place):
-    '''
+    """
     No specific data.
-    '''
+    """
     name = "Community Chest"
 
     def __repr__(self):
-        return "Community Chest at pos " + str(self.location)
+        return "Community Chest at pos {0}".format(str(self.location))
 
 
 class Chance(Place):
-    '''
+    """
     No specific data.
-    '''
+    """
     name = "Chance"
 
     def __repr__(self):
-        return "Chance at pos " + str(self.location)
+        return "Chance at pos {0}".format(str(self.location))
 
 
 class Tax(Place):
     def __init__(self, name, option1, option2, text):
-        '''
+        """
         Each tax location has a name or one or two taxation options, as
         some tax locations allow you to choose one of two alternatives.
-        '''
+        """
         self.name = name
         self.option1 = option1
         self.option2 = option2
@@ -509,181 +505,183 @@ class Tax(Place):
 
 
 class Jail(Place):
-    '''
+    """
     This is the jail
-    '''
+    """
     name = "Jail"
 
     def __repr__(self):
-        return "Jail at pos " + str(self.location)
+        return "Jail at pos {0}".format(str(self.location))
 
 
 class GoToJail(Place):
-    '''
+    """
      Here you go to jail.
-     '''
+     """
     name = "Go To Jail"
 
     def __repr__(self):
-        return "Go To Jail at pos " + str(self.location)
+        return "Go To Jail at pos {0}".format(str(self.location))
 
 
 class FreeParking(Place):
-    '''
+    """
     This is the free parking corner.
-    '''
+    """
     name = "Free Parking"
 
     def __repr__(self):
-        return "Free Parking at pos " + str(self.location)
+        return "Free Parking at pos {0}".format(str(self.location))
 
 
 class Start(Place):
-    '''
+    """
     This is the starting corner.
-    '''
+    """
     name = "Start"
 
     def __repr__(self):
-        return "Start at pos " + str(self.location)
+        return "Start at pos {0}".format(str(self.location))
 
 
 class CommunityCard(object):
-    '''
-    All comunity chest cards have a text description.
+    """
+    All community chest cards have a text description.
     These cards:
-    - give or take cash from you; or 
+    - give or take cash from you; or
     - move you to a new location; or
     - order you to make general repairs (USD 25 per house, USD 100 per hotel);
     - give you an out-of-jail ticket.
-    '''
+    """
 
-    def __init__(self, text, goStart, cash, jailcard, repairs, collect,
-                 goToJail):
+    def __init__(self, text, go_start, cash, jail_card, repairs, collect,
+                 go_to_jail):
         self.text = text
-        self.goStart = goStart # 0 or 1
-        self.cash = cash # positive or negative int
-        self.jailcard = jailcard # 0 or 1
-        self.repairs = repairs # 0 or 1
-        self.collect = collect # 0 or 1
-        self.goToJail = goToJail # 0 or 1
+        self.go_start = go_start  # 0 or 1
+        self.cash = cash  # Positive or negative int
+        self.jail_card = jail_card  # 0 or 1
+        self.repairs = repairs  # 0 or 1
+        self.collect = collect  # 0 or 1
+        self.go_to_jail = go_to_jail  # 0 or 1
 
     def __repr__(self):
         return "Community Card: " + self.text
 
 
 class ChanceCard(object):
-    '''
-    Chance cards are generally similar to community chest cards, with several exceptions:
-    - you advance to the neareast railroad and pay twice the rental or buy it from the bank;
+    """
+    Chance cards are generally similar to community chest cards,
+    with several added features:
+    - you advance to the nearest railroad and pay twice the rental or buy it
+    from the bank;
     - take a ride on the Reading; if you pass go, collect 200.
-    '''
+    """
+    #FIXME: Reading is hardcoded
 
-    def __init__(self, text, movement, cash, jailcard, rail, repairs, goToJail,
-                 reading, goTo):
+    def __init__(self, text, movement, cash, jail_card, rail, repairs,
+                 go_to_jail, reading, go_to):
         self.text = text
-        self.movement = movement # int
+        self.movement = movement  # Integer
         self.cash = cash
-        self.jailcard = jailcard #0 or 1?
-        self.rail = rail #boolean
-        self.repairs = repairs #0 or 1
-        self.goToJail = goToJail # 0 or 1
-        self.reading = reading #0 or 1
-        self.goTo = goTo # 0 or 1 if Start or string
+        self.jail_card = jail_card  # 0 or 1?
+        self.rail = rail  # Boolean
+        self.repairs = repairs  # 0 or 1
+        self.go_to_jail = go_to_jail  # 0 or 1
+        self.reading = reading  # 0 or 1
+        self.go_to = go_to  # 0 / 1 if Start / string
 
     def __repr__(self):
         return "Chance Card: " + self.text
 
 
 class Player(object):
-    '''
+    """
     Each player is initialized with an amount of money and a starting position.
-    '''
+    """
     human = True
     location = 0
-    doubles = 0 #how many doubles in a row
-    inJail = False
-    timeInJail = 0
-    jailCommCards = 0
-    jailChanceCards = 0
-    doublesInARow = 0
-    doubleRent = 1# 1 or 2; flag for the chance card sending to next R.R.
-    teleport = 0 #indicates whether the player was sent over by a Chance card
-    inAuction = False #used for auctions
+    doubles = 0  # How many doubles in a row
+    in_jail = False
+    time_in_jail = 0
+    jail_comm_cards = 0
+    jail_chance_cards = 0
+    doubles_in_a_row = 0
+    double_rent = 1  # 1 or 2; flag for the chance card sending to next R.R.
+    teleport = 0  # Indicates whether the player was sent over by a Chance card
+    in_auction = False  # Used for auctions
 
     def __init__(self, name, cash, human):
         self.name = name
         self.cash = cash
         self.human = human
 
-    def MoveToJail(self, game):
+    def move_to_jail(self, game):
         print self.name + " goes to JAIL!"
         #find next jail (you can have several, if you ask me)
-        searchJail = self.location
-        while not isinstance(game.board[searchJail], Jail):
-            searchJail = (searchJail + 1) % len(game.board)
-        self.location = searchJail
-        self.inJail = True
+        search_jail = self.location
+        while not isinstance(game.board[search_jail], Jail):
+            search_jail = (search_jail + 1) % len(game.board)
+        self.location = search_jail
+        self.in_jail = True
 
-    def Mortgage(self, game):
+    def mortgage(self, game):
         print "List of properties that you can mortgage:"
         for item in game.board:
-            if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
+            if item.is_owned_and_mortgaged(self, False) and item.houses == 0:
                 print item
-        choose = game.choose_int(0, len(game.board) - 1) #human
-        if game.board[choose].isOwnedAndMortgaged(self, False) and game.board[
-            choose].houses == 0:
+        choose = game.choose_int(0, len(game.board) - 1)
+        if game.board[choose].is_owned_and_mortgaged(self, False) and \
+                game.board[choose].houses == 0:
             game.bank.move_money(game.board[choose].mortgage, self)
             game.board[choose].mortgaged = True
             print "You have successfully mortgaged " + game.board[
                 choose].name + "."
 
-    def Demortgage(self, game):
+    def demortgage(self, game):
         print "List of properties that you can demortgage:"
         for item in game.board:
-            if item.isOwnedAndMortgaged(self, True):
+            if item.is_owned_and_mortgaged(self, True):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1) #human
-        if game.board[choose].isOwnedAndMortgaged(self, True) and \
-                        self.cash >= int(game.board[choose].mortgage * 1.1):
+        choose = game.choose_int(0, len(game.board) - 1)
+        if game.board[choose].is_owned_and_mortgaged(self, True) and \
+                self.cash >= int(game.board[choose].mortgage * 1.1):
             game.bank.move_money(-int(game.board[choose].mortgage * 1.1), self)
             game.board[choose].mortgaged = False
-            print "You have successfully demortgaged " + game.board[
-                choose].name + "."
+            print "You have successfully demortgaged " + \
+                  game.board[choose].name + "."
 
-    def Downgrade(self, game):
+    def downgrade(self, game):
         print "List of properties that you can downgrade:"
         for item in game.board:
-            if item.isOwnedAndMortgaged(self, False) and \
-                            item.houses > 0 and item.BankAllowsDowngrade(
-                    game.bank):
+            if item.is_owned_and_mortgaged(self, False) and \
+                    item.houses > 0 and item.bank_allows_downgrade(game.bank):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1) #human        
-        if game.board[choose].isOwnedAndMortgaged(self, False) and \
-                        game.board[choose].houses > 0 and game.board[
-            choose].BankAllowsDowngrade(game.bank):
+        choose = game.choose_int(0, len(game.board) - 1)
+        if game.board[choose].is_owned_and_mortgaged(self, False) and \
+                game.board[choose].houses > 0 and game.board[
+                choose].bank_allows_downgrade(game.bank):
             if game.board[choose].hotels == 1:
-                game.board[choose].DowngradeHotel(self, game.bank)
+                game.board[choose].downgrade_hotel(self, game.bank)
             else:
-                game.board[choose].DowngradeHouse(self, game.bank)
+                game.board[choose].downgrade_house(self, game.bank)
             print "You have downgraded " + game.board[choose].name + "."
 
-    def Upgrade(self, game):
+    def upgrade(self, game):
         #Flag the upgradeable locations
         game.flag_upgradeable_places(self)
         #Print the upgradeable locations
-        print "Hey , " + self.name + "! These are the locations you can upgrade now:"
+        print self.name + ", these are the locations you can upgrade now:"
         for item in game.board:
-            if isinstance(item, Street) and item.AllUpgradeConditions(
+            if isinstance(item, Street) and item.all_upgrade_conditions(
                     game.bank, self):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1) #human
+        choose = game.choose_int(0, len(game.board) - 1)
         if isinstance(game.board[choose], Street) and game.board[
-            choose].AllUpgradeConditions(game.bank, self):
+                choose].all_upgrade_conditions(game.bank, self):
             if game.board[choose].houses < 4:
-                game.board[choose].UpgradeHouse(self, game.bank)
+                game.board[choose].upgrade_house(self, game.bank)
             else:
-                game.board[choose].UpgradeHotel(self, game.bank)
+                game.board[choose].upgrade_hotel(self, game.bank)
             print "You have successfully upgraded " + game.board[
                 choose].name + "."
             #restore to 5
@@ -691,117 +689,119 @@ class Player(object):
             if isinstance(item, Street):
                 item.min_upgrade = 5
 
-    def ChooseAction(self):
-        return raw_input(
-            "Do you want to [u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do [n]othing? ").lower() #human
+    def choose_action(self):
+        return raw_input("Do you want to " +
+                         "[u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do " +
+                         "[n]othing? ").lower()
 
-    def ReplyToAuction(self, player, game, auctionPrice):
+    def reply_to_auction(self, player, game, auction_price):
         print "Hello," + self.name + "! " + player.name + " did not buy " + \
               game.board[player.location].name + \
               ". Do you want to buy it instead? Last price is " + \
-              str(auctionPrice) + ". Enter your price below."
+              str(auction_price) + ". Enter your price below."
         return game.choose_int(0, max(self.cash, 0))
 
-    def StartAuction(self, game):
+    def start_auction(self, game):
         #set auction flag
         print "Starting auction..."
         for person in game.players:
-            person.inAuction = True
-        self.inAuction = False
-        auctionRunning = True
-        auctionPrice = 0 # the auction starts from zero
-        bestCandidate = None
-        while auctionRunning:
-            stillInPlay = 0
+            person.in_auction = True
+        self.in_auction = False
+        auction_running = True
+        auction_price = 0  # FIXME The auction starts from zero (why hardcoded)
+        best_candidate = None
+        while auction_running:
+            still_in_play = 0
             for person in game.players:
-                if person.inAuction and person != bestCandidate:
-                    choose = person.ReplyToAuction(self, game, auctionPrice)
-                    if isinstance(choose, int) and choose > auctionPrice:
-                        bestCandidate = person
-                        auctionPrice = choose
-                        stillInPlay += 1
+                if person.in_auction and person != best_candidate:
+                    choose = person.reply_to_auction(self, game, auction_price)
+                    if isinstance(choose, int) and choose > auction_price:
+                        best_candidate = person
+                        auction_price = choose
+                        still_in_play += 1
                     else:
-                        person.inAuction = False
-            if stillInPlay == 0:
-                auctionRunning = False
-        if bestCandidate == None:
+                        person.in_auction = False
+            if still_in_play == 0:
+                auction_running = False
+        if best_candidate is None:
             print "Sadly, nobody wants that place."
         else:
-            print "Congratulations, " + bestCandidate.name + \
+            print "Congratulations, " + best_candidate.name + \
                   "! You have bought " + game.board[self.location].name + \
-                  " for $" + str(auctionPrice) + "."
-            game.bank.move_money(-auctionPrice, bestCandidate)
-            game.board[self.location].newOwner(bestCandidate)#assign new owner
+                  " for $" + str(auction_price) + "."
+            game.bank.move_money(-auction_price, best_candidate)
+            game.board[self.location].new_owner(best_candidate)  # New owner
 
-    def Buy(self, game):
-        message = "Hey, {}! {} is currently available and you have ${}. Do you want to buy it? Summary: {} [yes/no] ".format(
-            self.name, game.board[self.location].name, str(self.cash),
+    def buy(self, game):
+        message = "{} is free. You have ${}. Wanna buy? {} [yes/no] ".format(
+            game.board[self.location].name, str(self.cash),
             str(game.board[self.location]))
         return game.choose_yes_no(message)
 
-    def UseJailCard(self, game):
+    def use_jail_card(self, game):
         return game.choose_yes_no(
             "Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
 
-    def PayJailFine(self, game):
-        return game.choose_yes_no("Do you want to pay $" + str(
-            game.jailFine) + " to get out of jail[yes/no] ")
+    def pay_jail_fine(self, game):
+        return game.choose_yes_no("Do you want to pay $" + str(game.jailFine) +
+                                  " to get out of jail[yes/no] ")
 
-    def ResetJail(self):
-        self.inJail = False
-        self.timeInJail = 0
-        self.doublesInARow = 0
+    def reset_jail(self):
+        self.in_jail = False
+        self.time_in_jail = 0
+        self.doubles_in_a_row = 0
 
-    def ReturnCardLeaveJail(self, game):
+    def return_card_leave_jail(self, game):
         #return community/chance card back to the pile
-        if self.jailCommCards > self.jailChanceCards:
-            toInsert = CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0)
-            self.jailCommCards -= 1
-            game.currentComm = game.return_card_and_add_one(game.communityChest,
-                                                           game.currentComm,
-                                                           toInsert)
+        if self.jail_comm_cards > self.jail_chance_cards:
+            to_add = CommunityCard("Get out of jail, free", 0, 0, 1, 0, 0, 0)
+            self.jail_comm_cards -= 1
+            game.current_comm = game.return_card_and_add(game.community_chest,
+                                                         game.current_comm,
+                                                         to_add)
         else:
-            toInsert = ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0,
-                                  0)
-            self.jailChanceCards -= 1
-            game.currentChance = game.return_card_and_add_one(game.chances,
-                                                             game.currentChance,
-                                                             toInsert)
-        self.ResetJail()
+            to_add = ChanceCard("Get out of jail free", 0, 0, 1, 0, 0, 0, 0, 0)
+            self.jail_chance_cards -= 1
+            game.current_chance = game.return_card_and_add(game.chances,
+                                                           game.current_chance,
+                                                           to_add)
+        self.reset_jail()
         print self.name + " gets out of jail."
 
-    def PayRent(self, place, game):
-        rentDue = place.rent(game)
-        if self.doubleRent == 2:
-            rentDue *= 2 #rent is doubled when sent by Chance card to a R.R.
-            self.doubleRent = 1
+    def pay_rent(self, place, game):
+        rent_due = place.rent(game)
+        if self.double_rent == 2:
+            rent_due *= 2  # Rent is doubled when sent by Chance card to a R.R.
+            self.double_rent = 1
         if not place.mortgaged:
-            print place.name + " is owned by " + place.owned_by.name + ", you (" + self.name + ") must pay rent amounting to: " + str(
-                rentDue) + "."
-            self.cash -= rentDue
-            place.owned_by.cash += rentDue
+            print place.name + " is owned by " + place.owned_by.name + \
+                ", you (" + self.name + ") must pay rent amounting to: " + \
+                str(rent_due) + "."
+            self.cash -= rent_due
+            place.owned_by.cash += rent_due
         else:
-            print place.name + " is owned by " + place.owned_by.name + ", but is mortgaged and you pay nothing."
+            print place.name + " is owned by " + place.owned_by.name + \
+                ", but is mortgaged and you pay nothing."
 
-    def PayTax(self, place, game):
+    def pay_tax(self, place, game):
         #Yyou can pay either a lump sum or a percentage of total assets.
-        #Sometimes,the second option can be "None"
+        #Sometimes, the second option can be "None"
         tax1 = game.tax_rate(place.option1, self)
         tax2 = game.tax_rate(place.option2, self)
-        if tax1 == None or tax2 == None:
+        if tax1 is None or tax2 is None:
             tax = max(tax1, tax2)
         else:
             tax = min(tax1, tax2)
-        print "Well done, " + self.name + ", you pay taxes amounting to: $" + str(
-            tax)
+        print "Well done, " + self.name + ", you pay taxes amounting to: $" + \
+              str(tax)
         game.bank.move_money_to_table(-tax, self)
 
-    def MoveToStart(self, game):
+    def move_to_start(self, game):
         self.location = 0
         game.bank.move_money(game.start_wage, self)
         print "You go to Start and only receive $" + str(game.start_wage)
 
-    def PayCardMoney(self, cash, game):
+    def pay_card_money(self, cash, game):
         if cash > 0:
             game.bank.move_money(cash, self)
         else:
@@ -812,175 +812,177 @@ class Player(object):
 
 
 class Cheatoid(Player):
-    '''
+    """
     The computer player class is a subclass of the player class with specific
     methods.
-    '''
+    """
     human = False
-    successfulDowngrade = True
-    successfulMortgage = True
-    successfulUpgrade = True
-    successfulDemortgage = True
+    successful_downgrade = True
+    successful_mortgage = True
+    successful_upgrade = True
+    successful_demortgage = True
 
-    def Mortgage(self, game):
-        '''
+    def mortgage(self, game):
+        """
         Changes mortgage status
-        '''
-        self.successfulMortgage = False
+        """
+        self.successful_mortgage = False
         for item in game.board:
-            if item.isOwnedAndMortgaged(self, False) and item.houses == 0:
+            if item.is_owned_and_mortgaged(self, False) and item.houses == 0:
                 game.bank.move_money(item.mortgage, self)
                 item.mortgaged = True
-                print self.name + " has successfully mortgaged " + item.name + "."
-                self.successfulMortgage = True
+                print self.name + " has mortgaged " + item.name + "."
+                self.successful_mortgage = True
                 break
 
-    def Demortgage(self, game):
-        '''
+    def demortgage(self, game):
+        """
         Changes mortgage status
-        '''
-        self.successfulDemortgage = False
+        """
+        self.successful_demortgage = False
         for item in reversed(game.board):
-            if item.isOwnedAndMortgaged(self, True) and \
-                            self.cash >= int(item.mortgage * 1.1):
+            if item.is_owned_and_mortgaged(self, True) and \
+                    self.cash >= int(item.mortgage * 1.1):
                 game.bank.move_money(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False
-                print self.name + " has successfully demortgaged " + item.name + "."
-                self.successfulDemortgage = True
+                print self.name + " has demortgaged " + item.name + "."
+                self.successful_demortgage = True
                 break
 
-    def Downgrade(self, game):
-        '''
+    def downgrade(self, game):
+        """
         Changes house/hotel values
-        '''
-        self.successfulDowngrade = False
+        """
+        self.successful_downgrade = False
         for item in game.board:
             if item.owned_by == self and item.hotels == 1:
-                item.DowngradeHotel(self, game.bank)
+                item.downgrade_hotel(self, game.bank)
                 print self.name + " has downgraded " + item.name + "."
-                self.successfulDowngrade = True
+                self.successful_downgrade = True
                 break
-            elif item.owned_by == self and item.houses > 0: #only in streets >0
-                item.DowngradeHouse(self, game.bank)
+            elif item.owned_by == self and item.houses > 0:  # For streets: > 0
+                item.downgrade_house(self, game.bank)
                 print self.name + " has downgraded " + item.name + "."
-                self.successfulDowngrade = True
+                self.successful_downgrade = True
                 break
 
-
-    def Upgrade(self, game):
-        '''
+    def upgrade(self, game):
+        """
         Changes house/hotel values
-        '''
-        self.successfulUpgrade = False
+        """
+        self.successful_upgrade = False
         #Flag the upgradeable locations
         game.flag_upgradeable_places(self)
         level = 0
-        upgradeDone = False
-        while upgradeDone == False and level < 5:
+        upgrade_done = False
+        while not upgrade_done and level < 5:
             for item in game.board:
                 if isinstance(item, Street) and item.owned_by == self and \
-                                item.houses == level and item.AllUpgradeConditions(
+                        item.houses == level and item.all_upgrade_conditions(
                         game.bank, self):
                     #upgrade
                     if level < 4:
-                        item.UpgradeHouse(self, game.bank)
-                        print self.name + " has successfully upgraded " + item.name + "."
-                        upgradeDone = True
-                        self.successfulUpgrade = True
+                        item.upgrade_house(self, game.bank)
+                        print self.name + " has successfully upgraded " + \
+                            item.name + "."
+                        upgrade_done = True
+                        self.successful_upgrade = True
                     elif item.hotels == 0:
-                        item.UpgradeHotel(self, game.bank)
-                        print self.name + " has successfully upgraded " + item.name + "."
-                        upgradeDone = True
-                        self.successfulUpgrade = True
+                        item.upgrade_hotel(self, game.bank)
+                        print self.name + " has successfully upgraded " + \
+                            item.name + "."
+                        upgrade_done = True
+                        self.successful_upgrade = True
             level += 1
             #restore to 5
         for item in game.board:
             if isinstance(item, Street):
                 item.min_upgrade = 5
 
-
-    def ChooseAction(self):
-        '''
-        Computer chooses between [u]pgrade / [d]owngrade / [m]ortgage / 
+    def choose_action(self):
+        """
+        Computer chooses between [u]pgrade / [d]owngrade / [m]ortgage /
         d[e]mortgage / do [n]othing
         Returns "u"/"d"/"m"/"e"/"n"
-        '''
-        if self.cash < 0 and self.successfulDowngrade:
+        """
+        if self.cash < 0 and self.successful_downgrade:
             return "d"
-        if self.cash < 0 and not self.successfulDowngrade and self.successfulMortgage:
+        if self.cash < 0 and not self.successful_downgrade and \
+                self.successful_mortgage:
             return "m"
-        if self.cash > 125 and self.successfulDemortgage:
+        if self.cash > 125 and self.successful_demortgage:
             return "e"
-        if self.cash > 125 and not self.successfulDemortgage and self.successfulUpgrade:
+        if self.cash > 125 and not self.successful_demortgage and \
+                self.successful_upgrade:
             return "u"
             #at the very end
-        self.successfulDowngrade = True
-        self.successfulMortgage = True
-        self.successfulUpgrade = True
-        self.successfulDemortgage = True
+        self.successful_downgrade = True
+        self.successful_mortgage = True
+        self.successful_upgrade = True
+        self.successful_demortgage = True
         return "n"
 
-    def ReplyToAuction(self, player, game, auctionPrice):
-        '''
+    def reply_to_auction(self, other, game, auction_price):
+        """
         Returns a new auction price (int)
-        
-        Check whether player owns something in the neighborhood.
-        If yes,then aim high.
-        If not, then aim low
-        '''
+
+        Check whether other players own something in the neighborhood.
+        If yes,then aim low.
+        If not, then aim high.
+        """
+        my_neighborhood = True
         for neighborhood in game.neighborhoods.values():
-            myNeighborhood = True
-            if game.board[player.location] in neighborhood:
+            if game.board[other.location] in neighborhood:
                 for street in neighborhood:
-                    if street.owned_by != None and street.owned_by != self:
-                        myNeighborhood = False
+                    if street.owned_by is not None and street.owned_by != self:
+                        my_neighborhood = False
                 break
-        a = random.randint(-game.board[player.location].price / 10,
-                           game.board[player.location].price / 10)
-        if isinstance(game.board[player.location], Street) and myNeighborhood:
-            reply = min(auctionPrice + 1,
-                        game.board[player.location].rentH + a, self.cash)
+        a = random.randint(-game.board[other.location].price / 10,
+                           game.board[other.location].price / 10)
+        if isinstance(game.board[other.location], Street) and my_neighborhood:
+            reply = min(auction_price + 1,
+                        game.board[other.location].rent_h + a, self.cash)
         else:
-            reply = min(auctionPrice + 1,
-                        game.board[player.location].price + a, self.cash)
+            reply = min(auction_price + 1,
+                        game.board[other.location].price + a, self.cash)
         print self.name + " bids " + str(reply) + "."
         return reply
 
-    def Buy(self, game):
-        '''
+    def buy(self, game):
+        """
         Returns "yes"/"no"
-        '''
-        return "yes" #always try to buy
+        """
+        return "yes"  # The Cheatoid always tries to buy
 
-    def UseJailCard(self, game):
-        '''
+    def use_jail_card(self, game):
+        """
         Returns "yes"/"no"
-        The main program already checks wether the player has a jail card.
+        The main program already checks whether the player has a jail card.
         Here the computer only tests the cost-effectiveness of its use.
         It's worthy when there are many free places and few opponent places.
-        '''
+        """
         mine = 0
         empty = 0
         theirs = 0
         for item in game.board:
             if isinstance(item, (Street, Railroad, Utility)):
-                if item.owned_by == None:
+                if item.owned_by is None:
                     empty += 1
                 elif item.owned_by == self:
                     mine += 1
                 else:
                     theirs += 1
         if len(game.players) < 4 and empty > 0 and self.cash > 125 and \
-                        game.bank.hotels > 8: #rudimentary
+                game.bank.hotels > 8:  # Rudimentary
             return "yes"
         else:
-            return "no" #better stay in jail
+            return "no"  # Better stay in jail
 
-    def PayJailFine(self, game):
-        '''
+    def pay_jail_fine(self, game):
+        """
         Returns "yes"/"no"
-        '''
-        return self.UseJailCard(game) #the easy way
+        """
+        return self.use_jail_card(game)  # The easy way
 
     def __repr__(self):
         return "Player " + self.name + " is NOT human."
