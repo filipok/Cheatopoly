@@ -26,10 +26,10 @@ print "************************"
 #thisGame.initialize_players()
 thisGame.mock_players()
 
-currentPlayer = 0  # Initialize current player
+thisGame.currentPlayer = 0  # Initialize current player
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
-    myPlayer = thisGame.players[currentPlayer]  # Shorthand
+    myPlayer = thisGame.players[thisGame.currentPlayer]  # Shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
@@ -69,7 +69,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 " to get out of jail after three turns."
         #Check if still in jail
         if myPlayer.in_jail:
-            currentPlayer = thisGame.add_one(currentPlayer,
+            thisGame.currentPlayer = thisGame.add_one(thisGame.currentPlayer,
                                              len(thisGame.players))
             continue  # End of turn
         #Check how many doubles in a row
@@ -77,7 +77,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.doubles_in_a_row += 1
             if myPlayer.doubles_in_a_row == 3:
                 myPlayer.move_to_jail(thisGame)
-                currentPlayer = thisGame.add_one(currentPlayer,
+                thisGame.currentPlayer = thisGame.add_one(thisGame.currentPlayer,
                                                  len(thisGame.players))
                 continue
         else:
@@ -252,6 +252,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         choose = ""
         print "Now " + myPlayer.name + " has $" + str(myPlayer.cash) + "."
 
+    #should check ifthisGame already in memory before running
     #Negotiate with other players
     #Update display
     #stylecheck
@@ -260,51 +261,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     # add turn counter and print it at the end
 
     #Turn end: remove from game if cash < 0
-    if myPlayer.cash < 0:
-        print myPlayer.name + " HAS BEEN ELIMINATED!"
-        for item in thisGame.board:
-            if isinstance(item, (Street, Railroad, Utility)) and \
-                    item.owned_by == myPlayer:
-                item.owned_by = None
-                if item.hotels == 1:
-                    item.hotels = 0
-                    thisGame.bank.hotels += 1
-                    item.houses = 0
-                else:
-                    thisGame.bank.houses += item.houses
-                    item.houses = 0
-        thisGame.players.pop(currentPlayer)
-        #no need to increment currentPlayer, but set to zero as needed
-        if currentPlayer == len(thisGame.players):
-            currentPlayer = 0
-    else:
-        #currentPlayer += 1
-        currentPlayer = thisGame.add_one(currentPlayer, len(thisGame.players))
+    thisGame.check_eliminate(myPlayer)
 
-    #Print current financial status
-    print ""
-    print "***"
-    for player in thisGame.players:
-        print player.name + " has $" + str(player.cash)
-    print "The bank has got $" + str(thisGame.bank.money) + \
-          " left. There are " + str(thisGame.bank.houses) + " houses and " + \
-          str(thisGame.bank.hotels) + " hotels available."
-    print "There are $" + str(thisGame.bank.card_payments) + \
-          " left on the table."
-    print "***"
-    print ""
+    #Print turn end status
+    thisGame.turn_end()
 
-
-if len(thisGame.players) == 1:
-    print thisGame.players[0].name + " HAS WON THE GAME"
-else:
-    best_score = 0
-    best_player = None
-    for person in thisGame.players:
-        if person.cash > best_score:
-            best_player = person
-            best_score = person.cash
-    if best_player is not None:
-        print best_player.name + " HAS WON THE GAME"
-    else:
-        print "INCREDIBLE BUNCH OF LOSERS."
+thisGame.game_end()  # Game end

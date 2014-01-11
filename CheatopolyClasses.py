@@ -27,6 +27,7 @@ class Game(object):
     players = []
     board = []
     bank = None
+    currentPlayer = 0  # current player index
 
     def load(self, content):
 
@@ -193,6 +194,56 @@ class Game(object):
         self.bank.card_payments += repair_cost  # Money goes to table
         print "Your repair costs have amounted to $" + str(repair_cost) + "."
 
+    def check_eliminate(self, player):
+        if player.cash < 0:
+            print player.name + " HAS BEEN ELIMINATED!"
+            for item in self.board:
+                if isinstance(item, (Street, Railroad, Utility)) and \
+                        item.owned_by == player:
+                    item.owned_by = None
+                    if item.hotels == 1:
+                        item.hotels = 0
+                        self.bank.hotels += 1
+                        item.houses = 0
+                    else:
+                        self.bank.houses += item.houses
+                        item.houses = 0
+            self.players.pop(self.currentPlayer)
+            #no need to increment currentPlayer, but set to zero as needed
+            if self.currentPlayer == len(self.players):
+                self.currentPlayer = 0
+        else:
+            #currentPlayer += 1
+            self.currentPlayer = self.add_one(self.currentPlayer, len(self.players))         
+    
+    def turn_end(self):
+        print ""
+        print "***"
+        for player in self.players:
+            print player.name + " has $" + str(player.cash)
+        print "The bank has got $" + str(self.bank.money) + \
+            " left. There are " + str(self.bank.houses) + " houses and " + \
+            str(self.bank.hotels) + " hotels available."
+        print "There are $" + str(self.bank.card_payments) + \
+            " left on the table."
+        print "***"
+        print ""        
+    
+    def game_end(self):
+        if len(self.players) == 1:
+            print self.players[0].name + " HAS WON THE GAME"
+        else:
+            best_score = 0
+            best_player = None
+            for person in self.players:
+                if person.cash > best_score:
+                    best_player = person
+                    best_score = person.cash
+            if best_player is not None:
+                print best_player.name + " HAS WON THE GAME"
+            else:
+                print "INCREDIBLE BUNCH OF LOSERS."
+    
     def dice(self):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
