@@ -26,10 +26,10 @@ print "************************"
 #thisGame.initialize_players()
 thisGame.mock_players()
 
-thisGame.currentPlayer = 0  # Initialize current player
+thisGame.current_player = 0  # Initialize current player
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
-    myPlayer = thisGame.players[thisGame.currentPlayer]  # Shorthand
+    myPlayer = thisGame.players[thisGame.current_player]  # Shorthand
     #Start player turn; test for teleportation with Chance card
     #Roll dice and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
@@ -69,16 +69,16 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 " to get out of jail after three turns."
         #Check if still in jail
         if myPlayer.in_jail:
-            thisGame.currentPlayer = thisGame.add_one(thisGame.currentPlayer,
-                                             len(thisGame.players))
+            thisGame.current_player = thisGame.add_one(thisGame.current_player,
+                                                       len(thisGame.players))
             continue  # End of turn
         #Check how many doubles in a row
         if dice[0] == dice[1]:
             myPlayer.doubles_in_a_row += 1
             if myPlayer.doubles_in_a_row == 3:
                 myPlayer.move_to_jail(thisGame)
-                thisGame.currentPlayer = thisGame.add_one(thisGame.currentPlayer,
-                                                 len(thisGame.players))
+                thisGame.current_player = thisGame.add_one(
+                    thisGame.current_player, len(thisGame.players))
                 continue
         else:
             myPlayer.doubles_in_a_row = 0
@@ -124,21 +124,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, CommunityChest):
         print myPlayer.name + ", you have drawn this Community Chest card: ",
         print thisGame.community_chest[thisGame.current_comm].text
-        if thisGame.community_chest[thisGame.current_comm].go_start == 1:
-            myPlayer.move_to_start(thisGame)
-        elif thisGame.community_chest[thisGame.current_comm].cash != 0:
-            myPlayer.pay_card_money(
-                thisGame.community_chest[thisGame.current_comm].cash, thisGame)
-        elif thisGame.community_chest[thisGame.current_comm].jail_card == 1:
-            myPlayer.jail_comm_cards += 1
-            #remove card & decrease index,to compensate for increase after IF
-            thisGame.community_chest.pop(thisGame.current_comm)
-            thisGame.current_comm = (thisGame.current_comm +
-                                     len(thisGame.community_chest) - 1) % \
-                len(thisGame.community_chest)
-        elif thisGame.community_chest[thisGame.current_comm].go_to_jail == 1:
-            myPlayer.move_to_jail(thisGame)
-        elif thisGame.community_chest[thisGame.current_comm].collect == 1:
+        # Common procedure
+        myPlayer.check_common_cards(thisGame, thisGame.community_chest,
+                                    thisGame.chest_repairs[0],
+                                    thisGame.chest_repairs[1],
+                                    thisGame.current_comm, "comm")
+        #Specific procedure
+        if thisGame.community_chest[thisGame.current_comm].collect == 1:
             for person in thisGame.players:
                 if person != myPlayer:
                     person.cash -= thisGame.collect_fine
@@ -146,9 +138,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     print person.name + " pays $" + \
                         str(thisGame.collect_fine) + " to " + myPlayer.name + \
                         "."
-        elif thisGame.community_chest[thisGame.current_comm].repairs == 1:
-            thisGame.repairs(thisGame.chest_repairs[0],
-                             thisGame.chest_repairs[1], myPlayer)
+        elif thisGame.community_chest[thisGame.current_comm].go_start == 1:
+            myPlayer.move_to_start(thisGame)
         #increment community chest card index
         thisGame.current_comm = thisGame.add_one(thisGame.current_comm,
                                                  len(thisGame.community_chest))
@@ -156,22 +147,12 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, Chance):
         print myPlayer.name + ", you have drawn this Chance card: ",
         print thisGame.chances[thisGame.current_chance].text
-        if thisGame.chances[thisGame.current_chance].cash != 0:
-            myPlayer.pay_card_money(
-                thisGame.chances[thisGame.current_chance].cash, thisGame)
-        elif thisGame.chances[thisGame.current_chance].jail_card == 1:
-            myPlayer.jail_chance_cards += 1
-            #remove card & decrease index,to compensate for increase after IF
-            thisGame.chances.pop(thisGame.current_chance)
-            thisGame.current_chance = (thisGame.current_chance +
-                                       len(thisGame.chances) - 1) % \
-                len(thisGame.chances)
-        elif thisGame.chances[thisGame.current_chance].go_to_jail == 1:
-            myPlayer.move_to_jail(thisGame)
-        elif thisGame.chances[thisGame.current_chance].repairs == 1:
-            thisGame.repairs(thisGame.chance_repairs[0],
-                             thisGame.chance_repairs[1], myPlayer)
-        elif thisGame.chances[thisGame.current_chance].reading == 1:
+        # Common procedure
+        myPlayer.check_common_cards(thisGame, thisGame.chances,
+                                    thisGame.chance_repairs[0],
+                                    thisGame.chance_repairs[1],
+                                    thisGame.current_chance, "chance")
+        if thisGame.chances[thisGame.current_chance].reading == 1:
             #find Reading location
             for item in thisGame.board:
                 if item.name == "Reading Railroad":
@@ -205,7 +186,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.doubleRent = 2
             myPlayer.teleport = 1
             continue
-        elif thisGame.chances[thisGame.current_chance].go_to != 0:
+        elif thisGame.chances[thisGame.current_chance].go_to != "0":
             if thisGame.chances[thisGame.current_chance].go_to == "1":
                 myPlayer.move_to_start(thisGame)
             else:

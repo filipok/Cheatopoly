@@ -27,7 +27,7 @@ class Game(object):
     players = []
     board = []
     bank = None
-    currentPlayer = 0  # current player index
+    current_player = 0  # current player index
 
     def load(self, content):
 
@@ -189,7 +189,8 @@ class Game(object):
         repair_cost = 0
         for item in self.board:
             if item.owned_by == player:
-                repair_cost += item.houses * house_cost + item.hotels * hotel_cost
+                repair_cost += item.houses * house_cost + \
+                    item.hotels * hotel_cost
         player.cash -= repair_cost
         self.bank.card_payments += repair_cost  # Money goes to table
         print "Your repair costs have amounted to $" + str(repair_cost) + "."
@@ -208,13 +209,14 @@ class Game(object):
                     else:
                         self.bank.houses += item.houses
                         item.houses = 0
-            self.players.pop(self.currentPlayer)
+            self.players.pop(self.current_player)
             #no need to increment currentPlayer, but set to zero as needed
-            if self.currentPlayer == len(self.players):
-                self.currentPlayer = 0
+            if self.current_player == len(self.players):
+                self.current_player = 0
         else:
             #currentPlayer += 1
-            self.currentPlayer = self.add_one(self.currentPlayer, len(self.players))         
+            self.current_player = self.add_one(self.current_player,
+                                               len(self.players))
     
     def turn_end(self):
         print ""
@@ -858,6 +860,25 @@ class Player(object):
         else:
             game.bank.move_money_to_table(cash, self)
 
+    def check_common_cards(self, game, card_set, repairs_0, repairs_1,
+                           card_ind, flag):
+        if card_set[card_ind].cash != 0:
+            self.pay_card_money(card_set[card_ind].cash, game)
+        elif card_set[card_ind].jail_card == 1:
+            self.jail_comm_cards += 1
+            #remove card & decrease index,to compensate for increase after IF
+            card_set.pop(card_ind)
+            if flag == "comm":
+                game.current_comm = (card_ind + len(card_set) - 1) % \
+                    len(card_set)
+            else:
+                game.current_chance = (card_ind + len(card_set) - 1) % \
+                    len(card_set)
+        elif card_set[card_ind].go_to_jail == 1:
+            self.move_to_jail(game)
+        elif card_set[card_ind].repairs == 1:
+            game.repairs(repairs_0, repairs_1, self)
+    
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 
