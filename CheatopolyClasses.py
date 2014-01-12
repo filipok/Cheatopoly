@@ -1,4 +1,5 @@
 import random
+import os
 
 
 class Game(object):
@@ -29,12 +30,17 @@ class Game(object):
     bank = None
     current_player = 0  # current player index
 
-    def load(self, content):
+    def load(self, file_name):
 
-        """ Process data.txt loaded in the main program
+        """ Process file_name txt file
 
-        @param content: the file content
+        @param file_name: the file name
         """
+        __location__ = os.path.realpath(
+            os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        ff = open(os.path.join(__location__, file_name))
+        with ff as f:
+            content = f.readlines()
         for i in range(len(content)):
             line = content[i].rstrip().split("\t")
             if line[0] == "street":
