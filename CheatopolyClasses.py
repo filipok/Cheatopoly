@@ -802,7 +802,8 @@ class Player(object):
             "Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
 
     def pay_jail_fine(self, game):
-        return game.choose_yes_no("Do you want to pay $" + str(game.jail_fine) +
+        return game.choose_yes_no("Do you want to pay $" +
+                                  str(game.jail_fine) +
                                   " to get out of jail[yes/no] ")
 
     def reset_jail(self):

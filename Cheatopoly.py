@@ -25,9 +25,11 @@ thisGame.current_player = 0  # Initialize current player
 
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
+    
     myPlayer = thisGame.players[thisGame.current_player]  # Shorthand
+    
     #Start player turn; test for teleportation with Chance card
-    #Roll dice and jail check happen only when not teleporting
+    #Dice roll and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name + "! You have $" +
@@ -35,6 +37,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         dice = thisGame.dice()  # Roll dice
         print "Dice roll for " + myPlayer.name + ": " + str(dice[0]) + " " + \
               str(dice[1])
+        
         ## Resolve jail status
         myPlayer.check_jail(thisGame, dice)
         #Check if still in jail
@@ -42,6 +45,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             thisGame.current_player = thisGame.add_one(thisGame.current_player,
                                                        len(thisGame.players))
             continue  # End of turn
+        
         #Check how many doubles in a row
         if dice[0] == dice[1]:
             myPlayer.doubles_in_a_row += 1
@@ -52,11 +56,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 continue
         else:
             myPlayer.doubles_in_a_row = 0
+        
         #So,we are definitely not in jail. Advance to new position
         myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
             len(thisGame.board)
         print myPlayer.name + " advances to " + str(myPlayer.location) + \
             " (" + thisGame.board[myPlayer.location].name + ")."
+        
         #Did we pass Go? +start_wage/2*start_wage
         if myPlayer.location == 0:
             thisGame.bank.move_money(2*thisGame.start_wage, myPlayer)
@@ -65,9 +71,12 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif myPlayer.location - dice[0] - dice[1] < 0:
             thisGame.bank.move_money(thisGame.start_wage, myPlayer)
             print myPlayer.name + " gets $" + str(thisGame.start_wage) + "."
+    
     #reset teleport counter now
     myPlayer.teleport = 0
+    
     thisPlace = thisGame.board[myPlayer.location]  # Shorthand
+    
     # if player lands on street, rail or utility:
     if isinstance(thisPlace, (Street, Railroad, Utility)):
         if thisPlace.owned_by is None:
@@ -81,15 +90,19 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         else:
             #Finally, you pay rent (if not mortgaged)
             myPlayer.pay_rent(thisPlace, thisGame)
+    
     #Free Parking
     if isinstance(thisPlace, FreeParking):
         thisGame.bank.move_table(myPlayer)
+    
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
         myPlayer.move_to_jail(thisGame)
+    
     #Pay taxes:
     if isinstance(thisPlace, Tax):
         myPlayer.pay_tax(thisPlace, thisGame)
+    
     #Community Chest
     if isinstance(thisPlace, CommunityChest):
         print myPlayer.name + ", you have drawn this Community Chest card: ",
@@ -113,6 +126,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         #increment community chest card index
         thisGame.current_comm = thisGame.add_one(thisGame.current_comm,
                                                  len(thisGame.community_chest))
+    
     #Chance cards
     if isinstance(thisPlace, Chance):
         print myPlayer.name + ", you have drawn this Chance card: ",
@@ -177,18 +191,19 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         #increment chance card index
         thisGame.current_chance = thisGame.add_one(thisGame.current_chance,
                                                    len(thisGame.chances))
+    
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
     print myPlayer.name + ", you have the following properties:"
     for item in thisGame.board:
         if item.owned_by == myPlayer:
             print item
-    print myPlayer.name + " has $" + str(myPlayer.cash) + ".",
     if myPlayer.cash < 0:
         print "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!"
     print ""
     choose = ''
     while choose not in ["u", "d", "m", "d", "e", "n"]:
+        print "Now " + myPlayer.name + " has $" + str(myPlayer.cash) + "."
         choose = myPlayer.choose_action()
         if choose == "u":
             myPlayer.upgrade(thisGame)  # Upgrade
@@ -201,12 +216,11 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif choose == "n":  # Exit loop
             break
         choose = ""
-        print "Now " + myPlayer.name + " has $" + str(myPlayer.cash) + "."
 
-    #should check ifthisGame already in memory before running
+
+    #should check if thisGame already in memory before running
     #Negotiate with other players
     #Update display
-    #stylecheck
     #no possibility to upgrade while in jail?
     #save/load game from disk
     # add turn counter and print it at the end
