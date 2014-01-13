@@ -31,34 +31,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         dice = thisGame.dice()  # Roll dice
         print "Dice roll for " + myPlayer.name + ": " + str(dice[0]) + " " + \
               str(dice[1])
-        # Resolve jail status
-        if myPlayer.in_jail:  # Check for doubles while in jail
-            if dice[0] == dice[1]:
-                myPlayer.reset_jail()
-                print myPlayer.name + " has got a double: " + str(dice[0]) + \
-                    " " + str(dice[1]) + "."
-            else:
-                myPlayer.time_in_jail += 1
-        #Else use a get ouf of jail card
-        if myPlayer.in_jail and \
-                max(myPlayer.jail_comm_cards, myPlayer.jail_chance_cards) > 0:
-            choose = myPlayer.use_jail_card(thisGame)
-            if choose == 'yes':
-                myPlayer.return_card_leave_jail(thisGame)
-        #Else pay
-        if myPlayer.in_jail and myPlayer.cash >= thisGame.jail_fine:
-            choose = myPlayer.pay_jail_fine(thisGame)
-            if choose == 'yes':
-                thisGame.bank.move_money(-thisGame.jail_fine, myPlayer)
-                myPlayer.reset_jail()
-                print myPlayer.name + " pays $" + str(thisGame.jail_fine) + \
-                    " to get out of jail."
-        #Else if already three turns in jail:
-        if myPlayer.time_in_jail == 3:
-            thisGame.bank.move_money(-thisGame.jail_fine, myPlayer)
-            myPlayer.reset_jail()
-            print myPlayer.name + " pays anyway $" + str(thisGame.jail_fine) +\
-                " to get out of jail after three turns."
+        ## Resolve jail status
+        myPlayer.check_jail(thisGame, dice)
         #Check if still in jail
         if myPlayer.in_jail:
             thisGame.current_player = thisGame.add_one(thisGame.current_player,

@@ -802,7 +802,7 @@ class Player(object):
             "Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
 
     def pay_jail_fine(self, game):
-        return game.choose_yes_no("Do you want to pay $" + str(game.jailFine) +
+        return game.choose_yes_no("Do you want to pay $" + str(game.jail_fine) +
                                   " to get out of jail[yes/no] ")
 
     def reset_jail(self):
@@ -884,6 +884,36 @@ class Player(object):
             self.move_to_jail(game)
         elif card_set[card_ind].repairs == 1:
             game.repairs(repairs_0, repairs_1, self)
+    
+    def check_jail(self, game, dice):
+        # Resolve jail status
+        if self.in_jail:  # Check for doubles while in jail
+            if dice[0] == dice[1]:
+                self.reset_jail()
+                print self.name + " has got a double: " + str(dice[0]) + \
+                    " " + str(dice[1]) + "."
+            else:
+                self.time_in_jail += 1
+        #Else use a get ouf of jail card
+        if self.in_jail and \
+                max(self.jail_comm_cards, self.jail_chance_cards) > 0:
+            choose = self.use_jail_card(game)
+            if choose == 'yes':
+                self.return_card_leave_jail(game)
+        #Else pay
+        if self.in_jail and self.cash >= game.jail_fine:
+            choose = self.pay_jail_fine(game)
+            if choose == 'yes':
+                game.bank.move_money(-game.jail_fine, self)
+                self.reset_jail()
+                print self.name + " pays $" + str(game.jail_fine) + \
+                    " to get out of jail."
+        #Else if already three turns in jail:
+        if self.time_in_jail == 3:
+            game.bank.move_money(-game.jail_fine, self)
+            self.reset_jail()
+            print self.name + " pays anyway $" + str(game.jail_fine) +\
+                " to get out of jail after three turns."
     
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
