@@ -15,10 +15,14 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-thisGame.initialize_players()
-#thisGame.mock_players()
+ans = thisGame.choose_yes_no("Play interactively?[yes/no] ")
+if ans == "yes":
+    thisGame.initialize_players()
+else:
+    thisGame.mock_players()
 
 thisGame.current_player = 0  # Initialize current player
+
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     myPlayer = thisGame.players[thisGame.current_player]  # Shorthand
