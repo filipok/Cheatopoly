@@ -5,7 +5,6 @@ import os
 class Game(object):
     """
     This class contains all game constants.
-    Todo: move all game objects to this class.
     """
 
     #Default values
@@ -886,6 +885,54 @@ class Player(object):
         elif card_set[card_ind].repairs == 1:
             game.repairs(repairs_0, repairs_1, self)
     
+    def check_specific_chance(self, game):
+        if game.chances[game.current_chance].reading == 1:
+            #find Reading location
+            destination = self.location  # Variable initialization
+            for item in game.board:
+                if item.name == "Reading Railroad":  # FIXME hardcoded
+                    destination = item.location
+                    break
+            if destination < self.location:
+                print "You pass Go and collect $" + str(game.start_wage) +\
+                      "."
+                game.bank.move_money(game.start_wage, self)
+            self.location = destination
+            print "You move to Reading Railroad, at location " + \
+                  str(destination) + "."
+            self.teleport = 1
+        elif game.chances[game.current_chance].movement != 0:
+            self.location = (self.location + len(game.board) +
+                             game.chances[game.current_chance].movement) % \
+                len(game.board)
+            self.teleport = 1
+        elif game.chances[game.current_chance].rail == 1:
+            while not isinstance(game.board[self.location], Railroad):
+                #FIXME: infinite loop if no rail!
+                self.location = game.add_one(self.location, len(game.board))
+            print "You have moved to the next railroad: " + \
+                  game.board[self.location].name + ", at pos " + \
+                  str(self.location) + "."
+            self.doubleRent = 2
+            self.teleport = 1
+        elif game.chances[game.current_chance].go_to != "0":
+            if game.chances[game.current_chance].go_to == "1":
+                self.move_to_start(game)
+            else:
+                for item in game.board:
+                    if item.name == game.chances[
+                            game.current_chance].go_to:
+                        #you get $200 if you pass Go.
+                        if self.location > item.location:
+                            game.bank.move_money(game.start_wage,
+                                                 self)
+                            print "You get $" + str(game.start_wage)
+                        self.location = item.location
+                        break
+                print "You move to " + game.board[self.location].name + \
+                      " at pos " + str(self.location) + "."
+                self.teleport = 1
+
     def check_jail(self, game, dice):
         # Resolve jail status
         if self.in_jail:  # Check for doubles while in jail
