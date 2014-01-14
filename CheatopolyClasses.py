@@ -963,6 +963,18 @@ class Player(object):
             print self.name + " pays anyway $" + str(game.jail_fine) +\
                 " to get out of jail after three turns."
     
+    def check_specific_comm(self, game):
+        if game.community_chest[game.current_comm].collect == 1:
+            for person in game.players:
+                if person != self:
+                    person.cash -= game.collect_fine
+                    self.cash += game.collect_fine
+                    print person.name + " pays $" + \
+                        str(game.collect_fine) + " to " + self.name + \
+                        "."
+        elif game.community_chest[game.current_comm].go_start == 1:
+            self.move_to_start(game)
+
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 

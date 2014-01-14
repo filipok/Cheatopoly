@@ -113,16 +113,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                                     thisGame.chest_repairs[1],
                                     thisGame.current_comm, "comm")
         #Specific procedure
-        if thisGame.community_chest[thisGame.current_comm].collect == 1:
-            for person in thisGame.players:
-                if person != myPlayer:
-                    person.cash -= thisGame.collect_fine
-                    myPlayer.cash += thisGame.collect_fine
-                    print person.name + " pays $" + \
-                        str(thisGame.collect_fine) + " to " + myPlayer.name + \
-                        "."
-        elif thisGame.community_chest[thisGame.current_comm].go_start == 1:
-            myPlayer.move_to_start(thisGame)
+        myPlayer.check_specific_comm(thisGame)
         #increment community chest card index
         thisGame.current_comm = thisGame.add_one(thisGame.current_comm,
                                                  len(thisGame.community_chest))
@@ -142,7 +133,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         thisGame.current_chance = thisGame.add_one(thisGame.current_chance,
                                                    len(thisGame.chances))
         if myPlayer.teleport == 1:
-            continue
+            continue  # Player teleports.
 
     #Upgrade/downgrade houses/hotels, mortgage properties
     print ""
