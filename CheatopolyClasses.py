@@ -902,13 +902,17 @@ class Player(object):
                 len(game.board)
             self.teleport = 1
         elif game.chances[game.current_chance].rail == 1:
-            while not isinstance(game.board[self.location], Railroad):
-                #FIXME: infinite loop if no rail!
-                self.location = game.add_one(self.location, len(game.board))
-            print "You have moved to the next railroad: " + \
-                  game.board[self.location].name + ", at pos " + \
-                  str(self.location) + "."
+            counter = 0
             self.double_rent = 2
+            while not isinstance(game.board[self.location], Railroad):
+                self.location = game.add_one(self.location, len(game.board))
+                counter += 1
+                if counter == len(game.board):
+                    self.double_rent = 1  # Back to normal rent
+                    print "Rail not found!"
+                    break  # Rail not found, back again to original location
+            print "You have moved to: " + game.board[self.location].name + \
+                  ", at pos " + str(self.location) + "."
             self.teleport = 1
         elif game.chances[game.current_chance].go_to != "0":
             if game.chances[game.current_chance].go_to == "1":
