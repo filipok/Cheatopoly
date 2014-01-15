@@ -760,9 +760,8 @@ class Player(object):
         print "Starting auction..."
         for person in game.players:
             person.in_auction = True
-        self.in_auction = False
         auction_running = True
-        auction_price = 0  # FIXME The auction starts from zero (why hardcoded)
+        auction_price = 0
         best_candidate = None
         while auction_running:
             still_in_play = 0
