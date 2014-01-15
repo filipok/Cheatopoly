@@ -60,7 +60,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                     str(2*thisGame.start_wage) + "."
             elif myPlayer.location - dice[0] - dice[1] < 0:
                 thisGame.bank.move_money(thisGame.start_wage, myPlayer)
-                print myPlayer.name + " gets $" + str(thisGame.start_wage) + "."
+                print myPlayer.name + " gets $" + str(thisGame.start_wage) + \
+                    "."
 
     #reset teleport counter now
     myPlayer.teleport = 0
