@@ -160,8 +160,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             break
         choose = ""
 
-
-    #should check if thisGame already in memory before running
     #Negotiate with other players
     #Update display
     #no possibility to upgrade while in jail?

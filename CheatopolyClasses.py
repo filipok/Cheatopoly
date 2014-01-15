@@ -18,16 +18,20 @@ class Game(object):
     chance_repairs = [25, 100]  # Cost of Chance repairs
     chest_repairs = [45, 115]  # Cost of Community Chest repairs
 
-    #Game objects
-    neighborhoods = {}
-    community_chest = []
-    chances = []
+    #Counters
     current_comm = 0
     current_chance = 0
-    players = []
-    board = []
-    bank = None
     current_player = 0  # current player index
+
+    #Bank
+    bank = None
+
+    def __init__(self):
+        self.neighborhoods = {}
+        self.community_chest = []
+        self.chances = []
+        self.players = []
+        self.board = []
 
     def load(self, file_name):
 
