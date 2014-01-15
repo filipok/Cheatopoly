@@ -21,8 +21,6 @@ if ans == "yes":
 else:
     thisGame.mock_players()
 
-thisGame.current_player = 0  # Initialize current player
-
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
@@ -166,7 +164,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #save/load game from disk
     # add turn counter and print it at the end
 
-    #Turn end: remove from game if cash < 0
+    #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
 
     #Print turn end status
