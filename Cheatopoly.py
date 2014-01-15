@@ -38,37 +38,29 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
         ## Resolve jail status
         myPlayer.check_jail(thisGame, dice)
-        #Check if still in jail
-        if myPlayer.in_jail:
-            thisGame.current_player = thisGame.add_one(thisGame.current_player,
-                                                       len(thisGame.players))
-            continue  # End of turn
 
         #Check how many doubles in a row
         if dice[0] == dice[1]:
             myPlayer.doubles_in_a_row += 1
             if myPlayer.doubles_in_a_row == 3:
                 myPlayer.move_to_jail(thisGame)
-                thisGame.current_player = thisGame.add_one(
-                    thisGame.current_player, len(thisGame.players))
-                continue  # End of turn, player went to jail
         else:
             myPlayer.doubles_in_a_row = 0
 
-        #So,we are definitely not in jail. Advance to new position
-        myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
-            len(thisGame.board)
-        print myPlayer.name + " advances to " + str(myPlayer.location) + \
-            " (" + thisGame.board[myPlayer.location].name + ")."
-
-        #Did we pass Go? +start_wage/2*start_wage
-        if myPlayer.location == 0:
-            thisGame.bank.move_money(2*thisGame.start_wage, myPlayer)
-            print myPlayer.name + " is a lucky punk and gets $" + \
-                str(2*thisGame.start_wage) + "."
-        elif myPlayer.location - dice[0] - dice[1] < 0:
-            thisGame.bank.move_money(thisGame.start_wage, myPlayer)
-            print myPlayer.name + " gets $" + str(thisGame.start_wage) + "."
+        #If not in jail, advance to new position
+        if not myPlayer.in_jail:
+            myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
+                len(thisGame.board)
+            print myPlayer.name + " advances to " + str(myPlayer.location) + \
+                " (" + thisGame.board[myPlayer.location].name + ")."
+            #Did we pass Go? +start_wage/2*start_wage
+            if myPlayer.location == 0:
+                thisGame.bank.move_money(2*thisGame.start_wage, myPlayer)
+                print myPlayer.name + " is a lucky punk and gets $" + \
+                    str(2*thisGame.start_wage) + "."
+            elif myPlayer.location - dice[0] - dice[1] < 0:
+                thisGame.bank.move_money(thisGame.start_wage, myPlayer)
+                print myPlayer.name + " gets $" + str(thisGame.start_wage) + "."
 
     #reset teleport counter now
     myPlayer.teleport = 0
@@ -105,13 +97,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, CommunityChest):
         print myPlayer.name + ", you have drawn this Community Chest card: ",
         print thisGame.community_chest[thisGame.current_comm].text
+        #Specific procedure
+        myPlayer.check_specific_comm(thisGame)
         # Common procedure
         myPlayer.check_common_cards(thisGame, thisGame.community_chest,
                                     thisGame.chest_repairs[0],
                                     thisGame.chest_repairs[1],
                                     thisGame.current_comm, "comm")
-        #Specific procedure
-        myPlayer.check_specific_comm(thisGame)
         #increment community chest card index
         thisGame.current_comm = thisGame.add_one(thisGame.current_comm,
                                                  len(thisGame.community_chest))
@@ -120,13 +112,13 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, Chance):
         print myPlayer.name + ", you have drawn this Chance card: ",
         print thisGame.chances[thisGame.current_chance].text
+        # Specific procedure
+        myPlayer.check_specific_chance(thisGame)
         # Common procedure
         myPlayer.check_common_cards(thisGame, thisGame.chances,
                                     thisGame.chance_repairs[0],
                                     thisGame.chance_repairs[1],
                                     thisGame.current_chance, "chance")
-        # Specific procedure
-        myPlayer.check_specific_chance(thisGame)
         # Increment chance card index
         thisGame.current_chance = thisGame.add_one(thisGame.current_chance,
                                                    len(thisGame.chances))
@@ -160,7 +152,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #Negotiate with other players
     #Update display
-    #no possibility to upgrade while in jail?
     #save/load game from disk
     # add turn counter and print it at the end
 

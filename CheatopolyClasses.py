@@ -917,7 +917,7 @@ class Player(object):
             print "You have moved to the next railroad: " + \
                   game.board[self.location].name + ", at pos " + \
                   str(self.location) + "."
-            self.doubleRent = 2
+            self.double_rent = 2
             self.teleport = 1
         elif game.chances[game.current_chance].go_to != "0":
             if game.chances[game.current_chance].go_to == "1":
