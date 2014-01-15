@@ -347,6 +347,10 @@ class Place(object):
     hotel_cost = 0
     house_cost = 0
 
+    def new_owner(self, player):
+        #change place owner
+        self.owned_by = player
+
     def owned_and_mortgaged_by(self, player):
         return self.owned_by == player and self.mortgaged
 
@@ -378,10 +382,6 @@ class Street(Place):
         self.house_cost = house_cost
         self.hotel_cost = hotel_cost
         self.neighborhood = neighborhood
-
-    def new_owner(self, player):
-        #change street owner
-        self.owned_by = player
 
     def rent(self, game):
         if self.hotels == 1:
@@ -469,10 +469,6 @@ class Railroad(Place):
         self.rent4 = rent4
         self.mortgage = mortgage
 
-    def new_owner(self, player):
-        #change railroad owner
-        self.owned_by = player
-
     def rent(self, game):
         counter = 0
         for item in game.board:
@@ -507,11 +503,6 @@ class Utility(Place):
         self.name = name
         self.price = price
         self.mortgage = mortgage
-
-    def new_owner(self, player):
-        #FIXME: move new_owner to Place
-        #change utility owner
-        self.owned_by = player
 
     def rent(self, game):
         print "Let us roll the dice for rent!"
