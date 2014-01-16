@@ -357,6 +357,7 @@ class Place(object):
     def owned_and_not_mortgaged_by(self, player):
         return self.owned_by == player and not self.mortgaged
 
+
 class Street(Place):
     """Each street is a place and has a name and a price.
     The rent depends on the number of houses (0-4, plus a hotel) .

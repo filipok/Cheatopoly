@@ -1,3 +1,6 @@
+import pygame
+import sys
+from pygame.locals import *
 from random import shuffle
 from CheatopolyClasses import *
 
@@ -21,8 +24,65 @@ if ans == "yes":
 else:
     thisGame.mock_players()
 
+# Game window size
+HEIGHT = 480
+WIDTH = 640
+# Colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+COLORS = [BLACK, WHITE, RED, GREEN, BLUE]
+COLORS_NO_GREEN = [BLACK, WHITE, RED, BLUE]
+# Frames per second
+FPS = 2
+fpsClock = pygame.time.Clock()
+#Pygame initialization
+pygame.init()
+DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Cheatopoly')
+DISPLAYSURF.fill(GREEN)
+# Find the length of the side of the board
+remainder = len(thisGame.board) % 4
+if remainder == 0:
+    side = len(thisGame.board) / 4 + 1
+else:
+    # increase the side of the square, with some empty places
+    side = (len(thisGame.board) + remainder)/4 + 1
+# Calculate place square size
+square_side = min(WIDTH, HEIGHT) / side
+
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
+
+    left = 0
+    up = 0
+    orientation = "right"
+    counter = 0
+    for item in thisGame.board:
+        pygame.draw.rect(DISPLAYSURF,
+                         COLORS_NO_GREEN[counter % len(COLORS_NO_GREEN)],
+                         (left, up, square_side, square_side))
+
+        counter += 1
+        if counter == side:
+            orientation = "down"
+        elif counter == 2 * side - 1:
+            orientation = "left"
+        elif counter == 3 * side - 2:
+            orientation = "up"
+        if orientation == "right":
+            left += square_side
+        elif orientation == "down":
+            up += square_side
+        elif orientation == "left":
+            left -= square_side
+        elif orientation == "up":
+            up -= square_side
+
+    pygame.display.update()
+    fpsClock.tick(FPS)
 
     myPlayer = thisGame.players[thisGame.current_player]  # Shorthand
 
@@ -155,6 +215,11 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Update display
     #save/load game from disk
     # add turn counter and print it at the end
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
 
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
