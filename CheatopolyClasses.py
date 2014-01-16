@@ -628,12 +628,11 @@ class ChanceCard(object):
     with several added features:
     - you advance to the nearest railroad and pay twice the rental or buy it
     from the bank;
-    - take a ride on the Reading; if you pass go, collect 200.
+    - take a ride on the some_rail name; if you pass go, collect 200.
     """
-    #FIXME: Reading is hardcoded
 
     def __init__(self, text, movement, cash, jail_card, rail, repairs,
-                 go_to_jail, reading, go_to):
+                 go_to_jail, some_rail, go_to):
         self.text = text
         self.movement = movement  # Integer
         self.cash = cash
@@ -641,8 +640,8 @@ class ChanceCard(object):
         self.rail = rail  # Boolean
         self.repairs = repairs  # 0 or 1
         self.go_to_jail = go_to_jail  # 0 or 1
-        self.reading = reading  # 0 or 1
-        self.go_to = go_to  # 0 / 1 if Start / string
+        self.some_rail = some_rail  # 0 or 1
+        self.go_to = go_to  # 0 / 1 if Start / string; also used for some_rail
 
     def __repr__(self):
         return "Chance Card: " + self.text
@@ -881,11 +880,12 @@ class Player(object):
             game.repairs(repairs_0, repairs_1, self)
     
     def check_specific_chance(self, game):
-        if game.chances[game.current_chance].reading == 1:
-            #find Reading location
+        if game.chances[game.current_chance].some_rail == 1:
+            #find rail location, if any, and move there
             destination = self.location  # Variable initialization
             for item in game.board:
-                if item.name == "Reading Railroad":  # FIXME hardcoded
+                # rail name is stored in go_to
+                if item.name == game.chances[game.current_chance].go_to:
                     destination = item.location
                     break
             if destination < self.location:
@@ -893,8 +893,8 @@ class Player(object):
                       "."
                 game.bank.move_money(game.start_wage, self)
             self.location = destination
-            print "You move to Reading Railroad, at location " + \
-                  str(destination) + "."
+            print "You move to " + game.chances[game.current_chance].go_to + \
+                  ", at location " + str(destination) + "."
             self.teleport = 1
         elif game.chances[game.current_chance].movement != 0:
             self.location = (self.location + len(game.board) +
