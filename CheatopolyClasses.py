@@ -1,5 +1,8 @@
 import random
 import os
+import pygame
+import sys
+from pygame.locals import *
 
 
 class Game(object):
@@ -25,6 +28,9 @@ class Game(object):
 
     #Bank
     bank = None
+
+    #Display
+    square_side = 0
 
     def __init__(self):
         self.neighborhoods = {}
@@ -255,6 +261,43 @@ class Game(object):
             else:
                 print "INCREDIBLE BUNCH OF LOSERS."
     
+    def place_positions(self, width, height):
+        # Find the length of the side of the board
+        remainder = len(self.board) % 4
+        if remainder == 0:
+            side = len(self.board) / 4 + 1
+        else:
+            # increase the side of the square, with some empty places
+            side = (len(self.board) + remainder)/4 + 1
+
+        # Calculate place square size
+        self.square_side = min(width, height) / side
+
+        # Assign top/left positions for each Place
+        left = 0
+        up = 0
+        orientation = "right"
+        counter = 0
+        for item in self.board:
+                item.x = left
+                item.y = up
+                counter += 1
+                if counter == side:
+                    orientation = "down"
+                elif counter == 2 * side - 1:
+                    orientation = "left"
+                elif counter == 3 * side - 2:
+                    orientation = "up"
+                if orientation == "right":
+                    left += self.square_side
+                elif orientation == "down":
+                    up += self.square_side
+                elif orientation == "left":
+                    left -= self.square_side
+                elif orientation == "up":
+                    up -= self.square_side
+
+
     def dice(self):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
@@ -346,6 +389,12 @@ class Place(object):
     hotels = 0
     hotel_cost = 0
     house_cost = 0
+    x = 0
+    y = 0
+
+    def draw(self, display, place_color, game):
+        pygame.draw.rect(display, place_color,
+                         (self.x, self.y, game.square_side, game.square_side))
 
     def new_owner(self, player):
         #change place owner
