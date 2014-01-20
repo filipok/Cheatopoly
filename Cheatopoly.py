@@ -25,12 +25,7 @@ else:
 HEIGHT = 480
 WIDTH = 640
 # Colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-COLORS = [BLACK, WHITE, RED, GREEN, BLUE]
+GRAY = (192, 192, 192)
 # Frames per second
 FPS = 2
 fpsClock = pygame.time.Clock()
@@ -38,17 +33,15 @@ fpsClock = pygame.time.Clock()
 pygame.init()
 DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Cheatopoly')
-DISPLAYSURF.fill(GREEN)
+DISPLAYSURF.fill(GRAY)
 
-thisGame.place_positions(WIDTH, HEIGHT)
+thisGame.set_places(WIDTH, HEIGHT)
 
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #draw board with places
-    for item in thisGame.board:
-        item.draw(DISPLAYSURF, COLORS[0], thisGame)
-        #FIXME allocate color to item, then create game method draw_board
+    thisGame.draw_board(DISPLAYSURF)
 
     pygame.display.update()
     fpsClock.tick(FPS)

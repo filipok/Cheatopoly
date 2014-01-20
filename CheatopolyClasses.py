@@ -261,7 +261,7 @@ class Game(object):
             else:
                 print "INCREDIBLE BUNCH OF LOSERS."
     
-    def place_positions(self, width, height):
+    def set_places(self, width, height):
         # Find the length of the side of the board
         remainder = len(self.board) % 4
         if remainder == 0:
@@ -296,7 +296,40 @@ class Game(object):
                     left -= self.square_side
                 elif orientation == "up":
                     up -= self.square_side
+        black = (0, 0, 0)
+        white = (255, 255, 255)
+        red = (255, 0, 0)
+        green = (0, 255, 0)
+        blue = (0, 0, 255)
+        purple = (204, 0, 255)
+        teal = (0, 128, 128)
+        pink = (253, 221, 230)
+        orange = (255, 165, 0)
+        yellow = (255, 255, 0)
+        brown = (150, 113, 23)
+        army_green = (75, 83, 32)
+        dark_green = (0, 100, 0)
+        coldict = {'Black': black, 'White': white, 'Red': red, 'Green': green,
+                   'Blue': blue, 'Purple': purple, 'Teal': teal, 'Pink': pink,
+                   'Orange': orange, 'Yellow': yellow, 'Brown': brown,
+                   'Army green': army_green, 'Dark_green': dark_green}
+        for item in self.board:
+            if isinstance(item, Street):
+                item.col = coldict[item.neighborhood]
+            elif isinstance(item, Railroad):
+                item.col = brown
+            elif isinstance(item, Utility):
+                item.col = army_green
+            elif isinstance(item, FreeParking):
+                item.col = dark_green
+            elif isinstance(item, GoToJail):
+                item.col = dark_green
+            else:
+                item.col = white
 
+    def draw_board(self, display):
+        for item in self.board:
+            item.draw(display, self)
 
     def dice(self):
         a = random.randint(1, 6)
@@ -391,10 +424,45 @@ class Place(object):
     house_cost = 0
     x = 0
     y = 0
+    col = None
+    txt = ""
 
-    def draw(self, display, place_color, game):
-        pygame.draw.rect(display, place_color,
+    def write(self, text, font_size, col, lines, line_height, display, game):
+        font_obj = pygame.font.Font(None, font_size)
+        text_surface_obj = font_obj.render(text, True, col, self.col)
+        text_rect_obj = text_surface_obj.get_rect()
+        text_rect_obj.center = (self.x + game.square_side/2,
+                                self.y + lines*line_height)
+        display.blit(text_surface_obj, text_rect_obj)
+
+    def draw(self, display, game):
+        pygame.draw.rect(display, self.col,
                          (self.x, self.y, game.square_side, game.square_side))
+        col = (0, 0, 0)
+        if isinstance(self, GoToJail) or isinstance(self, Jail) or \
+                isinstance(self, Chance):
+            col = (255, 0, 0)
+        if isinstance(self, Railroad) or isinstance(self, Utility):
+            y_pos = game.square_side/2 + 5
+        else:
+            y_pos = game.square_side/2
+        self.write(self.txt, 40, col, 1, y_pos, display, game)
+        if isinstance(self, CommunityChest):
+            pygame.draw.circle(display, (255, 247, 0),
+                               (self.x + game.square_side/2,
+                                self.y + game.square_side/2),
+                               game.square_side/2, game.square_side/2)
+        if isinstance(self, Street) or isinstance(self, Utility) or \
+                isinstance(self, Railroad):
+            name_split = self.name.split(" ")
+            name_end = name_split[-1]
+            name_begin = " ".join(name_split[:-1])
+            line_height = 5
+            lines = 1
+            if len(name_begin) != 0:
+                self.write(name_begin, 10, col, lines, line_height, display, game)
+                lines += 1
+            self.write(name_end, 10, col, lines, line_height, display, game)
 
     def new_owner(self, player):
         #change place owner
@@ -518,6 +586,7 @@ class Railroad(Place):
         self.rent3 = rent3
         self.rent4 = rent4
         self.mortgage = mortgage
+        self.txt = "R"
 
     def rent(self, game):
         counter = 0
@@ -553,6 +622,7 @@ class Utility(Place):
         self.name = name
         self.price = price
         self.mortgage = mortgage
+        self.txt = "W"
 
     def rent(self, game):
         print "Let us roll the dice for rent!"
@@ -589,6 +659,9 @@ class Chance(Place):
     """
     name = "Chance"
 
+    def __init__(self):
+        self.txt = "?"
+
     def __repr__(self):
         return "Chance at pos {0}".format(str(self.location))
 
@@ -603,6 +676,7 @@ class Tax(Place):
         self.option1 = option1
         self.option2 = option2
         self.text = text
+        self.txt = "$"
 
     def __repr__(self):
         return self.name + " at pos " + str(self.location)
@@ -614,6 +688,9 @@ class Jail(Place):
     """
     name = "Jail"
 
+    def __init__(self):
+        self.txt = "X"
+
     def __repr__(self):
         return "Jail at pos {0}".format(str(self.location))
 
@@ -623,6 +700,9 @@ class GoToJail(Place):
      Here you go to jail.
      """
     name = "Go To Jail"
+
+    def __init__(self):
+        self.txt = "->"
 
     def __repr__(self):
         return "Go To Jail at pos {0}".format(str(self.location))
@@ -634,6 +714,9 @@ class FreeParking(Place):
     """
     name = "Free Parking"
 
+    def __init__(self):
+        self.txt = "FP"
+
     def __repr__(self):
         return "Free Parking at pos {0}".format(str(self.location))
 
@@ -643,6 +726,9 @@ class Start(Place):
     This is the starting corner.
     """
     name = "Start"
+
+    def __init__(self):
+        self.txt = "GO"
 
     def __repr__(self):
         return "Start at pos {0}".format(str(self.location))
