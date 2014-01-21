@@ -436,8 +436,10 @@ class Place(object):
         display.blit(text_surface_obj, text_rect_obj)
 
     def draw(self, display, game):
+        # Draw place rectangle
         pygame.draw.rect(display, self.col,
                          (self.x, self.y, game.square_side, game.square_side))
+        # Draw place central text
         col = (0, 0, 0)
         if isinstance(self, GoToJail) or isinstance(self, Jail) or \
                 isinstance(self, Chance):
@@ -447,11 +449,13 @@ class Place(object):
         else:
             y_pos = game.square_side/2
         self.write(self.txt, 40, col, 1, y_pos, display, game)
+        # Draw community chest symbol
         if isinstance(self, CommunityChest):
             pygame.draw.circle(display, (255, 247, 0),
                                (self.x + game.square_side/2,
                                 self.y + game.square_side/2),
                                game.square_side/2, game.square_side/2)
+        # Draw place names and split it as necessary
         if isinstance(self, Street) or isinstance(self, Utility) or \
                 isinstance(self, Railroad):
             name_split = self.name.split(" ")
@@ -460,9 +464,31 @@ class Place(object):
             line_height = 5
             lines = 1
             if len(name_begin) != 0:
-                self.write(name_begin, 10, col, lines, line_height, display, game)
+                self.write(name_begin, 10, col, lines, line_height, display,
+                           game)
                 lines += 1
             self.write(name_end, 10, col, lines, line_height, display, game)
+        # Draw street houses and hotels
+        if isinstance(self, Street):
+            for i in range(4):
+                if self.houses >= i + 1:
+                    col = (111, 255, 255)  # Indigo
+                else:
+                    col = (0, 0, 0)
+                pygame.draw.rect(display, col, (self.x + i*game.square_side/4,
+                                                self.y + game.square_side -
+                                                game.square_side/4,
+                                                game.square_side/4 - 1,
+                                                game.square_side/4 - 1))
+            if self.hotels == 1:
+                col = (111, 255, 255)  # Indigo
+            else:
+                col = (0, 0, 0)
+            pygame.draw.rect(display, col, (self.x,
+                                            self.y + game.square_side -
+                                            game.square_side/2,
+                                            game.square_side,
+                                            game.square_side/4 - 1))
 
     def new_owner(self, player):
         #change place owner
