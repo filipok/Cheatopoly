@@ -32,6 +32,10 @@ class Game(object):
     #Display
     square_side = 0
 
+    #Player colors
+    player_cols = [(255, 51, 51), (255, 153, 51), (255, 51, 153),
+                   (153, 255, 51), (51, 255, 153, ), (51, 153, 255)]
+
     def __init__(self):
         self.neighborhoods = {}
         self.community_chest = []
@@ -131,9 +135,11 @@ class Game(object):
                         str(i + 1)))
             human = self.choose_yes_no("Is the player human [yes/no]: ")
             if human == "yes":
-                self.players.append(Player(name, self.player_cash, True))
+                self.players.append(Player(name, self.player_cash, True,
+                                           self.player_cols[i]))
             else:
-                self.players.append(Cheatoid(name, self.player_cash, False))
+                self.players.append(Cheatoid(name, self.player_cash, False,
+                                             self.player_cols[i]))
             list_of_names.append(name)
 
     def mock_players(self):
@@ -142,7 +148,8 @@ class Game(object):
         for i in range(num_players):
             name = "Borg{0}".format(str(i + 1))
             print "Adding " + name + "..."
-            self.players.append(Cheatoid(name, self.player_cash, False))
+            self.players.append(Cheatoid(name, self.player_cash, False,
+                                         self.player_cols[i]))
         print self.players
 
     def buy_or_auction(self, choose, player, place):
@@ -330,6 +337,32 @@ class Game(object):
     def draw_board(self, display):
         for item in self.board:
             item.draw(display, self)
+        for player in self.players:
+            player.draw(display, self)
+
+    def draw_stats(self, display, height, width, background):
+        if width > height:
+            i = 0
+            for player in self.players:
+                jail_status = ""
+                if player.in_jail:
+                    jail_status = " O-O"
+                font_obj = pygame.font.Font(None, 25)
+                text_surface_obj = font_obj.render(player.name + ": $" +
+                                                   str(player.cash) +
+                                                   jail_status,
+                                                   True, player.col,
+                                                   background)
+                text_rect_obj = text_surface_obj.get_rect()
+                text_rect_obj.center = (height + 80, 10 + i*30)
+                display.blit(text_surface_obj, text_rect_obj)
+                i += 1
+            
+
+    def draw_doughnut(self, display, fill_col, edge_col, x, y, diam, thick_1,
+                      thick_2):
+        pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
+        pygame.draw.circle(display, edge_col, (x, y), diam, thick_2)
 
     def dice(self):
         a = random.randint(1, 6)
@@ -824,11 +857,24 @@ class Player(object):
     double_rent = 1  # 1 or 2; flag for the chance card sending to next R.R.
     teleport = 0  # Indicates whether the player was sent over by a Chance card
     in_auction = False  # Used for auctions
+    col = None  # Player color
+    #Random position variation
+    x_rand = 0
+    y_rand = 0
 
-    def __init__(self, name, cash, human):
+    def __init__(self, name, cash, human, col):
         self.name = name
         self.cash = cash
         self.human = human
+        self.col = col
+
+    def draw(self, display, game):
+        game.draw_doughnut(display, self.col, (0, 0, 0),
+                           game.board[self.location].x + game.square_side/2 +
+                           self.x_rand,
+                           game.board[self.location].y + game.square_side/2 +
+                           self.y_rand,
+                           10, 5, 1)
 
     def move_to_jail(self, game):
         print self.name + " goes to JAIL!"

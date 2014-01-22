@@ -29,19 +29,20 @@ GRAY = (192, 192, 192)
 # Frames per second
 FPS = 2
 fpsClock = pygame.time.Clock()
-#Pygame initialization
+# Pygame initialization
 pygame.init()
 DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Cheatopoly')
-DISPLAYSURF.fill(GRAY)
-
+# Set place coordinates
 thisGame.set_places(WIDTH, HEIGHT)
 
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
-    #draw board with places
+    # Draw board with places
+    DISPLAYSURF.fill(GRAY)
     thisGame.draw_board(DISPLAYSURF)
+    thisGame.draw_stats(DISPLAYSURF, HEIGHT, WIDTH,GRAY)
 
     pygame.display.update()
     fpsClock.tick(FPS)
@@ -55,6 +56,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             raw_input("Hello, " + myPlayer.name + "! You have $" +
                       str(myPlayer.cash) + ". Press Enter to start turn.")
         dice = thisGame.dice()  # Roll dice
+
         print "Dice roll for " + myPlayer.name + ": " + str(dice[0]) + " " + \
               str(dice[1])
 
@@ -71,6 +73,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
         #If not in jail, advance to new position
         if not myPlayer.in_jail:
+            #Update random position variation
+            myPlayer.x_rand = random.randint(-6, 6)
+            myPlayer.y_rand = random.randint(-6, 6)
             myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
                 len(thisGame.board)
             print myPlayer.name + " advances to " + str(myPlayer.location) + \
