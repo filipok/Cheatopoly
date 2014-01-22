@@ -346,18 +346,19 @@ class Game(object):
             for player in self.players:
                 jail_status = ""
                 if player.in_jail:
-                    jail_status = " O-O"
+                    self.draw_doughnut(display, (0,0, 0), (0, 0, 0),
+                                       height + 10, 10 + i*30, 10, 5, 1)
                 font_obj = pygame.font.Font(None, 25)
                 text_surface_obj = font_obj.render(player.name + ": $" +
-                                                   str(player.cash) +
-                                                   jail_status,
+                                                   str(player.cash),
                                                    True, player.col,
                                                    background)
                 text_rect_obj = text_surface_obj.get_rect()
                 text_rect_obj.center = (height + 80, 10 + i*30)
+                text_rect_obj.left = height + 25
                 display.blit(text_surface_obj, text_rect_obj)
                 i += 1
-            
+
 
     def draw_doughnut(self, display, fill_col, edge_col, x, y, diam, thick_1,
                       thick_2):
