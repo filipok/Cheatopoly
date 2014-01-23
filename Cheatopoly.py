@@ -42,7 +42,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     # Draw board with places
     DISPLAYSURF.fill(GRAY)
     thisGame.draw_board(DISPLAYSURF)
-    thisGame.draw_stats(DISPLAYSURF, HEIGHT, WIDTH,GRAY)
+    thisGame.draw_stats(DISPLAYSURF, HEIGHT, WIDTH, GRAY)
 
     pygame.display.update()
     fpsClock.tick(FPS)
@@ -179,7 +179,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         choose = ""
 
     #Negotiate with other players
-    #Update display
     #save/load game from disk
     # add turn counter and print it at the end
 

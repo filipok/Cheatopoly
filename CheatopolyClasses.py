@@ -340,25 +340,47 @@ class Game(object):
         for player in self.players:
             player.draw(display, self)
 
+    def write_left(self, display, font_size, text, font_color, background,
+                   center_tuple, left):
+        font_obj = pygame.font.Font(None, font_size)
+        text_surface_obj = font_obj.render(text, True, font_color, background)
+        text_rect_obj = text_surface_obj.get_rect()
+        text_rect_obj.center = center_tuple
+        text_rect_obj.left = left
+        display.blit(text_surface_obj, text_rect_obj)
+
     def draw_stats(self, display, height, width, background):
         if width > height:
             i = 0
+            #Draw player stats
             for player in self.players:
-                jail_status = ""
                 if player.in_jail:
                     self.draw_doughnut(display, (0,0, 0), (0, 0, 0),
                                        height + 10, 10 + i*30, 10, 5, 1)
-                font_obj = pygame.font.Font(None, 25)
-                text_surface_obj = font_obj.render(player.name + ": $" +
-                                                   str(player.cash),
-                                                   True, player.col,
-                                                   background)
-                text_rect_obj = text_surface_obj.get_rect()
-                text_rect_obj.center = (height + 80, 10 + i*30)
-                text_rect_obj.left = height + 25
-                display.blit(text_surface_obj, text_rect_obj)
+                self.write_left(display, 25,
+                                player.name + ": $" + str(player.cash),
+                                player.col, background,
+                                (height + 80, 10 + i*30), height + 25)
                 i += 1
-
+            # Draw bank
+            i += 1
+            self.write_left(display, 20, "Bank: $" + str(self.bank.money),
+                (0, 0, 0), background, (height + 80, 10 + i*30),
+                height + 25)
+            i += 1
+            self.write_left(display, 20, "Houses: " + str(self.bank.houses),
+                (0, 0, 0), background, (height + 80, 10 + i*30),
+                height + 25)
+            i += 1
+            self.write_left(display, 20, "Hotels: " + str(self.bank.hotels),
+                (0, 0, 0), background, (height + 80, 10 + i*30),
+                height + 25)
+            # Money on table
+            i += 1
+            self.write_left(display, 20, "On table: " +
+                                         str(self.bank.card_payments),
+                            (0, 0, 0), background, (height + 80, 10 + i*30),
+                            height + 25)
 
     def draw_doughnut(self, display, fill_col, edge_col, x, y, diam, thick_1,
                       thick_2):
@@ -461,9 +483,10 @@ class Place(object):
     col = None
     txt = ""
 
-    def write(self, text, font_size, col, lines, line_height, display, game):
+    def write(self, text, font_size, col, background, lines, line_height,
+              display, game):
         font_obj = pygame.font.Font(None, font_size)
-        text_surface_obj = font_obj.render(text, True, col, self.col)
+        text_surface_obj = font_obj.render(text, True, col, background)
         text_rect_obj = text_surface_obj.get_rect()
         text_rect_obj.center = (self.x + game.square_side/2,
                                 self.y + lines*line_height)
@@ -473,7 +496,13 @@ class Place(object):
         # Draw place rectangle
         pygame.draw.rect(display, self.col,
                          (self.x, self.y, game.square_side, game.square_side))
-        # Draw place central text
+        # Draw street owner color, if any
+        if self.owned_by is not None and isinstance(self, Street):
+            pygame.draw.rect(display, self.owned_by.col,
+                             (self.x,
+                              self.y + game.square_side - game.square_side/2,
+                              game.square_side, game.square_side/2))
+        # Draw central text
         col = (0, 0, 0)
         if isinstance(self, GoToJail) or isinstance(self, Jail) or \
                 isinstance(self, Chance):
@@ -482,7 +511,14 @@ class Place(object):
             y_pos = game.square_side/2 + 5
         else:
             y_pos = game.square_side/2
-        self.write(self.txt, 40, col, 1, y_pos, display, game)
+        self.write(self.txt, 40, col, self.col, 1, y_pos, display, game)
+        # Draw railroad/utility owner color, if any
+        if self.owned_by is not None and isinstance(self, (Railroad, Utility)):
+            pygame.draw.rect(display, self.owned_by.col,
+                             (self.x,
+                              self.y + game.square_side - game.square_side/4,
+                              game.square_side, game.square_side/4))
+
         # Draw community chest symbol
         if isinstance(self, CommunityChest):
             pygame.draw.circle(display, (255, 247, 0),
@@ -490,6 +526,9 @@ class Place(object):
                                 self.y + game.square_side/2),
                                game.square_side/2, game.square_side/2)
         # Draw place names and split it as necessary
+        background = self.col
+        if self.owned_by is not None:
+            col = (255, 255, 255)
         if isinstance(self, Street) or isinstance(self, Utility) or \
                 isinstance(self, Railroad):
             name_split = self.name.split(" ")
@@ -498,10 +537,11 @@ class Place(object):
             line_height = 5
             lines = 1
             if len(name_begin) != 0:
-                self.write(name_begin, 10, col, lines, line_height, display,
-                           game)
+                self.write(name_begin, 10, col, background, lines, line_height,
+                           display, game)
                 lines += 1
-            self.write(name_end, 10, col, lines, line_height, display, game)
+            self.write(name_end, 10, col, background, lines, line_height,
+                       display, game)
         # Draw street houses and hotels
         if isinstance(self, Street):
             for i in range(4):
