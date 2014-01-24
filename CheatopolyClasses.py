@@ -382,6 +382,17 @@ class Game(object):
                             (0, 0, 0), background, (height + 80, 10 + i*30),
                             height + 25)
 
+    def draw_cards(self, card_set, ind, display, background):
+        for i in range(len(card_set)):
+            self.write_left(display, 14, card_set[i].text, (0, 0, 0),
+                            background, (self.square_side + 20,
+                                         self.square_side + 10 + i*12),
+                            self.square_side + 20)
+        pygame.draw.circle(display, (255, 0, 0),
+                           (self.square_side + 5,
+                            self.square_side + 10 + ind*12),
+                           5, 0)
+
     def draw_doughnut(self, display, fill_col, edge_col, x, y, diam, thick_1,
                       thick_2):
         pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
