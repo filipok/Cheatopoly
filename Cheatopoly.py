@@ -68,10 +68,24 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Start player turn; test for teleportation with Chance card
     #Dice roll and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
+
+
         if not isinstance(myPlayer, Cheatoid):
-            raw_input("Hello, " + myPlayer.name + "! You have $" +
-                      str(myPlayer.cash) + ". Press Enter to start turn.")
-        dice = myPlayer.roll_dice(DISPLAYSURF, GRAY, HEIGHT, WIDTH)  # Roll dice
+            while True:
+                myPlayer.message(DISPLAYSURF, "Click to begin turn",
+                                 (255, 0, 255), HEIGHT/2, HEIGHT/2)
+                pygame.display.update()
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_click = True
+                if mouse_click:
+                    mouse_click = False
+                    pygame.draw.rect(DISPLAYSURF, GRAY, (WIDTH/3, HEIGHT/3,
+                                                         WIDTH/3, HEIGHT/3))
+                    pygame.display.update()
+                    break
+        dice = myPlayer.roll_dice(DISPLAYSURF, GRAY, min(HEIGHT, WIDTH)/2,
+                                  min(HEIGHT, WIDTH)/2)
 
         ## Resolve jail status
         myPlayer.check_jail(thisGame, dice)
