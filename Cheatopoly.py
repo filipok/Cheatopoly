@@ -55,7 +55,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if not isinstance(myPlayer, Cheatoid):
             raw_input("Hello, " + myPlayer.name + "! You have $" +
                       str(myPlayer.cash) + ". Press Enter to start turn.")
-        dice = myPlayer.roll_dice()  # Roll dice
+        dice = myPlayer.roll_dice(DISPLAYSURF, GRAY, HEIGHT, WIDTH)  # Roll dice
 
         ## Resolve jail status
         myPlayer.check_jail(thisGame, dice)
