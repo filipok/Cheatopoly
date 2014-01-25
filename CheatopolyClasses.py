@@ -398,11 +398,6 @@ class Game(object):
         pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
         pygame.draw.circle(display, edge_col, (x, y), diam, thick_2)
 
-    def dice(self):
-        a = random.randint(1, 6)
-        b = random.randint(1, 6)
-        return [a, b]
-
     def add_one(self, location, length):
         return (location + 1) % length
 
@@ -737,16 +732,17 @@ class Utility(Place):
 
     def rent(self, game):
         print "Let us roll the dice for rent!"
-        dice = game.dice()
-        print "Dice: " + str(dice[0]) + " " + str(dice[1])
+        a = random.randint(1, 6)
+        b = random.randint(1, 6)
+        print "Dice: " + str(a) + " " + str(b)
         counter = 0
         for item in game.board:
             if isinstance(item, Utility) and item.owned_by == self.owned_by:
                 counter += 1
         if counter == 1:
-            return 4 * (dice[0] + dice[1])
+            return 4 * (a + b)
         else:
-            return 10 * (dice[0] + dice[1])
+            return 10 * (a + b)
 
     def __repr__(self):
         return self.name + " (" + str(self.location) + "), price: " + \
@@ -1233,6 +1229,13 @@ class Player(object):
                         "."
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
+
+    def roll_dice(self):
+        a = random.randint(1, 6)
+        b = random.randint(1, 6)
+        print "Dice roll for " + self.name + ": " + str(a) + " " + \
+              str(b)
+        return [a, b]
 
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
