@@ -39,6 +39,22 @@ thisGame.set_places(WIDTH, HEIGHT)
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
+    mouse_x = 0
+    mouse_y = 0
+    mouse_click = False
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == MOUSEMOTION:
+            mouse_x, mouse_y = event.pos
+        elif event.type == MOUSEBUTTONUP:
+            mouse_click = True
+    print str(mouse_x) + " " + str(mouse_y)
+    if mouse_click:
+        print "Mouse clicked!"
+
     # Draw board with places
     DISPLAYSURF.fill(GRAY)
     thisGame.draw_board(DISPLAYSURF)
@@ -179,10 +195,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #save/load game from disk
     # add turn counter and print it at the end
 
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
 
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
