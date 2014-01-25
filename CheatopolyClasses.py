@@ -1230,19 +1230,21 @@ class Player(object):
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
 
-    def roll_dice(self, display, background, height,width):
+    def roll_dice(self, display, background, height, width):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
         text = "Dice roll for " + self.name + ": " + str(a) + " " + str(b)
+        self.message(display, text, background, height, width)
+        return [a, b]
+
+    def message(self, display, text, background, x, y):
         print text
         font_obj = pygame.font.Font(None, 20)
         text_surface_obj = font_obj.render(text, True, (0,0,0), background)
         text_rect_obj = text_surface_obj.get_rect()
-        text_rect_obj.center = (min(height, width)/2, min(height, width)/2)
+        text_rect_obj.center = (x, y)
         display.blit(text_surface_obj, text_rect_obj)
         pygame.display.update()
-        pygame.time.wait(300)
-        return [a, b]
 
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
