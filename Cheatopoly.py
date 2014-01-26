@@ -75,7 +75,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                                   min(HEIGHT, WIDTH)/2)
 
         ## Resolve jail status
-        myPlayer.check_jail(thisGame, dice)
+        myPlayer.check_jail(thisGame, dice, DISPLAYSURF, GRAY, WIDTH, HEIGHT)
 
         #Check how many doubles in a row
         if dice[0] == dice[1]:
