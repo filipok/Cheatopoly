@@ -414,7 +414,6 @@ class Game(object):
                     pygame.display.update()
                     break
 
-
     def add_one(self, location, length):
         return (location + 1) % length
 
@@ -1269,6 +1268,33 @@ class Player(object):
                               ", click to begin turn",
                      (255, 0, 255), height/2, height/2)
         pygame.display.update()
+
+    def yes_no(self, display, message, background, x, y, button_size):
+        red = (255, 0, 0)
+        green = (0, 255, 0)
+        x = min(x, y)/2
+        y = x
+        #draw yes/no boxes
+        self.message(display, message, background, x, y + 20)
+        yes_box = pygame.draw.rect(display, green, (x - int(button_size*1.5),
+                                                    y + 40, button_size,
+                                                    button_size))
+        no_box = pygame.draw.rect(display, red, (x + int(button_size*0.5),
+                                                 y + 40, button_size,
+                                                 button_size))
+        pygame.display.update()
+        #detect click
+        mouse_x = 0
+        mouse_y = 0
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        #check click
+                        if yes_box.collidepoint(mouse_x, mouse_y):
+                            return "yes"
+                        if no_box.collidepoint(mouse_x, mouse_y):
+                            return "no"
 
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
