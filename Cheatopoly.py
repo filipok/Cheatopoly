@@ -68,8 +68,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Start player turn; test for teleportation with Chance card
     #Dice roll and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
-
-
         if not isinstance(myPlayer, Cheatoid):
             myPlayer.start_turn(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
             thisGame.click_n_cover(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
@@ -115,7 +113,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if isinstance(thisPlace, (Street, Railroad, Utility)):
         if thisPlace.owned_by is None:
             #You can buy the place
-            choose = myPlayer.buy(thisGame)  # Make a choice
+            choose = myPlayer.buy(thisGame, DISPLAYSURF, GRAY, WIDTH, HEIGHT)  # Make a choice
             thisGame.buy_or_auction(choose, myPlayer, thisPlace)
         elif thisPlace.owned_by == myPlayer:
             #If you already own that place

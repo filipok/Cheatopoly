@@ -1056,11 +1056,10 @@ class Player(object):
             game.bank.move_money(-auction_price, best_candidate)
             game.board[self.location].new_owner(best_candidate)  # New owner
 
-    def buy(self, game):
-        message = "{} is free. You have ${}. Wanna buy? {} [yes/no] ".format(
-            game.board[self.location].name, str(self.cash),
-            str(game.board[self.location]))
-        return game.choose_yes_no(message)
+    def buy(self, game, display, background, x, y):
+        text = "Wanna buy {}?".format(game.board[self.location].name)
+        button_size = 40
+        return yes_no(display, text, background, x, y, button_size)
 
     def use_jail_card(self, game):
         return game.choose_yes_no(
@@ -1250,54 +1249,56 @@ class Player(object):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
         text = "Dice roll for " + self.name + ": " + str(a) + " " + str(b)
-        self.message(display, text, background, height, width)
+        message(display, text, background, height, width)
         return [a, b]
-
-    def message(self, display, text, background, x, y):
-        print text
-        font_obj = pygame.font.Font(None, 20)
-        text_surface_obj = font_obj.render(text, True, (0,0,0), background)
-        text_rect_obj = text_surface_obj.get_rect()
-        text_rect_obj.center = (x, y)
-        display.blit(text_surface_obj, text_rect_obj)
-        pygame.display.update()
 
     def start_turn(self, display, background, height, width):
         mouse_click = False
-        self.message(display, "Hello, " + self.name +
+        message(display, "Hello, " + self.name +
                               ", click to begin turn",
                      (255, 0, 255), height/2, height/2)
         pygame.display.update()
 
-    def yes_no(self, display, message, background, x, y, button_size):
-        red = (255, 0, 0)
-        green = (0, 255, 0)
-        x = min(x, y)/2
-        y = x
-        #draw yes/no boxes
-        self.message(display, message, background, x, y + 20)
-        yes_box = pygame.draw.rect(display, green, (x - int(button_size*1.5),
-                                                    y + 40, button_size,
-                                                    button_size))
-        no_box = pygame.draw.rect(display, red, (x + int(button_size*0.5),
-                                                 y + 40, button_size,
-                                                 button_size))
-        pygame.display.update()
-        #detect click
-        mouse_x = 0
-        mouse_y = 0
-        while True:
-                for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
-                        mouse_x, mouse_y = event.pos
-                        #check click
-                        if yes_box.collidepoint(mouse_x, mouse_y):
-                            return "yes"
-                        if no_box.collidepoint(mouse_x, mouse_y):
-                            return "no"
-
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
+
+
+def yes_no(display, text, background, x, y, button_size):
+    red = (255, 0, 0)
+    green = (0, 255, 0)
+    x = min(x, y)/2
+    y = x
+    #draw yes/no boxes
+    message(display, text, background, x, y + 20)
+    yes_box = pygame.draw.rect(display, green, (x - int(button_size*1.5),
+                                                y + 40, button_size,
+                                                button_size))
+    no_box = pygame.draw.rect(display, red, (x + int(button_size*0.5),
+                                             y + 40, button_size,
+                                             button_size))
+    pygame.display.update()
+    #detect click
+    mouse_x = 0
+    mouse_y = 0
+    while True:
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    mouse_x, mouse_y = event.pos
+                    #check click
+                    if yes_box.collidepoint(mouse_x, mouse_y):
+                        return "yes"
+                    if no_box.collidepoint(mouse_x, mouse_y):
+                        return "no"
+
+
+def message(display, text, background, x, y):
+    print text
+    font_obj = pygame.font.Font(None, 20)
+    text_surface_obj = font_obj.render(text, True, (0,0,0), background)
+    text_rect_obj = text_surface_obj.get_rect()
+    text_rect_obj.center = (x, y)
+    display.blit(text_surface_obj, text_rect_obj)
+    pygame.display.update()
 
 
 class Cheatoid(Player):
@@ -1437,7 +1438,7 @@ class Cheatoid(Player):
         print self.name + " bids " + str(reply) + "."
         return reply
 
-    def buy(self, game):
+    def buy(self, game, display, background, x, y):
         """
         Returns "yes"/"no"
         """
