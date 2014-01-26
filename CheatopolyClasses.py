@@ -398,6 +398,23 @@ class Game(object):
         pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
         pygame.draw.circle(display, edge_col, (x, y), diam, thick_2)
 
+    def click_n_cover(self, display, background, height, width):
+        mouse_click = False
+        remainder = len(self.board) % 4
+        side = (len(self.board) + remainder)/4 - 1
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_click = True
+                if mouse_click:
+                    pygame.draw.rect(display, background,
+                                     (self.square_side, self.square_side,
+                                      side*self.square_side,
+                                      side*self.square_side))
+                    pygame.display.update()
+                    break
+
+
     def add_one(self, location, length):
         return (location + 1) % length
 
@@ -1244,6 +1261,13 @@ class Player(object):
         text_rect_obj = text_surface_obj.get_rect()
         text_rect_obj.center = (x, y)
         display.blit(text_surface_obj, text_rect_obj)
+        pygame.display.update()
+
+    def start_turn(self, display, background, height, width):
+        mouse_click = False
+        self.message(display, "Hello, " + self.name +
+                              ", click to begin turn",
+                     (255, 0, 255), height/2, height/2)
         pygame.display.update()
 
     def __repr__(self):

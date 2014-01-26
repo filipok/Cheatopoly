@@ -71,19 +71,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
 
         if not isinstance(myPlayer, Cheatoid):
-            while True:
-                myPlayer.message(DISPLAYSURF, "Click to begin turn",
-                                 (255, 0, 255), HEIGHT/2, HEIGHT/2)
-                pygame.display.update()
-                for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
-                        mouse_click = True
-                if mouse_click:
-                    mouse_click = False
-                    pygame.draw.rect(DISPLAYSURF, GRAY, (WIDTH/3, HEIGHT/3,
-                                                         WIDTH/3, HEIGHT/3))
-                    pygame.display.update()
-                    break
+            myPlayer.start_turn(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
+            thisGame.click_n_cover(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
         dice = myPlayer.roll_dice(DISPLAYSURF, GRAY, min(HEIGHT, WIDTH)/2,
                                   min(HEIGHT, WIDTH)/2)
 
