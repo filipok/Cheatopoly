@@ -165,16 +165,31 @@ class Game(object):
             if player.cash > place.price:
                 place.new_owner(player)  # Assign new owner
                 self.bank.move_money(-place.price, player)
-                print "Congratulations, " + player.name + \
-                      "! You have bought: " + str(place) + "."
+                text = "Well done, " + player.name + \
+                      ", you have bought " + place.name + "."
+                message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                self.wait_n_cover(1000)
+                place.draw(self)
+                for player in self.players:
+                    player.draw(self)
+                pygame.display.update()
             else:
-                print "Sorry, you do not have the required funds!"
+                text = "Sorry, you do not have the required funds!"
+                message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                self.wait_n_cover(1000)
                 a = random.randint(1, 4)
                 if a == 1:
-                    print "Beggar...!"
+                    text = "Beggar...!"
+                    message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                    self.wait_n_cover(1000)
                 player.start_auction(self)  # Launch auction
         else:
             player.start_auction(self)  # Launch auction
+
+    def draw_players(self):
+        for player in self.players:
+            player.draw(self)
+            pygame.display.update()
 
     def flag_upgradeable_places(self, player):
         """ Flag upgradeable locations
@@ -344,9 +359,9 @@ class Game(object):
 
     def draw_board(self):
         for item in self.board:
-            item.draw(self.display, self)
+            item.draw(self)
         for player in self.players:
-            player.draw(self.display, self)
+            player.draw(self)
 
     def roll_dice(self, player):
         a = random.randint(1, 6)
@@ -432,6 +447,10 @@ class Game(object):
                 if mouse_click:
                     self.cover()
                     break
+
+    def wait_n_cover(self, milliseconds):
+        pygame.time.wait(milliseconds)
+        self.cover()
 
     def cover(self):
         remainder = len(self.board) % 4
@@ -571,13 +590,13 @@ class Place(object):
                                 self.y + lines*line_height)
         display.blit(text_surface_obj, text_rect_obj)
 
-    def draw(self, display, game):
+    def draw(self,game):
         # Draw place rectangle
-        pygame.draw.rect(display, self.col,
+        pygame.draw.rect(game.display, self.col,
                          (self.x, self.y, game.square_side, game.square_side))
         # Draw street owner color, if any
         if self.owned_by is not None and isinstance(self, Street):
-            pygame.draw.rect(display, self.owned_by.col,
+            pygame.draw.rect(game.display, self.owned_by.col,
                              (self.x,
                               self.y + game.square_side - game.square_side/2,
                               game.square_side, game.square_side/2))
@@ -590,17 +609,17 @@ class Place(object):
             y_pos = game.square_side/2 + 5
         else:
             y_pos = game.square_side/2
-        self.write(self.txt, 40, col, self.col, 1, y_pos, display, game)
+        self.write(self.txt, 40, col, self.col, 1, y_pos, game.display, game)
         # Draw railroad/utility owner color, if any
         if self.owned_by is not None and isinstance(self, (Railroad, Utility)):
-            pygame.draw.rect(display, self.owned_by.col,
+            pygame.draw.rect(game.display, self.owned_by.col,
                              (self.x,
                               self.y + game.square_side - game.square_side/4,
                               game.square_side, game.square_side/4))
 
         # Draw community chest symbol
         if isinstance(self, CommunityChest):
-            pygame.draw.circle(display, (255, 247, 0),
+            pygame.draw.circle(game.display, (255, 247, 0),
                                (self.x + game.square_side/2,
                                 self.y + game.square_side/2),
                                game.square_side/2, game.square_side/2)
@@ -617,10 +636,10 @@ class Place(object):
             lines = 1
             if len(name_begin) != 0:
                 self.write(name_begin, 10, col, background, lines, line_height,
-                           display, game)
+                           game.display, game)
                 lines += 1
             self.write(name_end, 10, col, background, lines, line_height,
-                       display, game)
+                       game.display, game)
         # Draw street houses and hotels
         if isinstance(self, Street):
             for i in range(4):
@@ -628,7 +647,7 @@ class Place(object):
                     col = (111, 255, 255)  # Indigo
                 else:
                     col = (0, 0, 0)
-                pygame.draw.rect(display, col, (self.x + i*game.square_side/4,
+                pygame.draw.rect(game.display, col, (self.x + i*game.square_side/4,
                                                 self.y + game.square_side -
                                                 game.square_side/4,
                                                 game.square_side/4 - 1,
@@ -637,7 +656,7 @@ class Place(object):
                 col = (111, 255, 255)  # Indigo
             else:
                 col = (0, 0, 0)
-            pygame.draw.rect(display, col, (self.x,
+            pygame.draw.rect(game.display, col, (self.x,
                                             self.y + game.square_side -
                                             game.square_side/2,
                                             game.square_side,
@@ -989,8 +1008,8 @@ class Player(object):
         self.human = human
         self.col = col
 
-    def draw(self, display, game):
-        game.draw_doughnut(display, self.col, (0, 0, 0),
+    def draw(self, game):
+        game.draw_doughnut(game.display, self.col, (0, 0, 0),
                            game.board[self.location].x + game.square_side/2 +
                            self.x_rand,
                            game.board[self.location].y + game.square_side/2 +

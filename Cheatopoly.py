@@ -81,6 +81,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.y_rand = random.randint(-6, 6)
             myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
                 len(thisGame.board)
+            thisGame.draw_players()
             print myPlayer.name + " advances to " + str(myPlayer.location) + \
                 " (" + thisGame.board[myPlayer.location].name + ")."
             #Did we pass Go? +start_wage/2*start_wage
