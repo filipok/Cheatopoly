@@ -168,7 +168,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     choose = ''
     while choose not in ["u", "d", "m", "d", "e", "n"]:
-        choose = thisGame.choose_action()
+        choose = myPlayer.choose_action(thisGame)
         if choose == "u":
             myPlayer.upgrade(thisGame)  # Upgrade
         elif choose == "d":

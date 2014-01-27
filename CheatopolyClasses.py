@@ -506,47 +506,6 @@ class Game(object):
                         if no_box.collidepoint(mouse_x, mouse_y):
                             return "no"
 
-
-
-    def choose_action(self):
-        self.cover()
-        smallest = min(self.width, self.height)
-        step = smallest/10
-        thickness = step - 10
-        center = smallest/2
-        width = smallest/2
-        message(self.display, "Choose an action:", self.background, smallest/2, self.height/5)
-        white = (255, 255, 255)
-        upgrade_box = self.mess_box("UPGRADE", white, smallest/4, smallest/4, width, thickness)
-        downgrade_box = self.mess_box("DOWNGRADE", white, smallest/4, step + smallest/4, width, thickness)
-        mortgage_box = self.mess_box("MORTGAGE", white, smallest/4, 2*step + smallest/4, width, thickness)
-        demortgage_box = self.mess_box("DEMORTGAGE", white, smallest/4, 3*step + smallest/4, width, thickness)
-        negotiate_box = self.mess_box("NEGOTIATE", white, smallest/4, 4*step + smallest/4, width, thickness)
-        nothing_box = self.mess_box("DO NOTHING", white, smallest/4, 5*step + smallest/4, width, thickness)
-        #detect click
-        mouse_x = 0
-        mouse_y = 0
-        while True:
-                for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
-                        mouse_x, mouse_y = event.pos
-                        #check click
-                        if upgrade_box.collidepoint(mouse_x, mouse_y):
-                            self.cover()
-                            return "u"
-                        if downgrade_box.collidepoint(mouse_x, mouse_y):
-                            self.cover()
-                            return "d"
-                        if mortgage_box.collidepoint(mouse_x, mouse_y):
-                            self.cover()
-                            return "m"
-                        if demortgage_box.collidepoint(mouse_x, mouse_y):
-                            self.cover()
-                            return "e"
-                        if nothing_box.collidepoint(mouse_x, mouse_y):
-                            self.cover()
-                            return "n"
-
     def mess_box(self, text, box_color, left, up, width, thickness):
         text_box = pygame.draw.rect(self.display, box_color, (left, up, width, thickness))
         message(self.display, text, box_color, left + width/2, up + thickness/2)
@@ -1062,6 +1021,46 @@ class Player(object):
                            self.y_rand,
                            10, 5, 1)
 
+    def choose_action(self, game):
+        game.cover()
+        smallest = min(game.width, game.height)
+        step = smallest/10
+        thickness = step - 10
+        center = smallest/2
+        width = smallest/2
+        message(game.display, "Choose an action:", game.background, smallest/2, game.height/5)
+        white = (255, 255, 255)
+        upgrade_box = game.mess_box("UPGRADE", white, smallest/4, smallest/4, width, thickness)
+        downgrade_box = game.mess_box("DOWNGRADE", white, smallest/4, step + smallest/4, width, thickness)
+        mortgage_box = game.mess_box("MORTGAGE", white, smallest/4, 2*step + smallest/4, width, thickness)
+        demortgage_box = game.mess_box("DEMORTGAGE", white, smallest/4, 3*step + smallest/4, width, thickness)
+        negotiate_box = game.mess_box("NEGOTIATE", white, smallest/4, 4*step + smallest/4, width, thickness)
+        nothing_box = game.mess_box("DO NOTHING", white, smallest/4, 5*step + smallest/4, width, thickness)
+        #detect click
+        mouse_x = 0
+        mouse_y = 0
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        #check click
+                        if upgrade_box.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return "u"
+                        if downgrade_box.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return "d"
+                        if mortgage_box.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return "m"
+                        if demortgage_box.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return "e"
+                        if nothing_box.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return "n"
+
+
     def move_to_jail(self, game):
         print self.name + " goes to JAIL!"
         #find next jail (you can have several, if you ask me)
@@ -1135,11 +1134,6 @@ class Player(object):
         for item in game.board:
             if isinstance(item, Street):
                 item.min_upgrade = 5
-
-    def choose_action(self):
-        return raw_input("Do you want to " +
-                         "[u]pgrade/[d]owngrade/[m]ortgage/d[e]mortgage/do " +
-                         "[n]othing? ").lower()
 
     def reply_to_auction(self, player, game, auction_price):
         print "Hello," + self.name + "! " + player.name + " did not buy " + \
@@ -1469,7 +1463,7 @@ class Cheatoid(Player):
             if isinstance(item, Street):
                 item.min_upgrade = 5
 
-    def choose_action(self):
+    def choose_action(self, game):
         """
         Computer chooses between [u]pgrade / [d]owngrade / [m]ortgage /
         d[e]mortgage / do [n]othing
@@ -1518,7 +1512,7 @@ class Cheatoid(Player):
         print self.name + " bids " + str(reply) + "."
         return reply
 
-    def buy(self, game, display, background, x, y):
+    def buy(self, game):
         """
         Returns "yes"/"no"
         """
