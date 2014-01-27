@@ -37,10 +37,10 @@ class Game(object):
     display = None
 
     #Player colors
-    player_cols = [(255, 51, 51), (255, 153, 51), (255, 51, 153),
-                   (153, 255, 51), (51, 255, 153, ), (51, 153, 255)]
+    player_cols = [(255, 51, 51), (153, 255, 51), (51, 153, 255),
+                   (255, 153, 51), (51, 255, 153, ), (255, 51, 153)]
 
-    def __init__(self, height, width, background, display):
+    def __init__(self, height, width, background, display, line_height, font_size):
         self.neighborhoods = {}
         self.community_chest = []
         self.chances = []
@@ -50,6 +50,8 @@ class Game(object):
         self.width = width
         self.background = background
         self.display = display
+        self.line_height = line_height
+        self.font_size = font_size
 
     def load(self, file_name):
 
@@ -595,7 +597,7 @@ class Place(object):
                                 self.y + lines*line_height)
         display.blit(text_surface_obj, text_rect_obj)
 
-    def draw(self,game):
+    def draw(self, game):
         # Draw place rectangle
         pygame.draw.rect(game.display, self.col,
                          (self.x, self.y, game.square_side, game.square_side))
@@ -637,13 +639,12 @@ class Place(object):
             name_split = self.name.split(" ")
             name_end = name_split[-1]
             name_begin = " ".join(name_split[:-1])
-            line_height = 5
             lines = 1
             if len(name_begin) != 0:
-                self.write(name_begin, 10, col, background, lines, line_height,
+                self.write(name_begin, game.font_size, col, background, lines, game.line_height,
                            game.display, game)
                 lines += 1
-            self.write(name_end, 10, col, background, lines, line_height,
+            self.write(name_end, game.font_size, col, background, lines, game.line_height,
                        game.display, game)
         # Draw street houses and hotels
         if isinstance(self, Street):

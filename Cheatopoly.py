@@ -5,15 +5,18 @@ from CheatopolyClasses import *
 pygame.init()
 
 # GUI settings
-HEIGHT = 480
-WIDTH = 640
+HEIGHT = 600
+WIDTH = 800
 GRAY = (192, 192, 192)
+LINE_HEIGHT = 7
+FONT_SIZE = 11
+
 DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
 DISPLAYSURF.fill(GRAY)
 pygame.display.set_caption('Cheatopoly')
 
 #Create game
-thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF)
+thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF,LINE_HEIGHT,FONT_SIZE)
 thisGame.load('data.txt')  # Process data.txt
 thisGame.bank = Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
