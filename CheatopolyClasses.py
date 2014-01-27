@@ -31,17 +31,25 @@ class Game(object):
 
     #Display
     square_side = 0
+    height = 0
+    width = 0
+    background = None
+    display = None
 
     #Player colors
     player_cols = [(255, 51, 51), (255, 153, 51), (255, 51, 153),
                    (153, 255, 51), (51, 255, 153, ), (51, 153, 255)]
 
-    def __init__(self):
+    def __init__(self, height, width, background, display):
         self.neighborhoods = {}
         self.community_chest = []
         self.chances = []
         self.players = []
         self.board = []
+        self.height = height
+        self.width = width
+        self.background = background
+        self.display = display
 
     def load(self, file_name):
 
@@ -268,7 +276,7 @@ class Game(object):
             else:
                 print "INCREDIBLE BUNCH OF LOSERS."
     
-    def set_places(self, width, height):
+    def set_places(self):
         # Find the length of the side of the board
         remainder = len(self.board) % 4
         if remainder == 0:
@@ -278,7 +286,7 @@ class Game(object):
             side = (len(self.board) + remainder)/4 + 1
 
         # Calculate place square size
-        self.square_side = min(width, height) / side
+        self.square_side = min(self.width, self.height) / side
 
         # Assign top/left positions for each Place
         left = 0
@@ -334,11 +342,19 @@ class Game(object):
             else:
                 item.col = white
 
-    def draw_board(self, display):
+    def draw_board(self):
         for item in self.board:
-            item.draw(display, self)
+            item.draw(self.display, self)
         for player in self.players:
-            player.draw(display, self)
+            player.draw(self.display, self)
+
+    def roll_dice(self, player):
+        a = random.randint(1, 6)
+        b = random.randint(1, 6)
+        text = "Dice roll for " + player.name + ": " + str(a) + " " + str(b)
+        message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+        return [a, b]
+
 
     def write_left(self, display, font_size, text, font_color, background,
                    center_tuple, left):
@@ -349,38 +365,38 @@ class Game(object):
         text_rect_obj.left = left
         display.blit(text_surface_obj, text_rect_obj)
 
-    def draw_stats(self, display, height, width, background):
-        if width > height:
+    def draw_stats(self):
+        if self.width > self.height:
             i = 0
             #Draw player stats
             for player in self.players:
                 if player.in_jail:
-                    self.draw_doughnut(display, (0,0, 0), (0, 0, 0),
-                                       height + 10, 10 + i*30, 10, 5, 1)
-                self.write_left(display, 25,
+                    self.draw_doughnut(self.display, (0,0, 0), (0, 0, 0),
+                                       self.height + 10, 10 + i*30, 10, 5, 1)
+                self.write_left(self.display, 25,
                                 player.name + ": $" + str(player.cash),
-                                player.col, background,
-                                (height + 80, 10 + i*30), height + 25)
+                                player.col, self.background,
+                                (self.height + 80, 10 + i*30), self.height + 25)
                 i += 1
             # Draw bank
             i += 1
-            self.write_left(display, 20, "Bank: $" + str(self.bank.money),
-                (0, 0, 0), background, (height + 80, 10 + i*30),
-                height + 25)
+            self.write_left(self.display, 20, "Bank: $" + str(self.bank.money),
+                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
+                self.height + 25)
             i += 1
-            self.write_left(display, 20, "Houses: " + str(self.bank.houses),
-                (0, 0, 0), background, (height + 80, 10 + i*30),
-                height + 25)
+            self.write_left(self.display, 20, "Houses: " + str(self.bank.houses),
+                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
+                self.height + 25)
             i += 1
-            self.write_left(display, 20, "Hotels: " + str(self.bank.hotels),
-                (0, 0, 0), background, (height + 80, 10 + i*30),
-                height + 25)
+            self.write_left(self.display, 20, "Hotels: " + str(self.bank.hotels),
+                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
+                self.height + 25)
             # Money on table
             i += 1
-            self.write_left(display, 20, "On table: " +
+            self.write_left(self.display, 20, "On table: " +
                                          str(self.bank.card_payments),
-                            (0, 0, 0), background, (height + 80, 10 + i*30),
-                            height + 25)
+                            (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
+                            self.height + 25)
 
     def draw_cards(self, card_set, ind, display, background):
         for i in range(len(card_set)):
@@ -398,7 +414,16 @@ class Game(object):
         pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
         pygame.draw.circle(display, edge_col, (x, y), diam, thick_2)
 
-    def click_n_cover(self, display, background, height, width):
+    def start_turn(self, player):
+        mouse_click = False
+        message(self.display, "Hello, " + player.name +
+                              ", click to begin turn",
+                     (255, 0, 255), self.height/2, self.height/2)
+        pygame.display.update()
+        self.click_n_cover()
+
+
+    def click_n_cover(self):
         mouse_click = False
         remainder = len(self.board) % 4
         side = (len(self.board) + remainder)/4 - 1
@@ -407,7 +432,7 @@ class Game(object):
                     if event.type == MOUSEBUTTONUP:
                         mouse_click = True
                 if mouse_click:
-                    pygame.draw.rect(display, background,
+                    pygame.draw.rect(self.display, self.background,
                                      (self.square_side, self.square_side,
                                       side*self.square_side,
                                       side*self.square_side))
@@ -1243,20 +1268,6 @@ class Player(object):
                         "."
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
-
-    def roll_dice(self, display, background, height, width):
-        a = random.randint(1, 6)
-        b = random.randint(1, 6)
-        text = "Dice roll for " + self.name + ": " + str(a) + " " + str(b)
-        message(display, text, background, height, width)
-        return [a, b]
-
-    def start_turn(self, display, background, height, width):
-        mouse_click = False
-        message(display, "Hello, " + self.name +
-                              ", click to begin turn",
-                     (255, 0, 255), height/2, height/2)
-        pygame.display.update()
 
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)

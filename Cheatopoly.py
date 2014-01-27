@@ -1,8 +1,19 @@
 from random import shuffle
 from CheatopolyClasses import *
 
+# Pygame initialization
+pygame.init()
+
+# GUI settings
+HEIGHT = 480
+WIDTH = 640
+GRAY = (192, 192, 192)
+DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
+DISPLAYSURF.fill(GRAY)
+pygame.display.set_caption('Cheatopoly')
+
 #Create game
-thisGame = Game()
+thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF)
 thisGame.load('data.txt')  # Process data.txt
 thisGame.bank = Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
@@ -21,20 +32,12 @@ if ans == "yes":
 else:
     thisGame.mock_players()
 
-# Game window size
-HEIGHT = 480
-WIDTH = 640
-# Colors
-GRAY = (192, 192, 192)
 # Frames per second
 FPS = 2
 fpsClock = pygame.time.Clock()
-# Pygame initialization
-pygame.init()
-DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Cheatopoly')
+
 # Set place coordinates
-thisGame.set_places(WIDTH, HEIGHT)
+thisGame.set_places()
 
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
@@ -45,9 +48,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             sys.exit()
 
     # Draw board with places
-    DISPLAYSURF.fill(GRAY)
-    thisGame.draw_board(DISPLAYSURF)
-    thisGame.draw_stats(DISPLAYSURF, HEIGHT, WIDTH, GRAY)
+    thisGame.draw_board()
+    thisGame.draw_stats()
 
     pygame.display.update()
     fpsClock.tick(FPS)
@@ -58,10 +60,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Dice roll and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
         if not isinstance(myPlayer, Cheatoid):
-            myPlayer.start_turn(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
-            thisGame.click_n_cover(DISPLAYSURF, GRAY, HEIGHT, WIDTH)
-        dice = myPlayer.roll_dice(DISPLAYSURF, GRAY, min(HEIGHT, WIDTH)/2,
-                                  min(HEIGHT, WIDTH)/2)
+            thisGame.start_turn(myPlayer)
+        dice = thisGame.roll_dice(myPlayer)
 
         ## Resolve jail status
         myPlayer.check_jail(thisGame, dice, DISPLAYSURF, GRAY, WIDTH, HEIGHT)
