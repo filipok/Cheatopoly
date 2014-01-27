@@ -457,6 +457,35 @@ class Game(object):
                 print "Oops!  That was no valid number.  Try again..."
         return choose
 
+    def yes_no(self, text, button_size):
+        red = (255, 0, 0)
+        green = (0, 255, 0)
+        x = min(self.width, self.height)/2
+        y = x
+        #draw yes/no boxes
+        message(self.display, text, self.background, x, y + 20)
+        yes_box = pygame.draw.rect(self.display, green, (x - int(button_size*1.5),
+                                                    y + 40, button_size,
+                                                    button_size))
+        no_box = pygame.draw.rect(self.display, red, (x + int(button_size*0.5),
+                                                 y + 40, button_size,
+                                                 button_size))
+        pygame.display.update()
+        #detect click
+        mouse_x = 0
+        mouse_y = 0
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        #check click
+                        if yes_box.collidepoint(mouse_x, mouse_y):
+                            return "yes"
+                        if no_box.collidepoint(mouse_x, mouse_y):
+                            return "no"
+
+
+
     def choose_yes_no(self, string):
         choose = ''
         while choose not in ["yes", "no"]:
@@ -1081,10 +1110,10 @@ class Player(object):
             game.bank.move_money(-auction_price, best_candidate)
             game.board[self.location].new_owner(best_candidate)  # New owner
 
-    def buy(self, game, display, background, x, y):
+    def buy(self, game):
         text = "Wanna buy {}?".format(game.board[self.location].name)
         button_size = 40
-        return yes_no(display, text, background, x, y, button_size)
+        return game.yes_no(text, button_size)
 
     def use_jail_card(self, game):
         return game.choose_yes_no(
@@ -1092,7 +1121,7 @@ class Player(object):
 
     def pay_jail_fine(self, game,display, background, x, y):
         text = "Pay $" + str(game.jail_fine) + " to leave jail?"
-        return yes_no(display, text, background, x, y, 40)
+        return game.yes_no(text, 40)
 
     def reset_jail(self):
         self.in_jail = False
@@ -1271,34 +1300,6 @@ class Player(object):
 
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
-
-
-def yes_no(display, text, background, x, y, button_size):
-    red = (255, 0, 0)
-    green = (0, 255, 0)
-    x = min(x, y)/2
-    y = x
-    #draw yes/no boxes
-    message(display, text, background, x, y + 20)
-    yes_box = pygame.draw.rect(display, green, (x - int(button_size*1.5),
-                                                y + 40, button_size,
-                                                button_size))
-    no_box = pygame.draw.rect(display, red, (x + int(button_size*0.5),
-                                             y + 40, button_size,
-                                             button_size))
-    pygame.display.update()
-    #detect click
-    mouse_x = 0
-    mouse_y = 0
-    while True:
-            for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
-                    mouse_x, mouse_y = event.pos
-                    #check click
-                    if yes_box.collidepoint(mouse_x, mouse_y):
-                        return "yes"
-                    if no_box.collidepoint(mouse_x, mouse_y):
-                        return "no"
 
 
 def message(display, text, background, x, y):
