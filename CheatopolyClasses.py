@@ -508,6 +508,52 @@ class Game(object):
 
 
 
+    def choose_action(self):
+        self.cover()
+        smallest = min(self.width, self.height)
+        step = smallest/10
+        thickness = step - 10
+        center = smallest/2
+        width = smallest/2
+        message(self.display, "Choose an action:", self.background, smallest/2, self.height/5)
+        white = (255, 255, 255)
+        upgrade_box = self.mess_box("UPGRADE", white, smallest/4, smallest/4, width, thickness)
+        downgrade_box = self.mess_box("DOWNGRADE", white, smallest/4, step + smallest/4, width, thickness)
+        mortgage_box = self.mess_box("MORTGAGE", white, smallest/4, 2*step + smallest/4, width, thickness)
+        demortgage_box = self.mess_box("DEMORTGAGE", white, smallest/4, 3*step + smallest/4, width, thickness)
+        negotiate_box = self.mess_box("NEGOTIATE", white, smallest/4, 4*step + smallest/4, width, thickness)
+        nothing_box = self.mess_box("DO NOTHING", white, smallest/4, 5*step + smallest/4, width, thickness)
+        #detect click
+        mouse_x = 0
+        mouse_y = 0
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        #check click
+                        if upgrade_box.collidepoint(mouse_x, mouse_y):
+                            self.cover()
+                            return "u"
+                        if downgrade_box.collidepoint(mouse_x, mouse_y):
+                            self.cover()
+                            return "d"
+                        if mortgage_box.collidepoint(mouse_x, mouse_y):
+                            self.cover()
+                            return "m"
+                        if demortgage_box.collidepoint(mouse_x, mouse_y):
+                            self.cover()
+                            return "e"
+                        if nothing_box.collidepoint(mouse_x, mouse_y):
+                            self.cover()
+                            return "n"
+
+    def mess_box(self, text, box_color, left, up, width, thickness):
+        text_box = pygame.draw.rect(self.display, box_color, (left, up, width, thickness))
+        message(self.display, text, box_color, left + width/2, up + thickness/2)
+        pygame.display.update()
+        return text_box
+
+
     def choose_yes_no(self, string):
         choose = ''
         while choose not in ["yes", "no"]:

@@ -165,11 +165,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             print item
     if myPlayer.cash < 0:
         print "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!"
-    print ""
+
     choose = ''
     while choose not in ["u", "d", "m", "d", "e", "n"]:
-        print "Now " + myPlayer.name + " has $" + str(myPlayer.cash) + "."
-        choose = myPlayer.choose_action()
+        choose = thisGame.choose_action()
         if choose == "u":
             myPlayer.upgrade(thisGame)  # Upgrade
         elif choose == "d":
