@@ -425,19 +425,22 @@ class Game(object):
 
     def click_n_cover(self):
         mouse_click = False
-        remainder = len(self.board) % 4
-        side = (len(self.board) + remainder)/4 - 1
         while True:
                 for event in pygame.event.get():
                     if event.type == MOUSEBUTTONUP:
                         mouse_click = True
                 if mouse_click:
-                    pygame.draw.rect(self.display, self.background,
+                    self.cover()
+                    break
+
+    def cover(self):
+        remainder = len(self.board) % 4
+        side = (len(self.board) + remainder)/4 - 1
+        pygame.draw.rect(self.display, self.background,
                                      (self.square_side, self.square_side,
                                       side*self.square_side,
                                       side*self.square_side))
-                    pygame.display.update()
-                    break
+        pygame.display.update()
 
     def add_one(self, location, length):
         return (location + 1) % length
@@ -1113,11 +1116,12 @@ class Player(object):
     def buy(self, game):
         text = "Wanna buy {}?".format(game.board[self.location].name)
         button_size = 40
-        return game.yes_no(text, button_size)
+        ans = game.yes_no(text, button_size)
+        game.cover()
+        return ans
 
     def use_jail_card(self, game):
-        return game.choose_yes_no(
-            "Do you want to use a 'Get Out Of Jail' card? [yes/no] ")
+        return game.yes_no("Use a 'Get Out Of Jail' card?", 40)
 
     def pay_jail_fine(self, game,display, background, x, y):
         text = "Pay $" + str(game.jail_fine) + " to leave jail?"
