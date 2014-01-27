@@ -39,6 +39,11 @@ thisGame.set_places(WIDTH, HEIGHT)
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
     # Draw board with places
     DISPLAYSURF.fill(GRAY)
     thisGame.draw_board(DISPLAYSURF)
