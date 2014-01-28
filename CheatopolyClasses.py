@@ -319,6 +319,7 @@ class Game(object):
         for item in self.board:
                 item.x = left
                 item.y = up
+                item.orientation = orientation
                 counter += 1
                 if counter == side:
                     orientation = "down"
@@ -596,6 +597,7 @@ class Place(object):
     house_cost = 0
     x = 0
     y = 0
+    orientation = None
     col = None
     txt = ""
 
@@ -705,6 +707,47 @@ class Place(object):
                          (self.x + game.square_side,
                           self.y + game.square_side),
                          1)
+
+    def draw_arrow(self, game):
+        r_len = 20
+        r_width = 10
+        rect_off = 40
+        triangle_h = 10
+        triangle_w = 14
+        small_side = (triangle_w - r_width)/2
+        # Find coordinates and draw rectangle and triangle
+        if self.orientation == "right":
+            x = self.x + game.square_side/2 - r_width/2
+            y = self.y + game.square_side + rect_off - r_len
+            pygame.draw.rect(game.display, self.col, (x, y, r_width, r_len))
+            pygame.draw.polygon(game.display, self.col,
+                                ((x - small_side, y),
+                                 (x + r_width + small_side, y),
+                                 (x + r_width/2, y - triangle_h)))
+        elif self.orientation == "down":
+            x = self.x - rect_off
+            y = self.y + game.square_side/2 - r_width/2
+            pygame.draw.rect(game.display, self.col, (x, y, r_len, r_width))
+            pygame.draw.polygon(game.display, self.col,
+                                ((x + r_len, y + r_width + small_side),
+                                 (x + r_len, y - small_side - 1),
+                                 (x + r_len + triangle_h, y + r_width/2)))
+        elif self.orientation == "left":
+            x = self.x + game.square_side/2 - r_width/2
+            y = self.y - rect_off
+            pygame.draw.rect(game.display, self.col, (x, y, r_width, r_len))
+            pygame.draw.polygon(game.display, self.col,
+                                ((x - small_side, y + r_len),
+                                 (x + r_width + small_side, y + r_len),
+                                 (x + r_width/2, y + r_len + triangle_h)))
+        elif self.orientation == "up":
+            x = self.x + game.square_side + rect_off - r_len
+            y = self.y + game.square_side/2 - r_width/2
+            pygame.draw.rect(game.display, self.col, (x, y, r_len, r_width))
+            pygame.draw.polygon(game.display, self.col,
+                                ((x, y + r_width + small_side),
+                                 (x, y - small_side - 1),
+                                 (x - triangle_h, y + r_width/2)))
 
     def new_owner(self, player):
         #change place owner
