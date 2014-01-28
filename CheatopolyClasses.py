@@ -1302,7 +1302,7 @@ class Player(object):
     def use_jail_card(self, game):
         return game.yes_no("Use a 'Get Out Of Jail' card?", 40)
 
-    def pay_jail_fine(self, game, display, background, x, y):
+    def pay_jail_fine(self, game):
         text = "Pay $" + str(game.jail_fine) + " to leave jail?"
         return game.yes_no(text, 40)
 
@@ -1439,7 +1439,7 @@ class Player(object):
                       " at pos " + str(self.location) + "."
                 self.teleport = 1
 
-    def check_jail(self, game, dice, display, background, x, y):
+    def check_jail(self, game, dice):
         # Resolve jail status
         if self.in_jail:  # Check for doubles while in jail
             if dice[0] == dice[1]:
@@ -1456,7 +1456,7 @@ class Player(object):
                 self.return_card_leave_jail(game)
         #Else pay
         if self.in_jail and self.cash >= game.jail_fine:
-            choose = self.pay_jail_fine(game, display, background, x, y)
+            choose = self.pay_jail_fine(game)
             if choose == 'yes':
                 game.bank.move_money(-game.jail_fine, self)
                 self.reset_jail()
@@ -1662,7 +1662,7 @@ class Cheatoid(Player):
         else:
             return "no"  # Better stay in jail
 
-    def pay_jail_fine(self, game, display, background, x, y):
+    def pay_jail_fine(self, game):
         """
         Returns "yes"/"no"
         """
