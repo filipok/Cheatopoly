@@ -51,12 +51,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             pygame.quit()
             sys.exit()
 
-    # Draw board with places
-    thisGame.display.fill(thisGame.background)
-    thisGame.draw_board()
-    thisGame.draw_stats()
+    # Draw board with places, players and stats
+    thisGame.visual_refresh()
 
-    pygame.display.update()
     fpsClock.tick(FPS)
 
     myPlayer = thisGame.players[thisGame.current_player]  # Shorthand

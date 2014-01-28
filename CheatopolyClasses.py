@@ -444,6 +444,12 @@ class Game(object):
         pygame.draw.circle(display, fill_col, (x, y), diam, thick_1)
         pygame.draw.circle(display, edge_col, (x, y), diam, thick_2)
 
+    def visual_refresh(self):
+        self.display.fill(self.background)
+        self.draw_board()
+        self.draw_stats()
+        pygame.display.update()
+
     def start_turn(self, player):
         mouse_click = False
         message(self.display, "Hello, " + player.name +
