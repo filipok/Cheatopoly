@@ -458,9 +458,9 @@ class Game(object):
         remainder = len(self.board) % 4
         side = (len(self.board) + remainder)/4 - 1
         pygame.draw.rect(self.display, self.background,
-                                     (self.square_side, self.square_side,
-                                      side*self.square_side,
-                                      side*self.square_side))
+                                     (self.square_side + 1, self.square_side + 1,
+                                      side*self.square_side - 1,
+                                      side*self.square_side - 1))
         pygame.display.update()
 
     def add_one(self, location, length):
@@ -632,8 +632,10 @@ class Place(object):
                                game.square_side/2, game.square_side/2)
         # Draw place names and split it as necessary
         background = self.col
+        owner_name = ""
         if self.owned_by is not None:
-            col = (255, 255, 255)
+            #col = (180, 180, 180)
+            owner_name = self.owned_by.name
         if isinstance(self, Street) or isinstance(self, Utility) or \
                 isinstance(self, Railroad):
             name_split = self.name.split(" ")
@@ -646,27 +648,40 @@ class Place(object):
                 lines += 1
             self.write(name_end, game.font_size, col, background, lines, game.line_height,
                        game.display, game)
+            lines += 1
+            if isinstance(self, (Utility, Railroad)) and self.owned_by is not None:
+                lines += 4
+                background = self.owned_by.col
+            self.write(owner_name, game.font_size, col, background, lines, game.line_height,
+                       game.display, game)
         # Draw street houses and hotels
         if isinstance(self, Street):
+            empty_col = self.col
+            full_col = (11,255, 255)
             for i in range(4):
                 if self.houses >= i + 1:
-                    col = (111, 255, 255)  # Indigo
+                    col = full_col
                 else:
-                    col = (0, 0, 0)
+                    col = empty_col
                 pygame.draw.rect(game.display, col, (self.x + i*game.square_side/4,
                                                 self.y + game.square_side -
                                                 game.square_side/4,
                                                 game.square_side/4 - 1,
                                                 game.square_side/4 - 1))
             if self.hotels == 1:
-                col = (111, 255, 255)  # Indigo
+                col = full_col
             else:
-                col = (0, 0, 0)
+                col = empty_col
             pygame.draw.rect(game.display, col, (self.x,
                                             self.y + game.square_side -
                                             game.square_side/2,
                                             game.square_side,
                                             game.square_side/4 - 1))
+        # Draw outline
+        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y), (self.x + game.square_side,self.y), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y), (self.x,self.y + game.square_side), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x + game.square_side, self.y), (self.x + game.square_side,self.y + game.square_side), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y + game.square_side), (self.x + game.square_side,self.y + game.square_side), 1)
 
     def new_owner(self, player):
         #change place owner

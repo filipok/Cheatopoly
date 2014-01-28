@@ -51,6 +51,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             sys.exit()
 
     # Draw board with places
+    thisGame.display.fill(thisGame.background)
     thisGame.draw_board()
     thisGame.draw_stats()
 
@@ -187,7 +188,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Negotiate with other players
     #save/load game from disk
     # add turn counter and print it at the end
-
 
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
