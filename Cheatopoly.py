@@ -77,7 +77,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.doubles_in_a_row = 0
 
         #If not in jail, advance to new position
-        if not myPlayer.in_jail:
+        if not myPlayer.in_jail and not myPlayer.jail_doubles:
             #Update random position variation
             myPlayer.x_rand = random.randint(-6, 6)
             myPlayer.y_rand = random.randint(-6, 6)
@@ -95,6 +95,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
                 thisGame.bank.move_money(thisGame.start_wage, myPlayer)
                 print myPlayer.name + " gets $" + str(thisGame.start_wage) + \
                     "."
+        elif myPlayer.jail_doubles:
+            myPlayer.jail_doubles = False
 
     #reset teleport counter now
     myPlayer.teleport = 0

@@ -482,6 +482,7 @@ class Game(object):
     def cover_n_central(self, text):
         self.cover()
         self.central_message(text)
+        pygame.time.wait(1000)
 
     def choose_place(self):
         choose = None
@@ -1104,6 +1105,7 @@ class Player(object):
     jail_comm_cards = 0
     jail_chance_cards = 0
     doubles_in_a_row = 0
+    jail_doubles = False  # Flag whether left jail with doubles
     double_rent = 1  # 1 or 2; flag for the chance card sending to next R.R.
     teleport = 0  # Indicates whether the player was sent over by a Chance card
     in_auction = False  # Used for auctions
