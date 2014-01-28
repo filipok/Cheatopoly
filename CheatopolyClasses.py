@@ -379,6 +379,7 @@ class Game(object):
         message(self.display, text, self.background, min(self.height,
                                                          self.width)/2,
                 min(self.height, self.width)/2)
+        pygame.time.wait(1000)
         return [a, b]
 
     def write_left(self, display, font_size, text, font_color, background,
