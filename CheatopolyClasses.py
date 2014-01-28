@@ -482,6 +482,22 @@ class Game(object):
                           side*self.square_side - 1))
         pygame.display.update()
 
+    def choose_place(self):
+        choose = None
+        while True:
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    m_x, m_y = event.pos
+                    self.cover()
+                    for item in self.board:
+                        if item.x <= m_x <= item.x + self.square_side and \
+                                item.y <= m_y <= item.y + self.square_side:
+                            choose = item.location
+                            break
+            if choose is not None:  # Need valid location
+                break
+        return choose
+
     def add_one(self, location, length):
         return (location + 1) % length
 
