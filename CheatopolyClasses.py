@@ -1221,24 +1221,35 @@ class Player(object):
             print "You have downgraded " + game.board[choose].name + "."
 
     def upgrade(self, game):
-        #Flag the upgradeable locations
+        # Flag the upgradeable locations
         game.flag_upgradeable_places(self)
-        #Print the upgradeable locations
-        print self.name + ", these are the locations you can upgrade now:"
+        # Print/draw the upgradeable locations
+        text = self.name + ", arrows indicate the locations you can upgrade."
+        message(game.display, text, game.background,
+                min(game.height, game.width)/2,
+                min(game.height, game.width)/2)
         for item in game.board:
             if isinstance(item, Street) and item.all_upgrade_conditions(
                     game.bank, self):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1)
+                item.draw_arrow(game)
+        pygame.display.update()
+        # Choose a place to upgrade
+        choose = game.choose_place()
         if isinstance(game.board[choose], Street) and game.board[
                 choose].all_upgrade_conditions(game.bank, self):
             if game.board[choose].houses < 4:
                 game.board[choose].upgrade_house(self, game.bank)
             else:
                 game.board[choose].upgrade_hotel(self, game.bank)
-            print "You have successfully upgraded " + game.board[
+            game.visual_refresh()
+            text = "You have successfully upgraded " + game.board[
                 choose].name + "."
-            #restore to 5
+            message(game.display, text, game.background,
+                    min(game.height, game.width)/2,
+                    min(game.height, game.width)/2)
+            pygame.time.wait(500)
+        #restore to 5
         for item in game.board:
             if isinstance(item, Street):
                 item.min_upgrade = 5
