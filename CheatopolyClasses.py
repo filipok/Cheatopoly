@@ -1,7 +1,6 @@
 import random
 import os
 import pygame
-import sys
 from pygame.locals import *
 
 
@@ -40,7 +39,8 @@ class Game(object):
     player_cols = [(255, 51, 51), (153, 255, 51), (51, 153, 255),
                    (255, 153, 51), (51, 255, 153, ), (255, 51, 153)]
 
-    def __init__(self, height, width, background, display, line_height, font_size):
+    def __init__(self, height, width, background, display, line_height,
+                 font_size):
         self.neighborhoods = {}
         self.community_chest = []
         self.chances = []
@@ -167,9 +167,11 @@ class Game(object):
             if player.cash > place.price:
                 place.new_owner(player)  # Assign new owner
                 self.bank.move_money(-place.price, player)
-                text = "Well done, " + player.name + \
-                      ", you have bought " + place.name + "."
-                message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                text = "Well done, " + player.name + ", you have bought " + \
+                       place.name + "."
+                message(self.display, text, self.background, min(self.height,
+                                                                 self.width)/2,
+                        min(self.height, self.width)/2)
                 self.wait_n_cover(1000)
                 place.draw(self)
                 for player in self.players:
@@ -177,12 +179,16 @@ class Game(object):
                 pygame.display.update()
             else:
                 text = "Sorry, you do not have the required funds!"
-                message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                message(self.display, text, self.background, min(self.height,
+                                                                 self.width)/2,
+                        min(self.height, self.width)/2)
                 self.wait_n_cover(1000)
                 a = random.randint(1, 4)
                 if a == 1:
                     text = "Beggar...!"
-                    message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+                    message(self.display, text, self.background,
+                            min(self.height, self.width)/2, min(self.height,
+                                                                self.width)/2)
                     self.wait_n_cover(1000)
                 player.start_auction(self)  # Launch auction
         else:
@@ -369,9 +375,10 @@ class Game(object):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
         text = "Dice roll for " + player.name + ": " + str(a) + " " + str(b)
-        message(self.display, text, self.background, min(self.height, self.width)/2, min(self.height, self.width)/2)
+        message(self.display, text, self.background, min(self.height,
+                                                         self.width)/2,
+                min(self.height, self.width)/2)
         return [a, b]
-
 
     def write_left(self, display, font_size, text, font_color, background,
                    center_tuple, left):
@@ -388,31 +395,36 @@ class Game(object):
             #Draw player stats
             for player in self.players:
                 if player.in_jail:
-                    self.draw_doughnut(self.display, (0,0, 0), (0, 0, 0),
+                    self.draw_doughnut(self.display, (0, 0, 0), (0, 0, 0),
                                        self.height + 10, 10 + i*30, 10, 5, 1)
                 self.write_left(self.display, 25,
                                 player.name + ": $" + str(player.cash),
                                 player.col, self.background,
-                                (self.height + 80, 10 + i*30), self.height + 25)
+                                (self.height + 80, 10 + i*30),
+                                self.height + 25)
                 i += 1
             # Draw bank
             i += 1
             self.write_left(self.display, 20, "Bank: $" + str(self.bank.money),
-                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
-                self.height + 25)
+                            (0, 0, 0), self.background, (self.height + 80,
+                                                         10 + i*30),
+                            self.height + 25)
             i += 1
-            self.write_left(self.display, 20, "Houses: " + str(self.bank.houses),
-                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
-                self.height + 25)
+            self.write_left(self.display, 20, "Houses: " +
+                                              str(self.bank.houses), (0, 0, 0),
+                            self.background, (self.height + 80, 10 + i*30),
+                            self.height + 25)
             i += 1
-            self.write_left(self.display, 20, "Hotels: " + str(self.bank.hotels),
-                (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
-                self.height + 25)
+            self.write_left(self.display, 20, "Hotels: " +
+                                              str(self.bank.hotels), (0, 0, 0),
+                            self.background, (self.height + 80, 10 + i*30),
+                            self.height + 25)
             # Money on table
             i += 1
             self.write_left(self.display, 20, "On table: " +
-                                         str(self.bank.card_payments),
-                            (0, 0, 0), self.background, (self.height + 80, 10 + i*30),
+                                              str(self.bank.card_payments),
+                            (0, 0, 0), self.background, (self.height + 80,
+                                                         10 + i*30),
                             self.height + 25)
 
     def draw_cards(self, card_set, ind, display, background):
@@ -435,10 +447,9 @@ class Game(object):
         mouse_click = False
         message(self.display, "Hello, " + player.name +
                               ", click to begin turn",
-                     (255, 0, 255), self.height/2, self.height/2)
+                (255, 0, 255), self.height/2, self.height/2)
         pygame.display.update()
         self.click_n_cover()
-
 
     def click_n_cover(self):
         mouse_click = False
@@ -458,9 +469,10 @@ class Game(object):
         remainder = len(self.board) % 4
         side = (len(self.board) + remainder)/4 - 1
         pygame.draw.rect(self.display, self.background,
-                                     (self.square_side + 1, self.square_side + 1,
-                                      side*self.square_side - 1,
-                                      side*self.square_side - 1))
+                         (self.square_side + 1,
+                          self.square_side + 1,
+                          side*self.square_side - 1,
+                          side*self.square_side - 1))
         pygame.display.update()
 
     def add_one(self, location, length):
@@ -488,16 +500,14 @@ class Game(object):
         y = x
         #draw yes/no boxes
         message(self.display, text, self.background, x, y + 20)
-        yes_box = pygame.draw.rect(self.display, green, (x - int(button_size*1.5),
-                                                    y + 40, button_size,
-                                                    button_size))
-        no_box = pygame.draw.rect(self.display, red, (x + int(button_size*0.5),
-                                                 y + 40, button_size,
-                                                 button_size))
+        yes_box = pygame.draw.rect(self.display, green,
+                                   (x - int(button_size*1.5), y + 40,
+                                    button_size, button_size))
+        no_box = pygame.draw.rect(self.display, red,
+                                  (x + int(button_size*0.5), y + 40,
+                                   button_size, button_size))
         pygame.display.update()
-        #detect click
-        mouse_x = 0
-        mouse_y = 0
+        # Detect click
         while True:
                 for event in pygame.event.get():
                     if event.type == MOUSEBUTTONUP:
@@ -509,11 +519,12 @@ class Game(object):
                             return "no"
 
     def mess_box(self, text, box_color, left, up, width, thickness):
-        text_box = pygame.draw.rect(self.display, box_color, (left, up, width, thickness))
-        message(self.display, text, box_color, left + width/2, up + thickness/2)
+        text_box = pygame.draw.rect(self.display, box_color,
+                                    (left, up, width, thickness))
+        message(self.display, text, box_color, left + width/2,
+                up + thickness/2)
         pygame.display.update()
         return text_box
-
 
     def choose_yes_no(self, string):
         choose = ''
@@ -643,45 +654,57 @@ class Place(object):
             name_begin = " ".join(name_split[:-1])
             lines = 1
             if len(name_begin) != 0:
-                self.write(name_begin, game.font_size, col, background, lines, game.line_height,
-                           game.display, game)
+                self.write(name_begin, game.font_size, col, background, lines,
+                           game.line_height, game.display, game)
                 lines += 1
-            self.write(name_end, game.font_size, col, background, lines, game.line_height,
-                       game.display, game)
+            self.write(name_end, game.font_size, col, background, lines,
+                       game.line_height, game.display, game)
             lines += 1
-            if isinstance(self, (Utility, Railroad)) and self.owned_by is not None:
+            if isinstance(self, (Utility, Railroad)) and  \
+                    self.owned_by is not None:
                 lines += 4
                 background = self.owned_by.col
-            self.write(owner_name, game.font_size, col, background, lines, game.line_height,
-                       game.display, game)
+            self.write(owner_name, game.font_size, col, background, lines,
+                       game.line_height, game.display, game)
         # Draw street houses and hotels
         if isinstance(self, Street):
             empty_col = self.col
-            full_col = (11,255, 255)
+            full_col = (11, 255, 255)
             for i in range(4):
                 if self.houses >= i + 1:
                     col = full_col
                 else:
                     col = empty_col
-                pygame.draw.rect(game.display, col, (self.x + i*game.square_side/4,
-                                                self.y + game.square_side -
-                                                game.square_side/4,
-                                                game.square_side/4 - 1,
-                                                game.square_side/4 - 1))
+                pygame.draw.rect(game.display, col,
+                                 (self.x + i*game.square_side/4,
+                                  self.y + game.square_side -
+                                  game.square_side/4,
+                                  game.square_side/4 - 1,
+                                  game.square_side/4 - 1))
             if self.hotels == 1:
                 col = full_col
             else:
                 col = empty_col
             pygame.draw.rect(game.display, col, (self.x,
-                                            self.y + game.square_side -
-                                            game.square_side/2,
-                                            game.square_side,
-                                            game.square_side/4 - 1))
+                                                 self.y + game.square_side -
+                                                 game.square_side/2,
+                                                 game.square_side,
+                                                 game.square_side/4 - 1))
         # Draw outline
-        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y), (self.x + game.square_side,self.y), 1)
-        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y), (self.x,self.y + game.square_side), 1)
-        pygame.draw.line(game.display, (0, 0, 0), (self.x + game.square_side, self.y), (self.x + game.square_side,self.y + game.square_side), 1)
-        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y + game.square_side), (self.x + game.square_side,self.y + game.square_side), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y),
+                         (self.x + game.square_side, self.y), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x, self.y),
+                         (self.x, self.y + game.square_side), 1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x + game.square_side,
+                                                   self.y),
+                         (self.x + game.square_side,
+                          self.y + game.square_side),
+                         1)
+        pygame.draw.line(game.display, (0, 0, 0), (self.x,
+                                                   self.y + game.square_side),
+                         (self.x + game.square_side,
+                          self.y + game.square_side),
+                         1)
 
     def new_owner(self, player):
         #change place owner
@@ -1039,22 +1062,27 @@ class Player(object):
 
     def choose_action(self, game):
         game.cover()
+        # Draw menu
         smallest = min(game.width, game.height)
         step = smallest/10
         thickness = step - 10
-        center = smallest/2
         width = smallest/2
-        message(game.display, "Choose an action:", game.background, smallest/2, game.height/5)
+        message(game.display, "Choose an action:", game.background, smallest/2,
+                game.height/5)
         white = (255, 255, 255)
-        upgrade_box = game.mess_box("UPGRADE", white, smallest/4, smallest/4, width, thickness)
-        downgrade_box = game.mess_box("DOWNGRADE", white, smallest/4, step + smallest/4, width, thickness)
-        mortgage_box = game.mess_box("MORTGAGE", white, smallest/4, 2*step + smallest/4, width, thickness)
-        demortgage_box = game.mess_box("DEMORTGAGE", white, smallest/4, 3*step + smallest/4, width, thickness)
-        negotiate_box = game.mess_box("NEGOTIATE", white, smallest/4, 4*step + smallest/4, width, thickness)
-        nothing_box = game.mess_box("DO NOTHING", white, smallest/4, 5*step + smallest/4, width, thickness)
-        #detect click
-        mouse_x = 0
-        mouse_y = 0
+        upgrade_box = game.mess_box("UPGRADE", white, smallest/4,
+                                    smallest/4, width, thickness)
+        downgrade_box = game.mess_box("DOWNGRADE", white, smallest/4,
+                                      step + smallest/4, width, thickness)
+        mortgage_box = game.mess_box("MORTGAGE", white, smallest/4,
+                                     2*step + smallest/4, width, thickness)
+        demortgage_box = game.mess_box("DEMORTGAGE", white, smallest/4,
+                                       3*step + smallest/4, width, thickness)
+        negotiate_box = game.mess_box("NEGOTIATE", white, smallest/4,
+                                      4*step + smallest/4, width, thickness)
+        nothing_box = game.mess_box("DO NOTHING", white, smallest/4,
+                                    5*step + smallest/4, width, thickness)
+        # Detect click
         while True:
                 for event in pygame.event.get():
                     if event.type == MOUSEBUTTONUP:
@@ -1075,7 +1103,6 @@ class Player(object):
                         if nothing_box.collidepoint(mouse_x, mouse_y):
                             game.cover()
                             return "n"
-
 
     def move_to_jail(self, game):
         print self.name + " goes to JAIL!"
@@ -1198,7 +1225,7 @@ class Player(object):
     def use_jail_card(self, game):
         return game.yes_no("Use a 'Get Out Of Jail' card?", 40)
 
-    def pay_jail_fine(self, game,display, background, x, y):
+    def pay_jail_fine(self, game, display, background, x, y):
         text = "Pay $" + str(game.jail_fine) + " to leave jail?"
         return game.yes_no(text, 40)
 
@@ -1384,7 +1411,7 @@ class Player(object):
 def message(display, text, background, x, y):
     print text
     font_obj = pygame.font.Font(None, 20)
-    text_surface_obj = font_obj.render(text, True, (0,0,0), background)
+    text_surface_obj = font_obj.render(text, True, (0, 0, 0), background)
     text_rect_obj = text_surface_obj.get_rect()
     text_rect_obj.center = (x, y)
     display.blit(text_surface_obj, text_rect_obj)
@@ -1558,7 +1585,7 @@ class Cheatoid(Player):
         else:
             return "no"  # Better stay in jail
 
-    def pay_jail_fine(self, game,display, background, x, y):
+    def pay_jail_fine(self, game, display, background, x, y):
         """
         Returns "yes"/"no"
         """

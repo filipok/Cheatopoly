@@ -1,3 +1,4 @@
+import sys
 from random import shuffle
 from CheatopolyClasses import *
 
@@ -16,7 +17,7 @@ DISPLAYSURF.fill(GRAY)
 pygame.display.set_caption('Cheatopoly')
 
 #Create game
-thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF,LINE_HEIGHT,FONT_SIZE)
+thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF, LINE_HEIGHT, FONT_SIZE)
 thisGame.load('data.txt')  # Process data.txt
 thisGame.bank = Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
