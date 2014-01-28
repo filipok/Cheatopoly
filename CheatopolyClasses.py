@@ -169,9 +169,7 @@ class Game(object):
                 self.bank.move_money(-place.price, player)
                 text = "Well done, " + player.name + ", you have bought " + \
                        place.name + "."
-                message(self.display, text, self.background, min(self.height,
-                                                                 self.width)/2,
-                        min(self.height, self.width)/2)
+                self.central_message(text)
                 self.wait_n_cover(1000)
                 place.draw(self)
                 for player in self.players:
@@ -179,16 +177,12 @@ class Game(object):
                 pygame.display.update()
             else:
                 text = "Sorry, you do not have the required funds!"
-                message(self.display, text, self.background, min(self.height,
-                                                                 self.width)/2,
-                        min(self.height, self.width)/2)
+                self.central_message(text)
                 self.wait_n_cover(1000)
                 a = random.randint(1, 4)
                 if a == 1:
                     text = "Beggar...!"
-                    message(self.display, text, self.background,
-                            min(self.height, self.width)/2, min(self.height,
-                                                                self.width)/2)
+                    self.central_message(text)
                     self.wait_n_cover(1000)
                 player.start_auction(self)  # Launch auction
         else:
@@ -376,9 +370,7 @@ class Game(object):
         a = random.randint(1, 6)
         b = random.randint(1, 6)
         text = "Dice roll for " + player.name + ": " + str(a) + " " + str(b)
-        message(self.display, text, self.background, min(self.height,
-                                                         self.width)/2,
-                min(self.height, self.width)/2)
+        self.central_message(text)
         pygame.time.wait(1000)
         return [a, b]
 
@@ -482,6 +474,10 @@ class Game(object):
                           side*self.square_side - 1,
                           side*self.square_side - 1))
         pygame.display.update()
+
+    def central_message(self, text):
+        message(self.display, text, self.background,
+                min(self.height, self.width)/2, min(self.height, self.width)/2)
 
     def choose_place(self):
         choose = None
@@ -1226,9 +1222,7 @@ class Player(object):
         game.flag_upgradeable_places(self)
         # Print/draw the upgradeable locations
         text = self.name + ", arrows indicate the locations you can upgrade."
-        message(game.display, text, game.background,
-                min(game.height, game.width)/2,
-                min(game.height, game.width)/2)
+        game.central_message(text)
         for item in game.board:
             if isinstance(item, Street) and item.all_upgrade_conditions(
                     game.bank, self):
@@ -1246,9 +1240,7 @@ class Player(object):
             game.visual_refresh()
             text = "You have successfully upgraded " + game.board[
                 choose].name + "."
-            message(game.display, text, game.background,
-                    min(game.height, game.width)/2,
-                    min(game.height, game.width)/2)
+            game.central_message(text)
             pygame.time.wait(500)
         #restore to 5
         for item in game.board:
