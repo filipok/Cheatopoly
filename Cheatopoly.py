@@ -84,17 +84,20 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.location = (myPlayer.location + dice[0] + dice[1]) % \
                 len(thisGame.board)
             thisGame.visual_refresh()
-            print myPlayer.name + " advances to " + str(myPlayer.location) + \
+            text = myPlayer.name + " advances to " + str(myPlayer.location) + \
                 " (" + thisGame.board[myPlayer.location].name + ")."
+            thisGame.cover_n_central(text)
             #Did we pass Go? +start_wage/2*start_wage
             if myPlayer.location == 0:
                 thisGame.bank.move_money(2*thisGame.start_wage, myPlayer)
-                print myPlayer.name + " is a lucky punk and gets $" + \
+                text = myPlayer.name + " is a lucky punk and gets $" + \
                     str(2*thisGame.start_wage) + "."
+                thisGame.cover_n_central(text)
             elif myPlayer.location - dice[0] - dice[1] < 0:
                 thisGame.bank.move_money(thisGame.start_wage, myPlayer)
-                print myPlayer.name + " gets $" + str(thisGame.start_wage) + \
+                text = myPlayer.name + " gets $" + str(thisGame.start_wage) + \
                     "."
+                thisGame.cover_n_central(text)
         elif myPlayer.jail_doubles:
             myPlayer.jail_doubles = False
 
@@ -111,8 +114,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             thisGame.buy_or_auction(choose, myPlayer, thisPlace)
         elif thisPlace.owned_by == myPlayer:
             #If you already own that place
-            print "You (" + myPlayer.name + ") already own " + \
-                  thisPlace.name + "."
+            text = "You (" + myPlayer.name + ") already own " + \
+                   thisPlace.name + "."
+            thisGame.cover_n_central(text)
         else:
             #Finally, you pay rent (if not mortgaged)
             myPlayer.pay_rent(thisPlace, thisGame)
@@ -131,8 +135,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #Community Chest
     if isinstance(thisPlace, CommunityChest):
-        print myPlayer.name + ", you have drawn this Community Chest card: ",
-        print thisGame.community_chest[thisGame.current_comm].text
+        text = myPlayer.name + ", you have drawn this Community Chest card: "
+        thisGame.cover_n_central(text)
+        thisGame.cover_n_central(
+            thisGame.community_chest[thisGame.current_comm].text)
         #Specific procedure
         myPlayer.check_specific_comm(thisGame)
         # Common procedure
@@ -146,8 +152,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #Chance cards
     if isinstance(thisPlace, Chance):
-        print myPlayer.name + ", you have drawn this Chance card: ",
-        print thisGame.chances[thisGame.current_chance].text
+        text = myPlayer.name + ", you have drawn this Chance card: "
+        thisGame.cover_n_central(text)
+        thisGame.cover_n_central(
+            thisGame.chances[thisGame.current_chance].text)
         # Specific procedure
         myPlayer.check_specific_chance(thisGame)
         # Common procedure
@@ -162,14 +170,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             continue  # Player teleports.
 
     #Upgrade/downgrade houses/hotels, mortgage properties
-    print ""
-    print myPlayer.name + ", you have the following properties:"
-    for item in thisGame.board:
-        if item.owned_by == myPlayer:
-            print item
     if myPlayer.cash < 0:
-        print "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!"
-
+        thisGame.cover_n_central(
+            "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!")
     choose = ''
     while choose not in ["u", "d", "m", "d", "e", "n"]:
         choose = myPlayer.choose_action(thisGame)
