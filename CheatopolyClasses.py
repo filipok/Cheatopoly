@@ -479,6 +479,10 @@ class Game(object):
         message(self.display, text, self.background,
                 min(self.height, self.width)/2, min(self.height, self.width)/2)
 
+    def cover_n_central(self, text):
+        self.cover()
+        self.central_message(text)
+
     def choose_place(self):
         choose = None
         while True:
@@ -1436,8 +1440,11 @@ class Player(object):
         if self.in_jail:  # Check for doubles while in jail
             if dice[0] == dice[1]:
                 self.reset_jail()
-                print self.name + " has got a double: " + str(dice[0]) + \
+                self.jail_doubles = True
+
+                text = self.name + " has got a double: " + str(dice[0]) + \
                     " " + str(dice[1]) + "."
+                game.cover_n_central(text)
             else:
                 self.time_in_jail += 1
         #Else use a get ouf of jail card
@@ -1452,14 +1459,16 @@ class Player(object):
             if choose == 'yes':
                 game.bank.move_money(-game.jail_fine, self)
                 self.reset_jail()
-                print self.name + " pays $" + str(game.jail_fine) + \
+                text = self.name + " pays $" + str(game.jail_fine) + \
                     " to get out of jail."
+                game.cover_n_central(text)
         #Else if already three turns in jail:
         if self.time_in_jail == 3:
             game.bank.move_money(-game.jail_fine, self)
             self.reset_jail()
-            print self.name + " pays anyway $" + str(game.jail_fine) +\
+            text = self.name + " pays anyway $" + str(game.jail_fine) +\
                 " to get out of jail after three turns."
+            game.cover_n_central(text)
     
     def check_specific_comm(self, game):
         if game.community_chest[game.current_comm].collect == 1:
