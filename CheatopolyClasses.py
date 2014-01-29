@@ -167,26 +167,24 @@ class Game(object):
             if player.cash > place.price:
                 place.new_owner(player)  # Assign new owner
                 self.bank.move_money(-place.price, player)
-                text = "Well done, " + player.name + ", you have bought " + \
-                       place.name + "."
-                self.central_message(text)
-                self.wait_n_cover(1000)
                 place.draw(self)
                 for player in self.players:
                     player.draw(self)
                 pygame.display.update()
+                self.cover_n_central(
+                    player.name + ", you have bought " + place.name + ".")
+
             else:
-                text = "Sorry, you do not have the required funds!"
-                self.central_message(text)
-                self.wait_n_cover(1000)
+                self.cover_n_central(
+                    "Sorry, you do not have the required funds!")
                 a = random.randint(1, 4)
                 if a == 1:
-                    text = "Beggar...!"
-                    self.central_message(text)
-                    self.wait_n_cover(1000)
+                    self.cover_n_central("Beggar...!")
                 player.start_auction(self)  # Launch auction
+                self.visual_refresh()
         else:
             player.start_auction(self)  # Launch auction
+            self.visual_refresh()
 
     def draw_players(self):
         for player in self.players:
