@@ -1181,17 +1181,21 @@ class Player(object):
         game.cover_n_central(self.name + " goes to JAIL!")
 
     def mortgage(self, game):
-        print "List of properties that you can mortgage:"
+        text = self.name + ", arrows indicate the locations you can mortgage."
+        game.central_message(text)
         for item in game.board:
             if item.owned_and_not_mortgaged_by(self) and item.houses == 0:
                 print item
-        choose = game.choose_int(0, len(game.board) - 1)
+                item.draw_arrow(game)
+        pygame.display.update()
+        choose = game.choose_place()
         if game.board[choose].owned_and_not_mortgaged_by(self) and \
                 game.board[choose].houses == 0:
             game.bank.move_money(game.board[choose].mortgage, self)
             game.board[choose].mortgaged = True
-            print "You have successfully mortgaged " + game.board[
-                choose].name + "."
+            game.visual_refresh()
+            game.cover_n_central(
+                "You have mortgaged " + game.board[choose].name + ".")
 
     def demortgage(self, game):
         print "List of properties that you can demortgage:"
@@ -1520,7 +1524,8 @@ class Cheatoid(Player):
             if item.owned_and_not_mortgaged_by(self) and item.houses == 0:
                 game.bank.move_money(item.mortgage, self)
                 item.mortgaged = True
-                print self.name + " has mortgaged " + item.name + "."
+                game.cover_n_central(
+                    self.name + " has mortgaged " + item.name + ".")
                 self.successful_mortgage = True
                 break
 
