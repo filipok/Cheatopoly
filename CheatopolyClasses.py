@@ -1198,17 +1198,20 @@ class Player(object):
                 "You have mortgaged " + game.board[choose].name + ".")
 
     def demortgage(self, game):
-        print "List of properties that you can demortgage:"
+        text = self.name + ", arrows indicate the locations you can demortgage."
+        game.central_message(text)
         for item in game.board:
             if item.owned_and_mortgaged_by(self):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1)
+                item.draw_arrow(game)
+        pygame.display.update()
+        choose = game.choose_place()
         if game.board[choose].owned_and_mortgaged_by(self) and \
                 self.cash >= int(game.board[choose].mortgage * 1.1):
             game.bank.move_money(-int(game.board[choose].mortgage * 1.1), self)
             game.board[choose].mortgaged = False
-            print "You have successfully demortgaged " + \
-                  game.board[choose].name + "."
+            game.cover_n_central(
+                "You have demortgaged " + game.board[choose].name + ".")
 
     def downgrade(self, game):
         text = self.name + ", arrows indicate the locations you can downgrade."
@@ -1539,7 +1542,8 @@ class Cheatoid(Player):
                     self.cash >= int(item.mortgage * 1.1):
                 game.bank.move_money(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False
-                print self.name + " has demortgaged " + item.name + "."
+                game.cover_n_central(
+                    self.name + " has demortgaged " + item.name + ".")
                 self.successful_demortgage = True
                 break
 
