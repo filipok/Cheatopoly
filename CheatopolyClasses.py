@@ -1545,12 +1545,16 @@ class Cheatoid(Player):
         for item in game.board:
             if item.owned_by == self and item.hotels == 1:
                 item.downgrade_hotel(self, game.bank)
-                print self.name + " has downgraded " + item.name + "."
+                game.visual_refresh()
+                game.cover_n_central(
+                    self.name + " has downgraded " + item.name + ".")
                 self.successful_downgrade = True
                 break
             elif item.owned_by == self and item.houses > 0:  # For streets: > 0
                 item.downgrade_house(self, game.bank)
-                print self.name + " has downgraded " + item.name + "."
+                game.visual_refresh()
+                game.cover_n_central(
+                    self.name + " has downgraded " + item.name + ".")
                 self.successful_downgrade = True
                 break
 
@@ -1571,14 +1575,16 @@ class Cheatoid(Player):
                     #upgrade
                     if level < 4:
                         item.upgrade_house(self, game.bank)
-                        print self.name + " has successfully upgraded " + \
-                            item.name + "."
+                        game.visual_refresh()
+                        game.cover_n_central(
+                            self.name + " has upgraded " + item.name + ".")
                         upgrade_done = True
                         self.successful_upgrade = True
                     elif item.hotels == 0:
                         item.upgrade_hotel(self, game.bank)
-                        print self.name + " has successfully upgraded " + \
-                            item.name + "."
+                        game.visual_refresh()
+                        game.cover_n_central(
+                            self.name + " has upgraded " + item.name + ".")
                         upgrade_done = True
                         self.successful_upgrade = True
             level += 1
