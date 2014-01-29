@@ -1173,13 +1173,14 @@ class Player(object):
                             return "n"
 
     def move_to_jail(self, game):
-        print self.name + " goes to JAIL!"
         #find next jail (you can have several, if you ask me)
         search_jail = self.location
         while not isinstance(game.board[search_jail], Jail):
             search_jail = (search_jail + 1) % len(game.board)
         self.location = search_jail
         self.in_jail = True
+        game.visual_refresh()
+        game.cover_n_central(self.name + " goes to JAIL!")
 
     def mortgage(self, game):
         print "List of properties that you can mortgage:"
