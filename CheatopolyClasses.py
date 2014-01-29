@@ -488,13 +488,13 @@ class Game(object):
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONUP:
                     m_x, m_y = event.pos
-                    self.cover()
                     for item in self.board:
                         if item.x <= m_x <= item.x + self.square_side and \
                                 item.y <= m_y <= item.y + self.square_side:
                             choose = item.location
                             break
             if choose is not None:  # Need valid location
+                self.cover()
                 break
         return choose
 
