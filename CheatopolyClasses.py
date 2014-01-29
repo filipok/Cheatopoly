@@ -1209,12 +1209,15 @@ class Player(object):
                   game.board[choose].name + "."
 
     def downgrade(self, game):
-        print "List of properties that you can downgrade:"
+        text = self.name + ", arrows indicate the locations you can downgrade."
+        game.central_message(text)
         for item in game.board:
             if item.owned_and_not_mortgaged_by(self) and \
                     item.houses > 0 and item.bank_allows_downgrade(game.bank):
                 print item
-        choose = game.choose_int(0, len(game.board) - 1)
+                item.draw_arrow(game)
+        pygame.display.update()
+        choose = game.choose_place()
         if game.board[choose].owned_and_not_mortgaged_by(self) and \
                 game.board[choose].houses > 0 and game.board[
                 choose].bank_allows_downgrade(game.bank):
@@ -1222,7 +1225,9 @@ class Player(object):
                 game.board[choose].downgrade_hotel(self, game.bank)
             else:
                 game.board[choose].downgrade_house(self, game.bank)
-            print "You have downgraded " + game.board[choose].name + "."
+            game.visual_refresh()
+            game.cover_n_central(
+                "You have downgraded " + game.board[choose].name + ".")
 
     def upgrade(self, game):
         # Flag the upgradeable locations
