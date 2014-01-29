@@ -168,8 +168,8 @@ class Game(object):
                 place.new_owner(player)  # Assign new owner
                 self.bank.move_money(-place.price, player)
                 place.draw(self)
-                for player in self.players:
-                    player.draw(self)
+                for person in self.players:
+                    person.draw(self)
                 pygame.display.update()
                 self.cover_n_central(
                     player.name + ", you have bought " + place.name + ".")
