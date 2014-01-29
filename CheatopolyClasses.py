@@ -1245,10 +1245,8 @@ class Player(object):
             else:
                 game.board[choose].upgrade_hotel(self, game.bank)
             game.visual_refresh()
-            text = "You have successfully upgraded " + game.board[
-                choose].name + "."
-            game.central_message(text)
-            pygame.time.wait(500)
+            game.cover_n_central(
+                "You have upgraded " + game.board[choose].name + ".")
         #restore to 5
         for item in game.board:
             if isinstance(item, Street):
