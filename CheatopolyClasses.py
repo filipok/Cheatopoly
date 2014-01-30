@@ -1264,15 +1264,80 @@ class Player(object):
                 item.min_upgrade = 5
 
     def reply_to_auction(self, player, game, auction_price):
-        print "Hello," + self.name + "! " + player.name + " did not buy " + \
-              game.board[player.location].name + \
-              ". Do you want to buy it instead? Last price is " + \
-              str(auction_price) + ". Enter your price below."
-        return game.choose_int(0, max(self.cash, 0))
+        game.cover()
+        line_w = 20
+        box_step = 40
+        box_w = 30
+        box_l = 40
+        central = min(game.width, game.height)/2
+        message(game.display,
+                "Hey, " + self.name + "! " + game.board[player.location].name +
+                " is available.", game.background, central, game.height/4)
+        message(game.display, "Last price: " + str(auction_price),
+                game.background, central, game.height/4 + line_w)
+        message(game.display, "Do you bid more?", game.background,
+                central, game.height/4 + 2*line_w)
+        green = (0, 255, 0)
+        red = (255, 0, 0)
+        col = game.background
+        if player.cash - auction_price >= 1:
+            col = green
+        plus_one = game.mess_box("+1", col, central - box_l,
+                                 game.height/4 + 3*box_step, 2*box_l, box_w)
+        col = game.background
+        if player.cash - auction_price >= 5:
+            col = green
+        plus_five = game.mess_box("+5", col, central - box_l,
+                                  game.height/4 + 4*box_step, 2*box_l, box_w)
+        col = game.background
+        if player.cash - auction_price >= 10:
+            col = green
+        plus_ten = game.mess_box("+10", col, central - box_l,
+                                 game.height/4 + 5*box_step, 2*box_l, box_w)
+        if player.cash - auction_price >= 50:
+            col = green
+        plus_fifty = game.mess_box("+50", col, central - box_l,
+                                   game.height/4 + 6*box_step, 2*box_l, box_w)
+        col = game.background
+        if player.cash - auction_price >= 100:
+            col = green
+        plus_hundr = game.mess_box("+100", col, central - box_l,
+                                   game.height/4 + 7*box_step, 2*box_l, box_w)
+        do_nothing = game.mess_box("No,thanks", red, central - box_l,
+                                   game.height/4 + 8*box_step, 2*box_l, box_w)
+        # Detect click
+        while True:
+                for event in pygame.event.get():
+                    if event.type == MOUSEBUTTONUP:
+                        mouse_x, mouse_y = event.pos
+                        remaining = player.cash - auction_price
+                        #check click
+                        if plus_one.collidepoint(mouse_x, mouse_y) \
+                                and remaining >= 1:
+                            game.cover()
+                            return auction_price + 1
+                        if plus_five.collidepoint(mouse_x, mouse_y) \
+                                and remaining >= 5:
+                            game.cover()
+                            return auction_price + 5
+                        if plus_ten.collidepoint(mouse_x, mouse_y) \
+                                and remaining >= 10:
+                            game.cover()
+                            return auction_price + 10
+                        if plus_fifty.collidepoint(mouse_x, mouse_y) \
+                                and remaining >= 50:
+                            game.cover()
+                            return auction_price + 50
+                        if plus_hundr.collidepoint(mouse_x, mouse_y) \
+                                and remaining >= 100:
+                            return auction_price + 100
+                        if do_nothing.collidepoint(mouse_x, mouse_y):
+                            game.cover()
+                            return 0
 
     def start_auction(self, game):
         #set auction flag
-        print "Starting auction..."
+        game.cover_n_central("Starting auction...")
         for person in game.players:
             person.in_auction = True
         auction_running = True
@@ -1283,7 +1348,7 @@ class Player(object):
             for person in game.players:
                 if person.in_auction and person != best_candidate:
                     choose = person.reply_to_auction(self, game, auction_price)
-                    if isinstance(choose, int) and choose > auction_price:
+                    if choose > auction_price:
                         best_candidate = person
                         auction_price = choose
                         still_in_play += 1
@@ -1292,13 +1357,16 @@ class Player(object):
             if still_in_play == 0:
                 auction_running = False
         if best_candidate is None:
-            print "Sadly, nobody wants that place."
+            game.cover_n_central("Sadly, nobody wants that place.")
         else:
-            print "Congratulations, " + best_candidate.name + \
-                  "! You have bought " + game.board[self.location].name + \
-                  " for $" + str(auction_price) + "."
+
             game.bank.move_money(-auction_price, best_candidate)
             game.board[self.location].new_owner(best_candidate)  # New owner
+            game.visual_refresh()
+            text = "Congratulations, " + best_candidate.name + \
+                "! You have bought " + game.board[self.location].name + \
+                " for $" + str(auction_price) + "."
+            game.cover_n_central(text)
 
     def buy(self, game):
         text = "Wanna buy {}?".format(game.board[self.location].name)
@@ -1650,7 +1718,7 @@ class Cheatoid(Player):
         else:
             reply = min(auction_price + 1,
                         game.board[other.location].price + a, self.cash)
-        print self.name + " bids " + str(reply) + "."
+        game.cover_n_central(self.name + " bids " + str(reply) + ".")
         return reply
 
     def buy(self, game):
