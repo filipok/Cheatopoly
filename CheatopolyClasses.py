@@ -1198,7 +1198,8 @@ class Player(object):
                 "You have mortgaged " + game.board[choose].name + ".")
 
     def demortgage(self, game):
-        text = self.name + ", arrows indicate the locations you can demortgage."
+        text = self.name + \
+            ", arrows indicate the locations you can demortgage."
         game.central_message(text)
         for item in game.board:
             if item.owned_and_mortgaged_by(self):
