@@ -123,7 +123,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #Free Parking
     if isinstance(thisPlace, FreeParking):
-        thisGame.bank.move_table(myPlayer)
+        thisGame.move_table(myPlayer)
 
     #Go To Jail
     if isinstance(thisPlace, GoToJail):

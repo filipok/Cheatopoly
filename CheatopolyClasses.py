@@ -549,6 +549,16 @@ class Game(object):
         pygame.display.update()
         return text_box
 
+    def move_table(self, player):
+        #player gets money on the table
+        self.cover_n_central("Congratulations, " + player.name +
+                             "! You have landed on Free Parking!")
+        self.cover_n_central(
+            "You get ${0} from the community & chance card payments.".format(
+                str(self.bank.card_payments)))
+        player.cash += self.bank.card_payments
+        self.bank.card_payments = 0
+
     def choose_yes_no(self, string):
         choose = ''
         while choose not in ["yes", "no"]:
@@ -585,15 +595,6 @@ class Bank(object):
         #move money from player to table
         player.cash += amount
         self.card_payments -= amount
-
-    def move_table(self, player):
-        #player gets money on the table
-        print "Congratulations, " + player.name + \
-              "! You have landed on Free Parking!"
-        print "You get ${0} from the community & chance card payments.".format(
-            str(self.card_payments))
-        player.cash += self.card_payments
-        self.card_payments = 0
 
 
 class Place(object):
