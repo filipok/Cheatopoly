@@ -133,6 +133,42 @@ class Game(object):
                            "chanceL", "jail", "utility", "park", "gotojail"]:
                 self.board[i].location = i
 
+    def choose_six(self):
+        #message
+        central = min(self.width, self.height)/2
+        message(self.display,
+                "Choose a number of players", self.background,
+                central, self.height/4)
+        blue = (0, 0, 255)
+        width = 60
+        step = 40
+        #button 2
+        two = self.button("2", blue, central- width/2, self.height/4 + step, width, step - 10)
+        #button 3
+        three = self.button("3", blue, central- width/2, self.height/4 + 2*step, width, step - 10)
+        #button 4
+        four = self.button("4", blue, central- width/2, self.height/4 + 3*step, width, step - 10)
+        #button 5
+        five = self.button("5", blue, central- width/2, self.height/4 + 4*step, width, step - 10)
+        #button 6
+        six = self.button("6", blue, central- width/2, self.height/4 + 5*step, width, step - 10)
+        pygame.display.update()
+        #detect click and return
+        while True:
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    mouse_x, mouse_y = event.pos
+                    if two.collidepoint(mouse_x, mouse_y):
+                        return 2
+                    if three.collidepoint(mouse_x, mouse_y):
+                        return 3
+                    if four.collidepoint(mouse_x, mouse_y):
+                        return 4
+                    if five.collidepoint(mouse_x, mouse_y):
+                        return 5
+                    if six.collidepoint(mouse_x, mouse_y):
+                        return 6
+
     def initialize_players(self):
         print "Please enter a number of players between 2 and 6:"
         num_players = self.choose_int(2, 6)
