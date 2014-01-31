@@ -170,8 +170,8 @@ class Game(object):
                         return 6
 
     def initialize_players(self):
-        print "Please enter a number of players between 2 and 6:"
-        num_players = self.choose_int(2, 6)
+        self.cover()
+        num_players = self.choose_six()
         list_of_names = ['']
         for i in range(num_players):
             name = ''
@@ -189,8 +189,8 @@ class Game(object):
             list_of_names.append(name)
 
     def mock_players(self):
-        print "Please enter a number of Borg players between 2 and 6:"
-        num_players = self.choose_int(2, 6)
+        self.cover()
+        num_players = self.choose_six()
         for i in range(num_players):
             name = "Borg{0}".format(str(i + 1))
             self.players.append(Cheatoid(name, self.player_cash, False,
