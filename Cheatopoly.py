@@ -30,7 +30,7 @@ print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
 #Initialize players
-ans = thisGame.choose_yes_no("Play interactively?[yes/no] ")
+ans = thisGame.yes_no("Play interactively?[yes/no] ",40)
 if ans == "yes":
     thisGame.initialize_players()
 else:
