@@ -23,21 +23,23 @@ thisGame.bank = Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
 shuffle(thisGame.chances)
 shuffle(thisGame.community_chest)
+# Set place coordinates
+thisGame.set_places()
 
 print "************************"
 print "WELCOME TO CHEATOPOLY!!!"
 print "You can play Cheatopoly in up to 6 players."
 print "************************"
 
+for item in thisGame.board:
+    item.draw(thisGame)
+pygame.display.update()
 #Initialize players
 ans = thisGame.yes_no("Play interactively?[yes/no] ",40)
 if ans == "yes":
     thisGame.initialize_players()
 else:
     thisGame.mock_players()
-
-# Set place coordinates
-thisGame.set_places()
 
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
