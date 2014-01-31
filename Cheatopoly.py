@@ -36,10 +36,6 @@ if ans == "yes":
 else:
     thisGame.mock_players()
 
-# Frames per second
-FPS = 2
-fpsClock = pygame.time.Clock()
-
 # Set place coordinates
 thisGame.set_places()
 
@@ -53,8 +49,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     # Draw board with places, players and stats
     thisGame.visual_refresh()
-
-    fpsClock.tick(FPS)
 
     myPlayer = thisGame.players[thisGame.current_player]  # Shorthand
 
