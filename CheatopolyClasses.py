@@ -157,7 +157,6 @@ class Game(object):
         num_players = self.choose_int(2, 6)
         for i in range(num_players):
             name = "Borg{0}".format(str(i + 1))
-            print "Adding " + name + "..."
             self.players.append(Cheatoid(name, self.player_cash, False,
                                          self.player_cols[i]))
         print self.players
@@ -238,11 +237,12 @@ class Game(object):
                     item.hotels * hotel_cost
         player.cash -= repair_cost
         self.bank.card_payments += repair_cost  # Money goes to table
-        print "Your repair costs have amounted to $" + str(repair_cost) + "."
+        self.cover_n_central(
+            "Your repair costs have amounted to $" + str(repair_cost) + ".")
 
     def check_eliminate(self, player):
         if player.cash < 0:
-            print player.name + " HAS BEEN ELIMINATED!"
+            self.cover_n_central(player.name + " HAS BEEN ELIMINATED!")
             for item in self.board:
                 if isinstance(item, (Street, Railroad, Utility)) and \
                         item.owned_by == player:
@@ -263,22 +263,9 @@ class Game(object):
             self.current_player = self.add_one(self.current_player,
                                                len(self.players))
     
-    def turn_end(self):
-        print ""
-        print "***"
-        for player in self.players:
-            print player.name + " has $" + str(player.cash)
-        print "The bank has got $" + str(self.bank.money) + \
-            " left. There are " + str(self.bank.houses) + " houses and " + \
-            str(self.bank.hotels) + " hotels available."
-        print "There are $" + str(self.bank.card_payments) + \
-            " left on the table."
-        print "***"
-        print ""        
-    
     def game_end(self):
         if len(self.players) == 1:
-            print self.players[0].name + " HAS WON THE GAME"
+            self.cover_n_central(self.players[0].name + " HAS WON THE GAME")
         else:
             best_score = 0
             best_player = None
@@ -287,9 +274,10 @@ class Game(object):
                     best_player = person
                     best_score = person.cash
             if best_player is not None:
-                print best_player.name + " HAS WON THE GAME"
+                self.cover_n_central(best_player.name + " HAS WON THE GAME")
             else:
-                print "INCREDIBLE BUNCH OF LOSERS."
+                self.cover_n_central("INCREDIBLE BUNCH OF LOSERS.")
+        self.click_n_cover()
     
     def set_places(self):
         # Find the length of the side of the board
@@ -933,10 +921,10 @@ class Utility(Place):
         self.txt = "W"
 
     def rent(self, game):
-        print "Let us roll the dice for rent!"
+        game.cover_n_central("Let us roll the dice for rent!")
         a = random.randint(1, 6)
         b = random.randint(1, 6)
-        print "Dice: " + str(a) + " " + str(b)
+        game.cover_n_central("Dice: " + str(a) + " " + str(b))
         counter = 0
         for item in game.board:
             if isinstance(item, Utility) and item.owned_by == self.owned_by:
@@ -1186,7 +1174,6 @@ class Player(object):
         game.central_message(text)
         for item in game.board:
             if item.owned_and_not_mortgaged_by(self) and item.houses == 0:
-                print item
                 item.draw_arrow(game)
         pygame.display.update()
         choose = game.choose_place()
@@ -1204,7 +1191,6 @@ class Player(object):
         game.central_message(text)
         for item in game.board:
             if item.owned_and_mortgaged_by(self):
-                print item
                 item.draw_arrow(game)
         pygame.display.update()
         choose = game.choose_place()
@@ -1221,7 +1207,6 @@ class Player(object):
         for item in game.board:
             if item.owned_and_not_mortgaged_by(self) and \
                     item.houses > 0 and item.bank_allows_downgrade(game.bank):
-                print item
                 item.draw_arrow(game)
         pygame.display.update()
         choose = game.choose_place()
@@ -1239,13 +1224,12 @@ class Player(object):
     def upgrade(self, game):
         # Flag the upgradeable locations
         game.flag_upgradeable_places(self)
-        # Print/draw the upgradeable locations
+        # Draw the upgradeable locations
         text = self.name + ", arrows indicate the locations you can upgrade."
         game.central_message(text)
         for item in game.board:
             if isinstance(item, Street) and item.all_upgrade_conditions(
                     game.bank, self):
-                print item
                 item.draw_arrow(game)
         pygame.display.update()
         # Choose a place to upgrade
@@ -1403,7 +1387,7 @@ class Player(object):
                                                            game.current_chance,
                                                            to_add)
         self.reset_jail()
-        print self.name + " gets out of jail."
+        game.cover_n_central(self.name + " gets out of jail.")
 
     def pay_rent(self, place, game):
         rent_due = place.rent(game)
@@ -1411,14 +1395,14 @@ class Player(object):
             rent_due *= 2  # Rent is doubled when sent by Chance card to a R.R.
             self.double_rent = 1
         if not place.mortgaged:
-            print place.name + " is owned by " + place.owned_by.name + \
-                ", you (" + self.name + ") must pay rent amounting to: " + \
-                str(rent_due) + "."
+            game.cover_n_central(place.owned_by.name + " owns " + place.name +
+                                 ", " + self.name + " pays rent: " +
+                                 str(rent_due) + ".")
             self.cash -= rent_due
             place.owned_by.cash += rent_due
         else:
-            print place.name + " is owned by " + place.owned_by.name + \
-                ", but is mortgaged and you pay nothing."
+            game.cover_n_central(place.owned_by.name + " owns " + place.name +
+                                 ", but is mortgaged.")
 
     def pay_tax(self, place, game):
         #Yyou can pay either a lump sum or a percentage of total assets.
@@ -1429,14 +1413,15 @@ class Player(object):
             tax = max(tax1, tax2)
         else:
             tax = min(tax1, tax2)
-        print "Well done, " + self.name + ", you pay taxes amounting to: $" + \
-              str(tax)
+        game.cover_n_central(self.name + "pays taxes amounting to: $" +
+                             str(tax))
         game.bank.move_money_to_table(-tax, self)
 
     def move_to_start(self, game):
         self.location = 0
         game.bank.move_money(game.start_wage, self)
-        print "You go to Start and only receive $" + str(game.start_wage)
+        game.cover_n_central("You go to Start and only receive $" +
+                             str(game.start_wage))
 
     def pay_card_money(self, cash, game):
         if cash > 0:
@@ -1473,12 +1458,13 @@ class Player(object):
                     destination = item.location
                     break
             if destination < self.location:
-                print "You pass Go and collect $" + str(game.start_wage) +\
-                      "."
+                game.cover_n_central(
+                    "You pass Go and collect $" + str(game.start_wage) + ".")
                 game.bank.move_money(game.start_wage, self)
             self.location = destination
-            print "You move to " + game.chances[game.current_chance].go_to + \
-                  ", at location " + str(destination) + "."
+            game.cover_n_central("You move to " +
+                                 game.chances[game.current_chance].go_to +
+                                 ", at location " + str(destination) + ".")
             self.teleport = 1
         elif game.chances[game.current_chance].movement != 0:
             self.location = (self.location + len(game.board) +
@@ -1493,10 +1479,11 @@ class Player(object):
                 counter += 1
                 if counter == len(game.board):
                     self.double_rent = 1  # Back to normal rent
-                    print "Rail not found!"
+                    game.cover_n_central("Rail not found!")
                     break  # Rail not found, back again to original location
-            print "You have moved to: " + game.board[self.location].name + \
-                  ", at pos " + str(self.location) + "."
+            game.cover_n_central("You have moved to: " +
+                                 game.board[self.location].name +
+                                 ", at pos " + str(self.location) + ".")
             self.teleport = 1
         elif game.chances[game.current_chance].go_to != "0":
             if game.chances[game.current_chance].go_to == "1":
@@ -1509,11 +1496,12 @@ class Player(object):
                         if self.location > item.location:
                             game.bank.move_money(game.start_wage,
                                                  self)
-                            print "You get $" + str(game.start_wage)
+                            game.cover_n_central(
+                                "You get $" + str(game.start_wage))
                         self.location = item.location
                         break
-                print "You move to " + game.board[self.location].name + \
-                      " at pos " + str(self.location) + "."
+                game.cover_n_central("You move to " +
+                                     game.board[self.location].name + ".")
                 self.teleport = 1
 
     def check_jail(self, game, dice):
@@ -1557,9 +1545,9 @@ class Player(object):
                 if person != self:
                     person.cash -= game.collect_fine
                     self.cash += game.collect_fine
-                    print person.name + " pays $" + \
-                        str(game.collect_fine) + " to " + self.name + \
-                        "."
+                    game.cover_n_central(person.name + " pays $" +
+                                         str(game.collect_fine) + " to " +
+                                         self.name + ".")
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
 
@@ -1568,7 +1556,6 @@ class Player(object):
 
 
 def message(display, text, background, x, y):
-    print text
     font_obj = pygame.font.Font(None, 20)
     text_surface_obj = font_obj.render(text, True, (0, 0, 0), background)
     text_rect_obj = text_surface_obj.get_rect()

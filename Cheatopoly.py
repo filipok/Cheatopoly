@@ -195,7 +195,4 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
 
-    #Print turn end status
-    thisGame.turn_end()
-
 thisGame.game_end()  # Game end
