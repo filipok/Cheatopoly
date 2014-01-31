@@ -264,6 +264,7 @@ class Game(object):
                                                len(self.players))
     
     def game_end(self):
+        self.visual_refresh()
         if len(self.players) == 1:
             self.cover_n_central(self.players[0].name + " HAS WON THE GAME")
         else:
