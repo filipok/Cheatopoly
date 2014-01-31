@@ -530,7 +530,7 @@ class Game(object):
                         if no_box.collidepoint(mouse_x, mouse_y):
                             return "no"
 
-    def mess_box(self, text, box_color, left, up, width, thickness):
+    def button(self, text, box_color, left, up, width, thickness):
         text_box = pygame.draw.rect(self.display, box_color,
                                     (left, up, width, thickness))
         message(self.display, text, box_color, left + width/2,
@@ -1126,17 +1126,17 @@ class Player(object):
         message(game.display, "Choose an action:", game.background, smallest/2,
                 game.height/5)
         white = (255, 255, 255)
-        upgrade_box = game.mess_box("UPGRADE", white, smallest/4,
+        upgrade_box = game.button("UPGRADE", white, smallest/4,
                                     smallest/4, width, thickness)
-        downgrade_box = game.mess_box("DOWNGRADE", white, smallest/4,
+        downgrade_box = game.button("DOWNGRADE", white, smallest/4,
                                       step + smallest/4, width, thickness)
-        mortgage_box = game.mess_box("MORTGAGE", white, smallest/4,
+        mortgage_box = game.button("MORTGAGE", white, smallest/4,
                                      2*step + smallest/4, width, thickness)
-        demortgage_box = game.mess_box("DEMORTGAGE", white, smallest/4,
+        demortgage_box = game.button("DEMORTGAGE", white, smallest/4,
                                        3*step + smallest/4, width, thickness)
-        negotiate_box = game.mess_box("NEGOTIATE", white, smallest/4,
+        negotiate_box = game.button("NEGOTIATE", white, smallest/4,
                                       4*step + smallest/4, width, thickness)
-        nothing_box = game.mess_box("DO NOTHING", white, smallest/4,
+        nothing_box = game.button("DO NOTHING", white, smallest/4,
                                     5*step + smallest/4, width, thickness)
         # Detect click
         while True:
@@ -1268,28 +1268,28 @@ class Player(object):
         col = game.background
         if player.cash - auction_price >= 1:
             col = green
-        plus_one = game.mess_box("+1", col, central - box_l,
+        plus_one = game.button("+1", col, central - box_l,
                                  game.height/4 + 3*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 5:
             col = green
-        plus_five = game.mess_box("+5", col, central - box_l,
+        plus_five = game.button("+5", col, central - box_l,
                                   game.height/4 + 4*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 10:
             col = green
-        plus_ten = game.mess_box("+10", col, central - box_l,
+        plus_ten = game.button("+10", col, central - box_l,
                                  game.height/4 + 5*box_step, 2*box_l, box_w)
         if player.cash - auction_price >= 50:
             col = green
-        plus_fifty = game.mess_box("+50", col, central - box_l,
+        plus_fifty = game.button("+50", col, central - box_l,
                                    game.height/4 + 6*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 100:
             col = green
-        plus_hundr = game.mess_box("+100", col, central - box_l,
+        plus_hundr = game.button("+100", col, central - box_l,
                                    game.height/4 + 7*box_step, 2*box_l, box_w)
-        do_nothing = game.mess_box("No,thanks", red, central - box_l,
+        do_nothing = game.button("No,thanks", red, central - box_l,
                                    game.height/4 + 8*box_step, 2*box_l, box_w)
         # Detect click
         while True:
