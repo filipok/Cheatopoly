@@ -142,16 +142,17 @@ class Game(object):
         blue = (0, 0, 255)
         width = 60
         step = 40
-        #button 2
-        two = self.button("2", blue, central- width/2, self.height/4 + step, width, step - 10)
-        #button 3
-        three = self.button("3", blue, central- width/2, self.height/4 + 2*step, width, step - 10)
-        #button 4
-        four = self.button("4", blue, central- width/2, self.height/4 + 3*step, width, step - 10)
-        #button 5
-        five = self.button("5", blue, central- width/2, self.height/4 + 4*step, width, step - 10)
-        #button 6
-        six = self.button("6", blue, central- width/2, self.height/4 + 5*step, width, step - 10)
+        #buttons
+        two = self.button("2", blue, central - width/2,
+                          self.height/4 + step, width, step - 10)
+        three = self.button("3", blue, central - width/2,
+                            self.height/4 + 2*step, width, step - 10)
+        four = self.button("4", blue, central - width/2,
+                           self.height/4 + 3*step, width, step - 10)
+        five = self.button("5", blue, central - width/2,
+                           self.height/4 + 4*step, width, step - 10)
+        six = self.button("6", blue, central - width/2,
+                          self.height/4 + 5*step, width, step - 10)
         pygame.display.update()
         #detect click and return
         while True:
