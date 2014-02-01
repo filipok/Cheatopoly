@@ -593,6 +593,33 @@ class Game(object):
             choose = raw_input(string).lower()
         return choose
 
+    def capture_word(self, y_pos):
+        name = ""
+        green = (0, 255, 0)
+        central = min(self.width, self.height)/2
+        while True:
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.unicode.isalpha():
+                        name += event.unicode
+                        print event.unicode
+                        print name
+                        self.button(name, green,
+                                    central - max(10*len(name), 100)/2, y_pos,
+                                    max(10*len(name), 100), 20)
+                    elif event.key == K_BACKSPACE:
+                        #cover the button
+                        self.button("", self.background,
+                                    central - max(10*len(name), 100)/2, y_pos,
+                                    max(10*len(name), 100), 20)
+                        name = name[:-1]
+                        print name
+                        self.button(name, green,
+                                    central - max(10*len(name), 100)/2, y_pos,
+                                    max(10*len(name), 100), 20)
+                    elif event.key == K_RETURN and len(name) > 0:
+                        return name
+
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
         return self.add_one(position, len(card_set))
