@@ -542,21 +542,15 @@ class Game(object):
                 print "Oops!  That was no valid number.  Try again..."
         return choose
 
-    def yes_no(self, text, button_size):
-        red = (255, 0, 0)
-        green = (0, 255, 0)
-        x = min(self.width, self.height)/2
-        y = x
-        #draw yes/no boxes
+    def draw_yes_no(self, text, button_size, col_yes, col_no, x, y):
         message(self.display, text, self.background, x, y + 20)
-        yes_box = pygame.draw.rect(self.display, green,
+        yes_box = pygame.draw.rect(self.display, col_yes,
                                    (x - int(button_size*1.5), y + 40,
                                     button_size, button_size))
-        no_box = pygame.draw.rect(self.display, red,
+        no_box = pygame.draw.rect(self.display, col_no,
                                   (x + int(button_size*0.5), y + 40,
                                    button_size, button_size))
         pygame.display.update()
-        # Detect click
         while True:
                 for event in pygame.event.get():
                     if event.type == MOUSEBUTTONUP:
@@ -566,6 +560,14 @@ class Game(object):
                             return "yes"
                         if no_box.collidepoint(mouse_x, mouse_y):
                             return "no"
+
+    def yes_no(self, text, button_size):
+        red = (255, 0, 0)
+        green = (0, 255, 0)
+        x = min(self.width, self.height)/2
+        y = x
+        #draw yes/no boxes
+        return self.draw_yes_no(text, button_size, green, red, x, y)
 
     def button(self, text, box_color, left, up, width, thickness):
         text_box = pygame.draw.rect(self.display, box_color,
