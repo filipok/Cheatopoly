@@ -26,14 +26,22 @@ shuffle(thisGame.community_chest)
 # Set place coordinates
 thisGame.set_places()
 
-print "************************"
-print "WELCOME TO CHEATOPOLY!!!"
-print "You can play Cheatopoly in up to 6 players."
-print "************************"
-
+#Welcome screen
 for item in thisGame.board:
     item.draw(thisGame)
+message(thisGame.display, "************************", thisGame.background,
+        min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 20)
+message(thisGame.display, "WELCOME TO CHEATOPOLY!!!", thisGame.background,
+        min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 40)
+message(thisGame.display, "You can play Cheatopoly in up to 6 players",
+        thisGame.background, min(thisGame.width, thisGame.height)/2,
+        thisGame.height/4 + 60)
+message(thisGame.display, "************************", thisGame.background,
+        min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 80)
 pygame.display.update()
+pygame.time.wait(2000)
+thisGame.click_n_cover()
+
 #Initialize players
 ans = thisGame.yes_no("Play interactively?[yes/no] ",40)
 if ans == "yes":
