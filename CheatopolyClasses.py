@@ -1342,28 +1342,28 @@ class Player(object):
         if player.cash - auction_price >= 1:
             col = green
         plus_one = game.button("+1", col, central - box_l,
-                                 game.height/4 + 3*box_step, 2*box_l, box_w)
+                               game.height/4 + 3*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 5:
             col = green
         plus_five = game.button("+5", col, central - box_l,
-                                  game.height/4 + 4*box_step, 2*box_l, box_w)
+                                game.height/4 + 4*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 10:
             col = green
         plus_ten = game.button("+10", col, central - box_l,
-                                 game.height/4 + 5*box_step, 2*box_l, box_w)
+                               game.height/4 + 5*box_step, 2*box_l, box_w)
         if player.cash - auction_price >= 50:
             col = green
         plus_fifty = game.button("+50", col, central - box_l,
-                                   game.height/4 + 6*box_step, 2*box_l, box_w)
+                                 game.height/4 + 6*box_step, 2*box_l, box_w)
         col = game.background
         if player.cash - auction_price >= 100:
             col = green
         plus_hundr = game.button("+100", col, central - box_l,
-                                   game.height/4 + 7*box_step, 2*box_l, box_w)
+                                 game.height/4 + 7*box_step, 2*box_l, box_w)
         do_nothing = game.button("No,thanks", red, central - box_l,
-                                   game.height/4 + 8*box_step, 2*box_l, box_w)
+                                 game.height/4 + 8*box_step, 2*box_l, box_w)
         # Detect click
         while True:
                 for event in pygame.event.get():

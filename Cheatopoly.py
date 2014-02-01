@@ -4,14 +4,12 @@ from CheatopolyClasses import *
 
 # Pygame initialization
 pygame.init()
-
 # GUI settings
 HEIGHT = 600
 WIDTH = 800
 GRAY = (192, 192, 192)
 LINE_HEIGHT = 7
 FONT_SIZE = 11
-
 DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
 DISPLAYSURF.fill(GRAY)
 pygame.display.set_caption('Cheatopoly')
@@ -43,7 +41,7 @@ pygame.time.wait(2000)
 thisGame.click_n_cover()
 
 #Initialize players
-ans = thisGame.yes_no("Play interactively?[yes/no] ",40)
+ans = thisGame.yes_no("Play interactively?[yes/no] ", 40)
 if ans == "yes":
     thisGame.initialize_players()
 else:
