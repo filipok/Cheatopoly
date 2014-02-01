@@ -173,14 +173,21 @@ class Game(object):
     def initialize_players(self):
         self.cover()
         num_players = self.choose_six()
+        self.cover()
         list_of_names = ['']
+        green = (0, 255, 0)
+        red = (255, 0, 0)
+        middle = min(self.width, self.height)/2
         for i in range(num_players):
-            name = ''
-            while name in list_of_names:
-                name = raw_input(
-                    "Please enter a unique name for player {0}: ".format(
-                        str(i + 1)))
-            human = self.choose_yes_no("Is the player human [yes/no]: ")
+            self.button("", green, middle - 50, (i+1)*self.height/8 + 10, 100,
+                        20)
+        pygame.display.update()
+        for i in range(num_players):
+            # draw name box and enter name
+            name = self.capture_word((i+1)*self.height/8 + 10)
+            # draw human/not human dialog
+            human = self.draw_yes_no("Human?", 20, green, red, middle + 90,
+                                     (i+1)*self.height/8 - 30)
             if human == "yes":
                 self.players.append(Player(name, self.player_cash, True,
                                            self.player_cols[i]))
