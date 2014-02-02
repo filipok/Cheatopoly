@@ -867,7 +867,7 @@ class Street(Place):
             return 2 * self.rent0
 
     def downgrade_hotel(self, player, bank):
-        self.hotels = 0
+        self.hotels -= 1
         bank.houses -= 4
         bank.hotels += 1
         bank.move_money(self.hotel_cost / 2, player)
@@ -883,7 +883,7 @@ class Street(Place):
         bank.move_money(-self.house_cost, player)
 
     def upgrade_hotel(self, player, bank):
-        self.hotels = 1
+        self.hotels += 1
         bank.hotels -= 1
         bank.houses += 4
         bank.move_money(-self.hotel_cost, player)
