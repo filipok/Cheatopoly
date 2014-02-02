@@ -216,6 +216,7 @@ class Game(object):
                 pygame.display.update()
                 self.cover_n_central(
                     player.name + ", you have bought " + place.name + ".")
+                self.visual_refresh()
 
             else:
                 self.cover_n_central(

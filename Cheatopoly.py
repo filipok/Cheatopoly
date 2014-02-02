@@ -74,6 +74,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         if dice[0] == dice[1]:
             myPlayer.doubles_in_a_row += 1
             if myPlayer.doubles_in_a_row == 3:
+                thisGame.cover_n_central(myPlayer.name + "goes to jail")
                 myPlayer.move_to_jail(thisGame)
         else:
             myPlayer.doubles_in_a_row = 0
@@ -105,7 +106,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #reset teleport counter now
     myPlayer.teleport = 0
-
+    thisGame.visual_refresh()
     thisPlace = thisGame.board[myPlayer.location]  # Shorthand
 
     # if player lands on street, rail or utility:
@@ -122,10 +123,12 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         else:
             #Finally, you pay rent (if not mortgaged)
             myPlayer.pay_rent(thisPlace, thisGame)
+            thisGame.visual_refresh()
 
     #Free Parking
     if isinstance(thisPlace, FreeParking):
         thisGame.move_table(myPlayer)
+        thisGame.visual_refresh()
 
     #Go To Jail
     if isinstance(thisPlace, GoToJail):
@@ -134,6 +137,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Pay taxes:
     if isinstance(thisPlace, Tax):
         myPlayer.pay_tax(thisPlace, thisGame)
+        thisGame.visual_refresh()
 
     #Community Chest
     if isinstance(thisPlace, CommunityChest):
@@ -151,6 +155,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         #increment community chest card index
         thisGame.current_comm = thisGame.add_one(thisGame.current_comm,
                                                  len(thisGame.community_chest))
+        thisGame.visual_refresh()
 
     #Chance cards
     if isinstance(thisPlace, Chance):
@@ -168,6 +173,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         # Increment chance card index
         thisGame.current_chance = thisGame.add_one(thisGame.current_chance,
                                                    len(thisGame.chances))
+        thisGame.visual_refresh()
         if myPlayer.teleport == 1:
             continue  # Player teleports.
 
