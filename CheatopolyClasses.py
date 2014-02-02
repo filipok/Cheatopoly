@@ -476,7 +476,6 @@ class Game(object):
         pygame.display.update()
 
     def start_turn(self, player):
-        mouse_click = False
         message(self.display, "Hello, " + player.name +
                               ", click to begin turn",
                 (255, 0, 255), self.height/2, self.height/2)
@@ -589,8 +588,6 @@ class Game(object):
                 if event.type == KEYDOWN:
                     if event.unicode.isalpha():
                         name += event.unicode
-                        print event.unicode
-                        print name
                         self.button(name, green,
                                     central - max(10*len(name), 100)/2, y_pos,
                                     max(10*len(name), 100), 20)
@@ -600,7 +597,6 @@ class Game(object):
                                     central - max(10*len(name), 100)/2, y_pos,
                                     max(10*len(name), 100), 20)
                         name = name[:-1]
-                        print name
                         self.button(name, green,
                                     central - max(10*len(name), 100)/2, y_pos,
                                     max(10*len(name), 100), 20)
