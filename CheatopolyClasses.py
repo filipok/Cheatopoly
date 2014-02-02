@@ -1176,21 +1176,21 @@ class Player(object):
         step = smallest/10
         thickness = step - 10
         width = smallest/2
-        message(game.display, "Choose an action:", game.background, smallest/2,
-                game.height/5)
+        message(game.display, self.name + ", choose an action:",
+                game.background, smallest/2, game.height/5)
         white = (255, 255, 255)
         upgrade_box = game.button("UPGRADE", white, smallest/4,
-                                    smallest/4, width, thickness)
+                                  smallest/4, width, thickness)
         downgrade_box = game.button("DOWNGRADE", white, smallest/4,
-                                      step + smallest/4, width, thickness)
+                                    step + smallest/4, width, thickness)
         mortgage_box = game.button("MORTGAGE", white, smallest/4,
-                                     2*step + smallest/4, width, thickness)
+                                   2*step + smallest/4, width, thickness)
         demortgage_box = game.button("DEMORTGAGE", white, smallest/4,
-                                       3*step + smallest/4, width, thickness)
+                                     3*step + smallest/4, width, thickness)
         negotiate_box = game.button("NEGOTIATE", white, smallest/4,
-                                      4*step + smallest/4, width, thickness)
+                                    4*step + smallest/4, width, thickness)
         nothing_box = game.button("DO NOTHING", white, smallest/4,
-                                    5*step + smallest/4, width, thickness)
+                                  5*step + smallest/4, width, thickness)
         # Detect click
         while True:
                 for event in pygame.event.get():
@@ -1408,7 +1408,8 @@ class Player(object):
             game.cover_n_central(text)
 
     def buy(self, game):
-        text = "Wanna buy {}?".format(game.board[self.location].name)
+        text = self.name + \
+            ", wanna buy {}?".format(game.board[self.location].name)
         button_size = 40
         ans = game.yes_no(text, button_size)
         game.cover()
@@ -1467,7 +1468,7 @@ class Player(object):
             tax = max(tax1, tax2)
         else:
             tax = min(tax1, tax2)
-        game.cover_n_central(self.name + "pays taxes amounting to: $" +
+        game.cover_n_central(self.name + " pays taxes amounting to: $" +
                              str(tax))
         game.bank.move_money_to_table(-tax, self)
 
