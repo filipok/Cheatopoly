@@ -535,21 +535,6 @@ class Game(object):
     def add_one(self, location, length):
         return (location + 1) % length
 
-    def choose_int(self, fro, to):
-        """Choose an integer number within an interval
-
-        @rtype : int
-        """
-        choose = -1
-        while choose < fro or choose > to:
-            try:
-                choose = int(raw_input(
-                    "Enter number [{0} - {1}]: ".format(str(fro), str(
-                        to))))
-            except ValueError:
-                print "Oops!  That was no valid number.  Try again..."
-        return choose
-
     def draw_yes_no(self, text, button_size, col_yes, col_no, x, y):
         message(self.display, text, self.background, x, y + 20)
         yes_box = pygame.draw.rect(self.display, col_yes,
@@ -594,12 +579,6 @@ class Game(object):
                 str(self.bank.card_payments)))
         player.cash += self.bank.card_payments
         self.bank.card_payments = 0
-
-    def choose_yes_no(self, string):
-        choose = ''
-        while choose not in ["yes", "no"]:
-            choose = raw_input(string).lower()
-        return choose
 
     def capture_word(self, y_pos):
         name = ""
