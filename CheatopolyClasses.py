@@ -768,6 +768,14 @@ class Place(object):
                          (self.x + game.square_side,
                           self.y + game.square_side),
                          1)
+        # Draw mortgage triangle
+        if self.mortgaged:
+            pygame.draw.polygon(game.display, (0, 0, 0),
+                                [(self.x + game.square_side,
+                                  self.y + game.square_side/2),
+                                 (self.x + game.square_side,
+                                  self.y + game.square_side),
+                                 (self.x, self.y + game.square_side)])
 
     def draw_arrow(self, game):
         r_len = 20
@@ -1248,6 +1256,7 @@ class Player(object):
                 self.cash >= int(game.board[choose].mortgage * 1.1):
             game.bank.move_money(-int(game.board[choose].mortgage * 1.1), self)
             game.board[choose].mortgaged = False
+            game.visual_refresh()
             game.cover_n_central(
                 "You have demortgaged " + game.board[choose].name + ".")
 
@@ -1635,6 +1644,7 @@ class Cheatoid(Player):
             if item.owned_and_not_mortgaged_by(self) and item.houses == 0:
                 game.bank.move_money(item.mortgage, self)
                 item.mortgaged = True
+                game.visual_refresh()
                 game.cover_n_central(
                     self.name + " has mortgaged " + item.name + ".")
                 self.successful_mortgage = True
@@ -1650,6 +1660,7 @@ class Cheatoid(Player):
                     self.cash >= int(item.mortgage * 1.1):
                 game.bank.move_money(-int(item.mortgage * 1.1), self)
                 item.mortgaged = False
+                game.visual_refresh()
                 game.cover_n_central(
                     self.name + " has demortgaged " + item.name + ".")
                 self.successful_demortgage = True
