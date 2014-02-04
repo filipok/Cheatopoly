@@ -182,7 +182,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         thisGame.cover_n_central(
             "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!")
     choose = ''
-    while choose not in ["u", "d", "m", "d", "e", "n"]:
+    while choose not in ["u", "d", "m", "e", "g", "n"]:
         choose = myPlayer.choose_action(thisGame)
         if choose == "u":
             myPlayer.upgrade(thisGame)  # Upgrade
@@ -192,6 +192,8 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             myPlayer.mortgage(thisGame)  # Mortgage
         elif choose == "e":
             myPlayer.demortgage(thisGame)  # Demortgage
+        elif choose == "g":
+            myPlayer.negotiate(thisGame)  # Negotiate
         elif choose == "n":  # Exit loop
             break
         choose = ""

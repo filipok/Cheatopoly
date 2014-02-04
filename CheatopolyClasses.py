@@ -1213,6 +1213,8 @@ class Player(object):
                         if demortgage_box.collidepoint(mouse_x, mouse_y):
                             game.cover()
                             return "e"
+                        if negotiate_box.collidepoint(mouse_x, mouse_y):
+                            return "g"
                         if nothing_box.collidepoint(mouse_x, mouse_y):
                             game.cover()
                             return "n"
@@ -1279,6 +1281,22 @@ class Player(object):
             game.visual_refresh()
             game.cover_n_central(
                 "You have downgraded " + game.board[choose].name + ".")
+
+    def negotiate(self, game):
+        # Choose player to negotiate with (interactiv menu)
+
+        # Choose own properties and/or cash (place arrow + cash menu)
+
+        # Choose other player's properties and/or cash
+
+        #Send offer to the other player
+
+        #If reply is yes, change ownership
+        pass
+
+    def reply_negotiate(self, game):
+        #Return yes/no (interactive menu)
+        pass
 
     def upgrade(self, game):
         # Flag the upgradeable locations
