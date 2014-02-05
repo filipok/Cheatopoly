@@ -1283,7 +1283,37 @@ class Player(object):
                 "You have downgraded " + game.board[choose].name + ".")
 
     def negotiate(self, game):
-        # Choose player to negotiate with (interactiv menu)
+        game.cover()
+        # Choose player to negotiate with (interactive menu)
+        central = min(game.width, game.height)/2
+        message(game.display, "Choose a player to trade with:",
+                game.background, central,
+                game.height/5)
+        player_buttons = {}
+        col = (0, 0, 255)
+        width = 60
+        thickness = 40
+        step = 0
+        for i in range(len(game.players)):
+            if game.players[i] != self:
+                player_buttons[i] = game.button(
+                    game.players[i].name, col, central - width/2,
+                    game.height/5 + (2*step+1)*thickness, width, thickness)
+                step += 1
+        chosen_one = None
+        while True:
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    mouse_x, mouse_y = event.pos
+                    for item in player_buttons:
+                        if player_buttons[item].collidepoint(mouse_x,mouse_y):
+                            chosen_one = game.players[item]
+                            break
+                    break
+            if chosen_one is not None:
+                break
+        print chosen_one.name
+        pygame.time.wait(2000) # for testing
 
         # Choose own properties and/or cash (place arrow + cash menu)
 
