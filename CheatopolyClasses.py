@@ -569,6 +569,38 @@ class Game(object):
         pygame.display.update()
         return text_box
 
+    def trade_board(self, sell, x, player_left, player_right):
+        message(self.display, "Time to trade!", self.background, x,
+                self.height/5 - 20)
+        message(self.display, player_left.name, self.background, x/2,
+                self.height/5)
+        message(self.display, player_right.name,self.background,
+                x + x/2, self.height/5)
+        message(self.display, "You give:", self.background,
+                x/2, self.height/5 + 20)
+        for i in range(len(sell)):
+            item = sell[i]
+            if isinstance(item, (Street, Railroad, Utility)):
+                message(self.display, item.name, self.background, x/2,
+                        self.height/5 + 20*(2 + i))
+            else:
+                print "$" + str(item)
+
+    def sell_list(self, sell, x):
+        for i in range(len(sell)):
+            item = sell[i]
+            if isinstance(item, (Street, Railroad, Utility)):
+                message(self.display, item.name, self.background, x/2,
+                        self.height/5 + 20*(2 + i))
+            else:
+                message(self.display, "$" + str(item), self.background, x/2,
+                        self.height/5 + 20*(2 + i))
+
+    def player_arrows(self, player):
+        for item in self.board:
+            if item.owned_by == player:
+                item.draw_arrow(self)
+
     def move_table(self, player):
         #player gets money on the table
         self.cover_n_central("Congratulations, " + player.name +
@@ -661,6 +693,7 @@ class Place(object):
     orientation = None
     col = None
     txt = ""
+    in_trade = False
 
     def write(self, text, font_size, col, background, lines, line_height,
               display, game):
@@ -1312,7 +1345,47 @@ class Player(object):
                     break
             if chosen_one is not None:
                 break
-        print chosen_one.name
+
+        sell = []
+        red = (255, 0, 0)
+        game.cover()
+        game.trade_board(sell, central, self, chosen_one)
+        game.sell_list(sell, central)
+        game.player_arrows(self)
+        enough = game.button("Enough!", red, central,
+                             game.height - 2*game.square_side, 60, 30)
+        pygame.display.update()
+
+        while True:
+            exit_loop = False
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    mouse_x, mouse_y = event.pos
+                    if enough.collidepoint(mouse_x, mouse_y):
+                        exit_loop = True
+                        break
+                    for item in game.board:
+                        if item.x <= mouse_x <= item.x + game.square_side and \
+                                item.y <= mouse_y <= item.y + game.square_side:
+                            if not item.in_trade and item.owned_by == self:
+                                item.in_trade = True
+                                sell.append(item)
+                            elif item.in_trade and item.owned_by == self:
+                                item.in_trade = False
+                                sell.remove(item)
+                            game.cover()
+                            game.trade_board(sell, central, self, chosen_one)
+                            game.sell_list(sell, central)
+                            game.player_arrows(self)
+                            enough = game.button(
+                                "Enough!", red, central,
+                                game.height - 2*game.square_side, 60, 30)
+                            pygame.display.update()
+                            break
+            if exit_loop:
+                break
+
+
         pygame.time.wait(2000) # for testing
 
         # Choose own properties and/or cash (place arrow + cash menu)
