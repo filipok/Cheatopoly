@@ -1,7 +1,7 @@
 import random
 import os
 import pygame
-from pygame.locals import *
+import pygame.locals as loc
 
 
 class Game(object):
@@ -161,7 +161,7 @@ class Game(object):
         #detect click and return
         while True:
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
+                if event.type == loc.MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
                     if two.collidepoint(mouse_x, mouse_y):
                         return 2
@@ -490,7 +490,7 @@ class Game(object):
         mouse_click = False
         while True:
                 for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
+                    if event.type == loc.MOUSEBUTTONUP:
                         mouse_click = True
                 if mouse_click:
                     self.cover()
@@ -523,7 +523,7 @@ class Game(object):
         choose = None
         while True:
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
+                if event.type == loc.MOUSEBUTTONUP:
                     m_x, m_y = event.pos
                     for item in self.board:
                         if item.x <= m_x <= item.x + self.square_side and \
@@ -549,7 +549,7 @@ class Game(object):
         pygame.display.update()
         while True:
                 for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
+                    if event.type == loc.MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
                         #check click
                         if yes_box.collidepoint(mouse_x, mouse_y):
@@ -616,7 +616,7 @@ class Game(object):
         while True:
             exit_loop = False
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
+                if event.type == loc.MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
                     if enough.collidepoint(mouse_x, mouse_y):
                         exit_loop = True
@@ -659,13 +659,13 @@ class Game(object):
         central = min(self.width, self.height)/2
         while True:
             for event in pygame.event.get():
-                if event.type == KEYDOWN:
+                if event.type == loc.KEYDOWN:
                     if event.unicode.isalpha():
                         name += event.unicode
                         self.button(name, green,
                                     central - max(10*len(name), 100)/2, y_pos,
                                     max(10*len(name), 100), 20)
-                    elif event.key == K_BACKSPACE:
+                    elif event.key == loc.K_BACKSPACE:
                         #cover the button
                         self.button("", self.background,
                                     central - max(10*len(name), 100)/2, y_pos,
@@ -674,7 +674,7 @@ class Game(object):
                         self.button(name, green,
                                     central - max(10*len(name), 100)/2, y_pos,
                                     max(10*len(name), 100), 20)
-                    elif event.key == K_RETURN and len(name) > 0:
+                    elif event.key == loc.K_RETURN and len(name) > 0:
                         return name
 
     def return_card_and_add(self, card_set, position, card):
@@ -1273,7 +1273,7 @@ class Player(object):
         # Detect click
         while True:
                 for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
+                    if event.type == loc.MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
                         #check click
                         if upgrade_box.collidepoint(mouse_x, mouse_y):
@@ -1379,7 +1379,7 @@ class Player(object):
         chosen_one = None
         while True:
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
+                if event.type == loc.MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
                     for item in player_buttons:
                         if player_buttons[item].collidepoint(mouse_x,mouse_y):
@@ -1419,7 +1419,7 @@ class Player(object):
         while True:
             exit_loop = False
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONUP:
+                if event.type == loc.MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
                     for item in buttons:
                         if buttons[item].collidepoint(mouse_x, mouse_y):
@@ -1519,7 +1519,7 @@ class Player(object):
         # Detect click
         while True:
                 for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONUP:
+                    if event.type == loc.MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
                         remaining = player.cash - auction_price
                         #check click
