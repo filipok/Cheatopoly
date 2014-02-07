@@ -193,12 +193,11 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         elif choose == "e":
             myPlayer.demortgage(thisGame)  # Demortgage
         elif choose == "g":
-            myPlayer.negotiate(thisGame)  # Negotiate
+            myPlayer.negotiate(thisGame)  # Trade
         elif choose == "n":  # Exit loop
             break
         choose = ""
 
-    #Negotiate with other players
     #save/load game from disk
     # add turn counter and print it at the end
 

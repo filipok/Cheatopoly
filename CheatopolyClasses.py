@@ -35,6 +35,10 @@ class Game(object):
     background = None
     display = None
 
+    #Trade
+    sell = []
+    buy = []
+
     #Player colors
     player_cols = [(255, 51, 51), (153, 255, 51), (51, 153, 255),
                    (255, 153, 51), (51, 255, 153, ), (255, 51, 153)]
@@ -589,17 +593,55 @@ class Game(object):
     def sell_list(self, sell, x):
         for i in range(len(sell)):
             item = sell[i]
-            if isinstance(item, (Street, Railroad, Utility)):
-                message(self.display, item.name, self.background, x/2,
-                        self.height/5 + 20*(2 + i))
-            else:
-                message(self.display, "$" + str(item), self.background, x/2,
-                        self.height/5 + 20*(2 + i))
+            message(self.display, item.name, self.background, x,
+                    self.height/5 + 20*(2 + i))
 
     def player_arrows(self, player):
         for item in self.board:
             if item.owned_by == player:
                 item.draw_arrow(self)
+
+    def choose_places(self, central, seller, buyer, player, place_list, text):
+        red = (255, 0, 0)
+        button_w = 120
+        self.cover()
+        self.trade_board(self.sell, central, seller, buyer)
+        self.sell_list(self.sell, central/2)
+        self.sell_list(self.buy, central + central/2)
+        self.player_arrows(player)
+        enough = self.button(text, red, central - button_w/2,
+                             self.height - 2*self.square_side, button_w, 30)
+        pygame.display.update()
+
+        while True:
+            exit_loop = False
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    mouse_x, mouse_y = event.pos
+                    if enough.collidepoint(mouse_x, mouse_y):
+                        exit_loop = True
+                        break
+                    for item in self.board:
+                        if item.x <= mouse_x <= item.x + self.square_side and \
+                                item.y <= mouse_y <= item.y + self.square_side:
+                            if not item.in_trade and item.owned_by == player:
+                                item.in_trade = True
+                                place_list.append(item)
+                            elif item.in_trade and item.owned_by == player:
+                                item.in_trade = False
+                                place_list.remove(item)
+                            self.cover()
+                            self.trade_board(self.sell, central, seller, buyer)
+                            self.sell_list(self.sell, central/2)
+                            self.sell_list(self.buy, central + central/2)
+                            self.player_arrows(player)
+                            enough = self.button(
+                                text, red, central - button_w/2,
+                                self.height - 2*self.square_side, button_w, 30)
+                            pygame.display.update()
+                            break
+            if exit_loop:
+                break
 
     def move_table(self, player):
         #player gets money on the table
@@ -1224,7 +1266,7 @@ class Player(object):
                                    2*step + smallest/4, width, thickness)
         demortgage_box = game.button("DEMORTGAGE", white, smallest/4,
                                      3*step + smallest/4, width, thickness)
-        negotiate_box = game.button("NEGOTIATE", white, smallest/4,
+        negotiate_box = game.button("TRADE", white, smallest/4,
                                     4*step + smallest/4, width, thickness)
         nothing_box = game.button("DO NOTHING", white, smallest/4,
                                   5*step + smallest/4, width, thickness)
@@ -1317,6 +1359,7 @@ class Player(object):
 
     def negotiate(self, game):
         game.cover()
+
         # Choose player to negotiate with (interactive menu)
         central = min(game.width, game.height)/2
         message(game.display, "Choose a player to trade with:",
@@ -1346,51 +1389,54 @@ class Player(object):
             if chosen_one is not None:
                 break
 
-        sell = []
-        red = (255, 0, 0)
-        game.cover()
-        game.trade_board(sell, central, self, chosen_one)
-        game.sell_list(sell, central)
-        game.player_arrows(self)
-        enough = game.button("Enough!", red, central,
-                             game.height - 2*game.square_side, 60, 30)
-        pygame.display.update()
+        # Choose what to sell
+        game.choose_places(central, self, chosen_one, self, game.sell,
+                           "Enough selling")
 
+        # Choose what to buy
+        game.choose_places(central, self, chosen_one, chosen_one, game.buy,
+                           "Enough buying")
+
+        # Add/request money
+        message(game.display, "Ask/give cash?", game.background, central,
+                game.height/4)
+        col = (0, 0, 255)
+        box_l = 60
+        box_step = 35
+        box_w = 20
+        cash = 0
+        buttons = {}
+        sums = [1, -1, 10, -10, 50, -50, 100, -100]
+        for i in range(len(sums)):
+            buttons[sums[i]] = game.button(str(sums[i]), col, central - box_l/2,
+                                           game.height/4 + (i+1)*box_step,
+                                           box_l, box_w)
+        red = (255, 0, 0)
+        button_w = 200
+        enough = game.button(str(cash) + ";click to stop", red,
+                             central - button_w/2,
+                             game.height - 2*game.square_side, button_w, 30)
         while True:
             exit_loop = False
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
+                    for item in buttons:
+                        if buttons[item].collidepoint(mouse_x, mouse_y):
+                            if -self.cash <= cash + item <= chosen_one.cash:
+                                cash += item
+                            enough = game.button(
+                                str(cash) + ";click to stop", red,
+                                central - button_w/2,
+                                game.height - 2*game.square_side, button_w, 30)
+                            break
                     if enough.collidepoint(mouse_x, mouse_y):
                         exit_loop = True
                         break
-                    for item in game.board:
-                        if item.x <= mouse_x <= item.x + game.square_side and \
-                                item.y <= mouse_y <= item.y + game.square_side:
-                            if not item.in_trade and item.owned_by == self:
-                                item.in_trade = True
-                                sell.append(item)
-                            elif item.in_trade and item.owned_by == self:
-                                item.in_trade = False
-                                sell.remove(item)
-                            game.cover()
-                            game.trade_board(sell, central, self, chosen_one)
-                            game.sell_list(sell, central)
-                            game.player_arrows(self)
-                            enough = game.button(
-                                "Enough!", red, central,
-                                game.height - 2*game.square_side, 60, 30)
-                            pygame.display.update()
-                            break
             if exit_loop:
                 break
 
-
         pygame.time.wait(2000) # for testing
-
-        # Choose own properties and/or cash (place arrow + cash menu)
-
-        # Choose other player's properties and/or cash
 
         #Send offer to the other player
 
