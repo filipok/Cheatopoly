@@ -38,6 +38,7 @@ class Game(object):
     #Trade
     sell = []
     buy = []
+    trade_cash = 0
 
     #Player colors
     player_cols = [(255, 51, 51), (153, 255, 51), (51, 153, 255),
@@ -1382,7 +1383,7 @@ class Player(object):
                 if event.type == loc.MOUSEBUTTONUP:
                     mouse_x, mouse_y = event.pos
                     for item in player_buttons:
-                        if player_buttons[item].collidepoint(mouse_x,mouse_y):
+                        if player_buttons[item].collidepoint(mouse_x, mouse_y):
                             chosen_one = game.players[item]
                             break
                     break
@@ -1404,16 +1405,15 @@ class Player(object):
         box_l = 60
         box_step = 35
         box_w = 20
-        cash = 0
         buttons = {}
         sums = [1, -1, 10, -10, 50, -50, 100, -100]
         for i in range(len(sums)):
-            buttons[sums[i]] = game.button(str(sums[i]), col, central - box_l/2,
-                                           game.height/4 + (i+1)*box_step,
-                                           box_l, box_w)
+            buttons[sums[i]] = game.button(
+                str(sums[i]), col, central - box_l/2,
+                game.height/4 + (i+1)*box_step, box_l, box_w)
         red = (255, 0, 0)
         button_w = 200
-        enough = game.button(str(cash) + ";click to stop", red,
+        enough = game.button(str(game.trade_cash) + "- SEND OFFER", red,
                              central - button_w/2,
                              game.height - 2*game.square_side, button_w, 30)
         while True:
@@ -1423,11 +1423,12 @@ class Player(object):
                     mouse_x, mouse_y = event.pos
                     for item in buttons:
                         if buttons[item].collidepoint(mouse_x, mouse_y):
-                            if -self.cash <= cash + item <= chosen_one.cash:
-                                cash += item
+                            if -self.cash <= game.trade_cash + item <= \
+                                    chosen_one.cash:
+                                game.trade_cash += item
                             enough = game.button(
-                                str(cash) + ";click to stop", red,
-                                central - button_w/2,
+                                "$" + str(game.trade_cash) + " - SEND OFFER",
+                                red, central - button_w/2,
                                 game.height - 2*game.square_side, button_w, 30)
                             break
                     if enough.collidepoint(mouse_x, mouse_y):
@@ -1436,16 +1437,51 @@ class Player(object):
             if exit_loop:
                 break
 
-        pygame.time.wait(2000) # for testing
-
         #Send offer to the other player
+        choose = chosen_one.reply_negotiate(game, self)
+        if choose:
+            # Transfer properties
+            for item in game.sell:
+                item.owned_by = chosen_one
+            for item in game.buy:
+                item.owned_by = self
+            # Transfer cash
+            self.cash += game.trade_cash
+            chosen_one.cash -= game.trade_cash
+            game.cover_n_central("Processing trade...")
+            game.visual_refresh()
+        else:
+            game.cover_n_central(chosen_one.name + " has rejected your offer!")
+        #Reset trade variables
+        for item in game.sell:
+            item.in_trade = False
+        for item in game.buy:
+            item.in_trade = False
+        game.sell = []
+        game.buy = []
+        game.trade_cash = 0
 
-        #If reply is yes, change ownership
-        pass
-
-    def reply_negotiate(self, game):
-        #Return yes/no (interactive menu)
-        pass
+    def reply_negotiate(self, game, initiator):
+        central = min(game.width, game.height)/2
+        game.cover_n_central("Hello, " + self.name + ", " + initiator.name +
+                             " wants to trade with you!")
+        message(game.display, "You get:", game.background, central - central/2,
+                game.height/5 + 20)
+        game.sell_list(game.sell, central - central/2)
+        message(game.display, "You give:", game.background,
+                central + central/2, game.height/5 + 20)
+        game.sell_list(game.buy, central + central/2)
+        if game.trade_cash < 0:
+            message(game.display, "You also get $" + str(-game.trade_cash),
+                    game.background, central, game.height/3)
+        elif game.trade_cash > 0:
+            message(game.display, "You also give $" + str(game.trade_cash),
+                    game.background, central, game.height/3)
+        choose = game.yes_no("Do you accept?", 40)
+        if choose == "yes":
+            return True
+        else:
+            return False
 
     def upgrade(self, game):
         # Flag the upgradeable locations
@@ -1911,6 +1947,9 @@ class Cheatoid(Player):
         self.successful_upgrade = True
         self.successful_demortgage = True
         return "n"
+
+    def reply_negotiate(self, game, initiator):
+        return False
 
     def reply_to_auction(self, other, game, auction_price):
         """
