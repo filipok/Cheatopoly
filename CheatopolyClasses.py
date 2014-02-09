@@ -1949,6 +1949,20 @@ class Cheatoid(Player):
         return "n"
 
     def reply_negotiate(self, game, initiator):
+        # 1. Dismantle one neighborhood only when creating a better one
+
+        # 2. Don't give street used by opponent to complete neighborH (see 1)
+
+        # 3. Calculate values by comparing hotel rents (for entire neighb?)
+
+        # 4. If railroad/utility, calculate according to what you already have
+
+        # 5. Same calculations for opponent
+
+        # 6. Compare values
+
+        # 7. Add some random element
+
         return False
 
     def reply_to_auction(self, other, game, auction_price):
