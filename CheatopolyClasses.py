@@ -599,7 +599,7 @@ class Game(object):
 
     def player_arrows(self, player):
         for item in self.board:
-            if item.owned_by == player:
+            if item.owned_by == player and item.houses == 0:
                 item.draw_arrow(self)
 
     def choose_places(self, central, seller, buyer, player, place_list, text):
@@ -625,7 +625,8 @@ class Game(object):
                     for item in self.board:
                         if item.x <= mouse_x <= item.x + self.square_side and \
                                 item.y <= mouse_y <= item.y + self.square_side:
-                            if not item.in_trade and item.owned_by == player:
+                            if not item.in_trade and item.owned_by == player \
+                                    and item.houses == 0:
                                 item.in_trade = True
                                 place_list.append(item)
                             elif item.in_trade and item.owned_by == player:
