@@ -1951,6 +1951,22 @@ class Cheatoid(Player):
 
     def reply_negotiate(self, game, initiator):
         # 1. Dismantle one neighborhood only when creating a better one
+        for item in game.buy:
+            #find neighborhood
+            my_neighborhood = None
+            for neighborhood in game.neighborhoods.values():
+                for street in neighborhood:
+                    if street == item:
+                        my_neighborhood = neighborhood
+            #return False if cheatoid owns entire neighborhood
+            if my_neighborhood is not None:
+                all_mine = True
+                for street in my_neighborhood:
+                    if street.owned_by != self:
+                        all_mine = False
+                if all_mine:
+                    return False
+
 
         # 2. Don't give street used by opponent to complete neighborH (see 1)
 
