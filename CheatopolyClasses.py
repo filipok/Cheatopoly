@@ -1950,7 +1950,7 @@ class Cheatoid(Player):
         return "n"
 
     def reply_negotiate(self, game, initiator):
-        # 1. Dismantle one neighborhood only when creating a better one
+        # Check for complete neighborhoods
         for item in game.buy:
             #find neighborhood
             my_neighborhood = None
@@ -1958,17 +1958,21 @@ class Cheatoid(Player):
                 for street in neighborhood:
                     if street == item:
                         my_neighborhood = neighborhood
-            #return False if cheatoid owns entire neighborhood
             if my_neighborhood is not None:
+                # 1. Dismantle one neighborhood only when creating a better one
                 all_mine = True
                 for street in my_neighborhood:
                     if street.owned_by != self:
                         all_mine = False
                 if all_mine:
                     return False
-
-
-        # 2. Don't give street used by opponent to complete neighborH (see 1)
+                # 2. Don't give streets used by opponent to finish neighborhood
+                all_their = True
+                for street in my_neighborhood:
+                    if street.owned_by != initiator and street not in game.buy:
+                        all_their = False
+                if all_their:
+                    return False
 
         # 3. Calculate values by comparing hotel rents (for entire neighb?)
 
