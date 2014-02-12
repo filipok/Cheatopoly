@@ -1967,11 +1967,12 @@ class Cheatoid(Player):
                 if all_mine:
                     return False
                 # 2. Don't give streets used by opponent to finish neighborhood
+                # in 25% of the cases (sometimes the cheatoid is stubborn)
                 all_their = True
                 for street in my_neighborhood:
                     if street.owned_by != initiator and street not in game.buy:
                         all_their = False
-                if all_their:
+                if all_their and random.randint(1, 4) == 1:
                     return False
 
         # 3. Calculate values by comparing hotel rents (for entire neighb?)
