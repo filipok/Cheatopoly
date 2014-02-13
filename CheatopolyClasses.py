@@ -1528,26 +1528,26 @@ class Player(object):
         green = (0, 255, 0)
         red = (255, 0, 0)
         col = game.background
-        if player.cash - auction_price >= 1:
+        if self.cash - auction_price >= 1:
             col = green
         plus_one = game.button("+1", col, central - box_l,
                                game.height/4 + 3*box_step, 2*box_l, box_w)
         col = game.background
-        if player.cash - auction_price >= 5:
+        if self.cash - auction_price >= 5:
             col = green
         plus_five = game.button("+5", col, central - box_l,
                                 game.height/4 + 4*box_step, 2*box_l, box_w)
         col = game.background
-        if player.cash - auction_price >= 10:
+        if self.cash - auction_price >= 10:
             col = green
         plus_ten = game.button("+10", col, central - box_l,
                                game.height/4 + 5*box_step, 2*box_l, box_w)
-        if player.cash - auction_price >= 50:
+        if self.cash - auction_price >= 50:
             col = green
         plus_fifty = game.button("+50", col, central - box_l,
                                  game.height/4 + 6*box_step, 2*box_l, box_w)
         col = game.background
-        if player.cash - auction_price >= 100:
+        if self.cash - auction_price >= 100:
             col = green
         plus_hundr = game.button("+100", col, central - box_l,
                                  game.height/4 + 7*box_step, 2*box_l, box_w)
@@ -1558,7 +1558,7 @@ class Player(object):
                 for event in pygame.event.get():
                     if event.type == loc.MOUSEBUTTONUP:
                         mouse_x, mouse_y = event.pos
-                        remaining = player.cash - auction_price
+                        remaining = self.cash - auction_price
                         #check click
                         if plus_one.collidepoint(mouse_x, mouse_y) \
                                 and remaining >= 1:
