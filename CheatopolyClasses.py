@@ -1949,7 +1949,7 @@ class Cheatoid(Player):
         self.successful_demortgage = True
         return "n"
 
-    def reply_negotiate(self, game, initiator):
+    def reply_negotiate(self, game, other):
         # Check for complete neighborhoods
         for item in game.buy:
             #find neighborhood
@@ -1959,7 +1959,7 @@ class Cheatoid(Player):
                     if street == item:
                         my_neighborhood = neighborhood
             if my_neighborhood is not None:
-                # 1. Dismantle one neighborhood only when creating a better one
+                # 1. Do not dismantle own neighborhood
                 all_mine = True
                 for street in my_neighborhood:
                     if street.owned_by != self:
@@ -1970,10 +1970,39 @@ class Cheatoid(Player):
                 # in 25% of the cases (sometimes the cheatoid is stubborn)
                 all_their = True
                 for street in my_neighborhood:
-                    if street.owned_by != initiator and street not in game.buy:
+                    if street.owned_by != other and street not in game.buy:
                         all_their = False
                 if all_their and random.randint(1, 4) == 1:
                     return False
+
+        # Calculate how many neighborhoods each player gains from exchange
+        # Reject outright if cheatoid gains fewer neighborhoods
+        old_mine_c = 0
+        new_mine_c = 0
+        old_theirs_c = 0
+        new_theirs_c = 0
+        for neighborhood in game.neighborhoods.values():
+            old_mine = True
+            new_mine = True
+            old_theirs = True
+            new_theirs = True
+            for street in neighborhood:
+                if street.owned_by != self:
+                    old_mine = False
+                if street.owned_by != other:
+                    old_theirs = False
+                if (street.owned_by != self and street not in game.sell) or \
+                        (street.owned_by == self and street in game.buy):
+                    new_mine = False
+                if (street.owned_by != other and street not in game.buy) \
+                        or (street.owned_by == other and street in game.sell):
+                    new_theirs = False
+            old_mine_c += old_mine
+            old_theirs_c += old_theirs
+            new_mine_c += new_mine
+            new_theirs_c += new_theirs
+        if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
+            return False
 
         # 3. Calculate values by comparing hotel rents (for entire neighb?)
 
