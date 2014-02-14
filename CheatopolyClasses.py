@@ -679,6 +679,22 @@ class Game(object):
                     elif event.key == loc.K_RETURN and len(name) > 0:
                         return name
 
+    def add_values(self, value, list):
+        for item in list:
+            if isinstance(item, Street):
+                value += item.rent_h
+            if isinstance(item, Railroad):
+                value += item.rent4
+            if isinstance(item, Utility):
+                value += 70
+        return value
+
+    def neighb_value(self, neighborhood):
+        value = 0
+        for street in neighborhood:
+            value += street.rent_h
+        return value
+
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
         return self.add_one(position, len(card_set))
@@ -1950,6 +1966,8 @@ class Cheatoid(Player):
         return "n"
 
     def reply_negotiate(self, game, other):
+        my_value = 0
+        their_value = 0
         # Check for complete neighborhoods
         for item in game.buy:
             #find neighborhood
@@ -1976,7 +1994,7 @@ class Cheatoid(Player):
                     return False
 
         # Calculate how many neighborhoods each player gains from exchange
-        # Reject outright if cheatoid gains fewer neighborhoods
+        # and reject outright if cheatoid gains fewer neighborhoods
         old_mine_c = 0
         new_mine_c = 0
         old_theirs_c = 0
@@ -1997,24 +2015,28 @@ class Cheatoid(Player):
                 if (street.owned_by != other and street not in game.buy) \
                         or (street.owned_by == other and street in game.sell):
                     new_theirs = False
+            # Count how many new neighborhoods each player gets
             old_mine_c += old_mine
             old_theirs_c += old_theirs
             new_mine_c += new_mine
             new_theirs_c += new_theirs
+            # Add value of entire neighborhood to player estimations
+            my_value += game.neighb_value(neighborhood)*(new_mine - old_mine)/2
+            their_value += \
+                game.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
+        # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
         if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
             return False
-
-        # 3. Calculate values by comparing hotel rents (for entire neighb?)
-
-        # 4. If railroad/utility, calculate according to what you already have
-
-        # 5. Same calculations for opponent
-
-        # 6. Compare values
-
-        # 7. Add some random element
-
-        return False
+        # Parse sell/buy lists
+        my_value += game.add_values(my_value, game.sell)
+        their_value += game.add_values(their_value, game.buy)
+        # Add trade_cash
+        their_value += game.trade_cash
+        # Compare values
+        result = my_value - their_value
+        # Add some random element
+        result -= random.randint(0, int(my_value/4))
+        return result > 0
 
     def reply_to_auction(self, other, game, auction_price):
         """
