@@ -611,7 +611,7 @@ class Game(object):
         self.sell_list(self.buy, central + central/2)
         self.player_arrows(player)
         enough = self.button(text, red, central - button_w/2,
-                             self.height - 2*self.square_side, button_w, 30)
+                             self.height - 3*self.square_side, button_w, 30)
         pygame.display.update()
 
         while True:
@@ -639,7 +639,7 @@ class Game(object):
                             self.player_arrows(player)
                             enough = self.button(
                                 text, red, central - button_w/2,
-                                self.height - 2*self.square_side, button_w, 30)
+                                self.height - 3*self.square_side, button_w, 30)
                             pygame.display.update()
                             break
             if exit_loop:
@@ -694,6 +694,14 @@ class Game(object):
         for street in neighborhood:
             value += street.rent_h
         return value
+
+    def display_trade_cash(self, player_1, player_2, central, button_w):
+        left = self.button("Gives: "+ str(max(-self.trade_cash, 0)),
+                           player_1.col, central/2 - button_w/4,
+            self.height - 3*self.square_side, button_w/2, 30)
+        right = self.button("Gives: "+ str(max(self.trade_cash, 0)),
+                            player_2.col, central + central/2 - button_w/4,
+            self.height - 3*self.square_side, button_w/2, 30)
 
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
@@ -1420,7 +1428,7 @@ class Player(object):
                 game.height/4)
         col = (0, 0, 255)
         box_l = 60
-        box_step = 35
+        box_step = 30
         box_w = 20
         buttons = {}
         sums = [1, -1, 10, -10, 50, -50, 100, -100]
@@ -1430,9 +1438,11 @@ class Player(object):
                 game.height/4 + (i+1)*box_step, box_l, box_w)
         red = (255, 0, 0)
         button_w = 200
-        enough = game.button(str(game.trade_cash) + "- SEND OFFER", red,
+        enough = game.button("SEND OFFER", red,
                              central - button_w/2,
-                             game.height - 2*game.square_side, button_w, 30)
+                             game.height - 3*game.square_side, button_w, 30)
+        game.display_trade_cash(self, chosen_one, central, button_w)
+
         while True:
             exit_loop = False
             for event in pygame.event.get():
@@ -1444,9 +1454,10 @@ class Player(object):
                                     chosen_one.cash:
                                 game.trade_cash += item
                             enough = game.button(
-                                "$" + str(game.trade_cash) + " - SEND OFFER",
-                                red, central - button_w/2,
-                                game.height - 2*game.square_side, button_w, 30)
+                                "SEND OFFER", red, central - button_w/2,
+                                game.height - 3*game.square_side, button_w, 30)
+                            game.display_trade_cash(self, chosen_one, central,
+                                                    button_w)
                             break
                     if enough.collidepoint(mouse_x, mouse_y):
                         exit_loop = True
