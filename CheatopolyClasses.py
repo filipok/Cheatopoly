@@ -1956,7 +1956,7 @@ class Cheatoid(Player):
     def choose_action(self, game):
         """
         Computer chooses between [u]pgrade / [d]owngrade / [m]ortgage /
-        d[e]mortgage / do [n]othing
+        d[e]mortgage / do [n]othing / ne[g]otiate
         Returns "u"/"d"/"m"/"e"/"n"
         """
         if self.cash < 0 and self.successful_downgrade:
@@ -1964,6 +1964,10 @@ class Cheatoid(Player):
         if self.cash < 0 and not self.successful_downgrade and \
                 self.successful_mortgage:
             return "m"
+        # Computer negotiates if cash negative after downgrade and mortgage
+        if self.cash < 0 and not self.successful_downgrade and \
+                not self.successful_mortgage:
+            return "g"
         if self.cash > 125 and self.successful_demortgage:
             return "e"
         if self.cash > 125 and not self.successful_demortgage and \
@@ -1974,7 +1978,13 @@ class Cheatoid(Player):
         self.successful_mortgage = True
         self.successful_upgrade = True
         self.successful_demortgage = True
+        #Computer should also trade strategically under certain conditions
+        # ...TODO
         return "n"
+
+    def negotiate(self, game):
+        print "negotiate!!"
+        pass
 
     def reply_negotiate(self, game, other):
         my_value = 0
