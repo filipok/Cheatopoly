@@ -1865,6 +1865,7 @@ class Cheatoid(Player):
     successful_mortgage = True
     successful_upgrade = True
     successful_demortgage = True
+    trades = 0
 
     def mortgage(self, game):
         """
@@ -1959,7 +1960,6 @@ class Cheatoid(Player):
         d[e]mortgage / do [n]othing / ne[g]otiate
         Returns "u"/"d"/"m"/"e"/"n"
         """
-        trades = 0
         if self.cash < 0 and self.successful_downgrade:
             return "d"
         if self.cash < 0 and not self.successful_downgrade and \
@@ -1969,8 +1969,9 @@ class Cheatoid(Player):
         # Number of consecutive trades may not exceed number of players.
         # That is an arbitrary value.
         if self.cash < 0 and not self.successful_downgrade and \
-                not self.successful_mortgage and trades <= len(game.players):
-            trades += 1
+                not self.successful_mortgage and \
+                self.trades <= len(game.players):
+            self.trades += 1
             return "g"
         if self.cash > 125 and self.successful_demortgage:
             return "e"
@@ -1980,6 +1981,21 @@ class Cheatoid(Player):
 
         # Computer should also trade strategically under certain conditions:
         # - another player has a street in same neighborhood;
+        if self.trades <= len(game.players):
+            for neighborhood in game.neighborhood.values():
+                mine = False
+                other = False
+                empty = False
+                for street in neighborhood:
+                    if street.owned_by == self:
+                        mine = True
+                    elif street.owned_by is not None:
+                        other = True
+                    else:
+                        empty = True
+                if mine and other and not empty:
+                    self.trades += 1
+                    return "g"
         # - there is a very poor player compared to the other players.
         # Again, number of trades is limited.
         # Also, computer should not nag players indefinitely.
@@ -1991,7 +2007,7 @@ class Cheatoid(Player):
         self.successful_mortgage = True
         self.successful_upgrade = True
         self.successful_demortgage = True
-        trades = 0
+        self.trades = 0
         return "n"
 
     def negotiate(self, game):
