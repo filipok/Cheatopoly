@@ -1866,6 +1866,7 @@ class Cheatoid(Player):
     successful_upgrade = True
     successful_demortgage = True
     trades = 0
+    other_players = {}
 
     def mortgage(self, game):
         """
@@ -1982,22 +1983,33 @@ class Cheatoid(Player):
         # Computer should also trade strategically under certain conditions:
         # - another player has a street in same neighborhood;
         if self.trades <= len(game.players):
-            for neighborhood in game.neighborhood.values():
+            for neighborhood in game.neighborhoods.values():
                 mine = False
                 other = False
                 empty = False
                 for street in neighborhood:
                     if street.owned_by == self:
                         mine = True
-                    elif street.owned_by is not None:
+                    elif street.owned_by is not None and \
+                            self.other_players[street.owned_by] == 0:
                         other = True
                     else:
                         empty = True
                 if mine and other and not empty:
                     self.trades += 1
+                    print "trying to get street!"
                     return "g"
         # - there is a very poor player compared to the other players.
-        # Again, number of trades is limited.
+        min_cash = float("inf")
+        avg_cash = 0
+        for player in game.players:
+            min_cash = min(min_cash, player.cash)
+            avg_cash += player.cash
+        if min_cash < (avg_cash/len(game.players))/3 and \
+                min_cash < 2*self.cash:
+            print "trying to trade with poor guy!"
+            return "g"
+
         # Also, computer should not nag players indefinitely.
         # If refused, it should ignore the respective player for several turns.
         # ...TODO

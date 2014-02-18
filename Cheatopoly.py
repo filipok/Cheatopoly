@@ -50,6 +50,14 @@ if ans == "yes":
 else:
     thisGame.mock_players()
 
+# Initialize list of other players for cheatoids
+# Cheatoids should not nag players indefinitely, so we use a counter.
+for player in thisGame.players:
+    if isinstance(player, cheat.Cheatoid):
+        for other_player in thisGame.players:
+            if other_player != player:
+                player.other_players[other_player] = 0
+
 #Player turns are generated in a while loop
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
@@ -203,6 +211,10 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     #save/load game from disk
     # add turn counter and print it at the end
+
+    # Decrease nagging counter
+    for item in myPlayer.other_players:
+        myPlayer.other_players[item] = max(0, myPlayer.other_players[item] - 1)
 
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
