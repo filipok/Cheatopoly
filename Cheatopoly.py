@@ -1,6 +1,9 @@
 import sys
+import random
 from random import shuffle
-from CheatopolyClasses import *
+import pygame
+import pygame.locals as loc
+import CheatopolyClasses as cheat
 
 # Pygame initialization
 pygame.init()
@@ -15,9 +18,9 @@ DISPLAYSURF.fill(GRAY)
 pygame.display.set_caption('Cheatopoly')
 
 #Create game
-thisGame = Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF, LINE_HEIGHT, FONT_SIZE)
+thisGame = cheat.Game(HEIGHT, WIDTH, GRAY, DISPLAYSURF, LINE_HEIGHT, FONT_SIZE)
 thisGame.load('data.txt')  # Process data.txt
-thisGame.bank = Bank(thisGame)  # Initialize bank
+thisGame.bank = cheat.Bank(thisGame)  # Initialize bank
 #Randomize community chest and chance cards
 shuffle(thisGame.chances)
 shuffle(thisGame.community_chest)
@@ -27,14 +30,14 @@ thisGame.set_places()
 #Welcome screen
 for item in thisGame.board:
     item.draw(thisGame)
-message(thisGame.display, "************************", thisGame.background,
+cheat.message(thisGame.display, "************************", thisGame.background,
         min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 20)
-message(thisGame.display, "WELCOME TO CHEATOPOLY!!!", thisGame.background,
+cheat.message(thisGame.display, "WELCOME TO CHEATOPOLY!!!", thisGame.background,
         min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 40)
-message(thisGame.display, "You can play Cheatopoly in up to 6 players",
+cheat.message(thisGame.display, "You can play Cheatopoly in up to 6 players",
         thisGame.background, min(thisGame.width, thisGame.height)/2,
         thisGame.height/4 + 60)
-message(thisGame.display, "************************", thisGame.background,
+cheat.message(thisGame.display, "************************", thisGame.background,
         min(thisGame.width, thisGame.height)/2, thisGame.height/4 + 80)
 pygame.display.update()
 pygame.time.wait(2000)
@@ -51,7 +54,7 @@ else:
 while thisGame.bank.money > 0 and len(thisGame.players) > 1:
 
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == loc.QUIT:
             pygame.quit()
             sys.exit()
 
@@ -63,7 +66,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     #Start player turn; test for teleportation with Chance card
     #Dice roll and jail check happen only when not teleporting
     if myPlayer.teleport == 0:
-        if not isinstance(myPlayer, Cheatoid):
+        if not isinstance(myPlayer, cheat.Cheatoid):
             thisGame.start_turn(myPlayer)
         dice = thisGame.roll_dice(myPlayer)
 
@@ -110,7 +113,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     thisPlace = thisGame.board[myPlayer.location]  # Shorthand
 
     # if player lands on street, rail or utility:
-    if isinstance(thisPlace, (Street, Railroad, Utility)):
+    if isinstance(thisPlace, (cheat.Street, cheat.Railroad, cheat.Utility)):
         if thisPlace.owned_by is None:
             #You can buy the place
             choose = myPlayer.buy(thisGame)  # Make a choice
@@ -126,21 +129,21 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
             thisGame.visual_refresh()
 
     #Free Parking
-    if isinstance(thisPlace, FreeParking):
+    if isinstance(thisPlace, cheat.FreeParking):
         thisGame.move_table(myPlayer)
         thisGame.visual_refresh()
 
     #Go To Jail
-    if isinstance(thisPlace, GoToJail):
+    if isinstance(thisPlace, cheat.GoToJail):
         myPlayer.move_to_jail(thisGame)
 
     #Pay taxes:
-    if isinstance(thisPlace, Tax):
+    if isinstance(thisPlace, cheat.Tax):
         myPlayer.pay_tax(thisPlace, thisGame)
         thisGame.visual_refresh()
 
     #Community Chest
-    if isinstance(thisPlace, CommunityChest):
+    if isinstance(thisPlace, cheat.CommunityChest):
         text = myPlayer.name + ", you have drawn this Community Chest card: "
         thisGame.cover_n_central(text)
         thisGame.cover_n_central(
@@ -158,7 +161,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         thisGame.visual_refresh()
 
     #Chance cards
-    if isinstance(thisPlace, Chance):
+    if isinstance(thisPlace, cheat.Chance):
         text = myPlayer.name + ", you have drawn this Chance card: "
         thisGame.cover_n_central(text)
         thisGame.cover_n_central(
