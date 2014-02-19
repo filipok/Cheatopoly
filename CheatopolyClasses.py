@@ -2010,10 +2010,6 @@ class Cheatoid(Player):
             print "trying to trade with poor guy!"
             return "g"
 
-        # Also, computer should not nag players indefinitely.
-        # If refused, it should ignore the respective player for several turns.
-        # ...TODO
-
         #at the very end
         self.successful_downgrade = True
         self.successful_mortgage = True
@@ -2024,6 +2020,13 @@ class Cheatoid(Player):
 
     def negotiate(self, game):
         print "negotiate!!"
+        # There are three cases where the cheatoid wants to trade:
+        # - has negative cash
+        # - wants a street to complete neighborhood
+        # - wants to profit from the poorest player
+
+        # Question: should we flag the poorest player in choose_action()?
+        # Question: should we flag the desired street in choose_action()?
         pass
 
     def reply_negotiate(self, game, other):
