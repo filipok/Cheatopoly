@@ -2021,10 +2021,24 @@ class Cheatoid(Player):
     def negotiate(self, game):
         print "negotiate!!"
         # There are three cases where the cheatoid wants to trade:
-        # - has negative cash
-        # - wants a street to complete neighborhood
-        # - wants to profit from the poorest player
+        # 1. has negative cash
+        # Loop through assets:
+        #    select a random player to trade with (if not tempbanned)
+        #    estimate value for respective player
+        #    if value larger than deficit, send offer
+        #    otherwise check value for the next player (not tempbanned) etc.
+        #    if no player value is larger than deficit, try with next asset
+        #    (sometimes no trade takes place and player goes bankrupt)
+        # 2. wants a street to complete neighborhood
+        #    there should be a flag in the choose_action() method
+        #    send offer according to the flag
+        # 3. wants to profit from the poorest player
+        #    get flagged player (there should be a flag)
+        #    search through poor player assets for streets in the same nb
+        #    if player street(s) enough to complete nb, offer more
+        #    if not enough to complete nb, but no other owners, offer less
 
+        # If rejected, add temporary ban in each case!
         # Question: should we flag the poorest player in choose_action()?
         # Question: should we flag the desired street in choose_action()?
         pass
