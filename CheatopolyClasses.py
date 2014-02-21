@@ -703,6 +703,92 @@ class Game(object):
                             player_2.col, central + central/2 - button_w/4,
             self.height - 3*self.square_side, button_w/2, 30)
 
+    def transfer_properties(self, initiator, chosen_one):
+        # Transfer properties
+        for item in self.sell:
+            item.owned_by = chosen_one
+        for item in self.buy:
+            item.owned_by = initiator
+        # Transfer cash
+        initiator.cash += self.trade_cash
+        chosen_one.cash -= self.trade_cash
+        self.cover_n_central("Processing trade...")
+        self.visual_refresh()
+
+    def robot_negotiate(self, receiver, sender):
+        my_value = 0
+        their_value = 0
+        # Check for complete neighborhoods
+        for item in self.buy:
+            #find neighborhood
+            my_neighborhood = None
+            for neighborhood in self.neighborhoods.values():
+                for street in neighborhood:
+                    if street == item:
+                        my_neighborhood = neighborhood
+            if my_neighborhood is not None:
+                # 1. Do not dismantle own neighborhood
+                all_mine = True
+                for street in my_neighborhood:
+                    if street.owned_by != receiver:
+                        all_mine = False
+                if all_mine:
+                    return False
+                # 2. Don't give streets used by opponent to finish neighborhood
+                # in 25% of the cases (sometimes the cheatoid is stubborn)
+                all_their = True
+                for street in my_neighborhood:
+                    if street.owned_by != sender and street not in self.buy:
+                        all_their = False
+                if all_their and random.randint(1, 4) == 1:
+                    return False
+
+        # Calculate how many neighborhoods each player gains from exchange
+        # and reject outright if cheatoid gains fewer neighborhoods
+        old_mine_c = 0
+        new_mine_c = 0
+        old_theirs_c = 0
+        new_theirs_c = 0
+        for neighborhood in self.neighborhoods.values():
+            old_mine = True
+            new_mine = True
+            old_theirs = True
+            new_theirs = True
+            for street in neighborhood:
+                if street.owned_by != receiver:
+                    old_mine = False
+                if street.owned_by != sender:
+                    old_theirs = False
+                if (street.owned_by != receiver and street not in self.sell) or \
+                        (street.owned_by == receiver and street in self.buy):
+                    new_mine = False
+                if (street.owned_by != sender and street not in self.buy) \
+                        or (street.owned_by == sender and street in self.sell):
+                    new_theirs = False
+            # Count how many new neighborhoods each player gets
+            old_mine_c += old_mine
+            old_theirs_c += old_theirs
+            new_mine_c += new_mine
+            new_theirs_c += new_theirs
+            # Add value of entire neighborhood to player estimations
+            my_value += self.neighb_value(neighborhood)*(new_mine - old_mine)/2
+            their_value += \
+                self.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
+        # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
+        if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
+            return False
+        # Parse sell/buy lists
+        my_value += self.add_values(my_value, self.sell)
+        their_value += self.add_values(their_value, self.buy)
+        # Add trade_cash
+        their_value += self.trade_cash
+        # Compare values
+        result = my_value - their_value
+        # Add some random element
+        result -= random.randint(0, int(my_value/4))
+        return result > 0
+
+
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
         return self.add_one(position, len(card_set))
@@ -1468,16 +1554,7 @@ class Player(object):
         #Send offer to the other player
         choose = chosen_one.reply_negotiate(game, self)
         if choose:
-            # Transfer properties
-            for item in game.sell:
-                item.owned_by = chosen_one
-            for item in game.buy:
-                item.owned_by = self
-            # Transfer cash
-            self.cash += game.trade_cash
-            chosen_one.cash -= game.trade_cash
-            game.cover_n_central("Processing trade...")
-            game.visual_refresh()
+            game.transfer_properties(self, chosen_one)
         else:
             game.cover_n_central(chosen_one.name + " has rejected your offer!")
         #Reset trade variables
@@ -2043,78 +2120,9 @@ class Cheatoid(Player):
         # Question: should we flag the desired street in choose_action()?
         pass
 
-    def reply_negotiate(self, game, other):
-        my_value = 0
-        their_value = 0
-        # Check for complete neighborhoods
-        for item in game.buy:
-            #find neighborhood
-            my_neighborhood = None
-            for neighborhood in game.neighborhoods.values():
-                for street in neighborhood:
-                    if street == item:
-                        my_neighborhood = neighborhood
-            if my_neighborhood is not None:
-                # 1. Do not dismantle own neighborhood
-                all_mine = True
-                for street in my_neighborhood:
-                    if street.owned_by != self:
-                        all_mine = False
-                if all_mine:
-                    return False
-                # 2. Don't give streets used by opponent to finish neighborhood
-                # in 25% of the cases (sometimes the cheatoid is stubborn)
-                all_their = True
-                for street in my_neighborhood:
-                    if street.owned_by != other and street not in game.buy:
-                        all_their = False
-                if all_their and random.randint(1, 4) == 1:
-                    return False
 
-        # Calculate how many neighborhoods each player gains from exchange
-        # and reject outright if cheatoid gains fewer neighborhoods
-        old_mine_c = 0
-        new_mine_c = 0
-        old_theirs_c = 0
-        new_theirs_c = 0
-        for neighborhood in game.neighborhoods.values():
-            old_mine = True
-            new_mine = True
-            old_theirs = True
-            new_theirs = True
-            for street in neighborhood:
-                if street.owned_by != self:
-                    old_mine = False
-                if street.owned_by != other:
-                    old_theirs = False
-                if (street.owned_by != self and street not in game.sell) or \
-                        (street.owned_by == self and street in game.buy):
-                    new_mine = False
-                if (street.owned_by != other and street not in game.buy) \
-                        or (street.owned_by == other and street in game.sell):
-                    new_theirs = False
-            # Count how many new neighborhoods each player gets
-            old_mine_c += old_mine
-            old_theirs_c += old_theirs
-            new_mine_c += new_mine
-            new_theirs_c += new_theirs
-            # Add value of entire neighborhood to player estimations
-            my_value += game.neighb_value(neighborhood)*(new_mine - old_mine)/2
-            their_value += \
-                game.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
-        # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
-        if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
-            return False
-        # Parse sell/buy lists
-        my_value += game.add_values(my_value, game.sell)
-        their_value += game.add_values(their_value, game.buy)
-        # Add trade_cash
-        their_value += game.trade_cash
-        # Compare values
-        result = my_value - their_value
-        # Add some random element
-        result -= random.randint(0, int(my_value/4))
-        return result > 0
+    def reply_negotiate(self, game, other):
+        return game.robot_negotiate(self, other)
 
     def reply_to_auction(self, other, game, auction_price):
         """
