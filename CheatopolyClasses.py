@@ -744,7 +744,23 @@ class Game(object):
                     return False
 
         # Calculate how many neighborhoods each player gains from exchange
-        # and reject outright if cheatoid gains fewer neighborhoods
+        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c = \
+            self.compute_neighborhoods(receiver, sender, my_value, their_value)
+        # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
+        if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
+            return False
+        # Parse sell/buy lists
+        my_value += self.add_values(my_value, self.sell)
+        their_value += self.add_values(their_value, self.buy)
+        # Add trade_cash
+        their_value += self.trade_cash
+        # Compare values
+        result = my_value - their_value
+        # Add some random element
+        result -= random.randint(0, int(my_value/4))
+        return result > 0
+
+    def compute_neighborhoods(self, receiver, sender, my_value, their_value):
         old_mine_c = 0
         new_mine_c = 0
         old_theirs_c = 0
@@ -774,19 +790,7 @@ class Game(object):
             my_value += self.neighb_value(neighborhood)*(new_mine - old_mine)/2
             their_value += \
                 self.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
-        # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
-        if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
-            return False
-        # Parse sell/buy lists
-        my_value += self.add_values(my_value, self.sell)
-        their_value += self.add_values(their_value, self.buy)
-        # Add trade_cash
-        their_value += self.trade_cash
-        # Compare values
-        result = my_value - their_value
-        # Add some random element
-        result -= random.randint(0, int(my_value/4))
-        return result > 0
+        return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c
 
 
     def return_card_and_add(self, card_set, position, card):
