@@ -213,8 +213,9 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     # add turn counter and print it at the end
 
     # Decrease nagging counter
-    for item in myPlayer.other_players:
-        myPlayer.other_players[item] = max(0, myPlayer.other_players[item] - 1)
+    if isinstance(myPlayer, cheat.Cheatoid):
+        for item in myPlayer.other_players:
+            myPlayer.other_players[item] = max(0, myPlayer.other_players[item] - 1)
 
     #Turn end: remove from game if cash < 0 and increment current player
     thisGame.check_eliminate(myPlayer)
