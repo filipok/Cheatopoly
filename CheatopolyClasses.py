@@ -760,6 +760,25 @@ class Game(object):
         result -= random.randint(0, int(my_value/4))
         return result > 0
 
+    def show_trade(self, initiator, receiver):
+        central = min(self.width, self.height)/2
+        self.cover_n_central(
+            initiator.name + " wants to trade with " + receiver.name)
+        message(self.display, receiver.name + "would get:", self.background,
+                central - central/2, self.height/5 + 20)
+        self.sell_list(self.sell, central - central/2)
+        message(self.display, initiator.name + "would get:", self.background,
+                central + central/2, self.height/5 + 20)
+        self.sell_list(self.buy, central + central/2)
+        if self.trade_cash < 0:
+            message(self.display, receiver.name + "would also get $" +
+                    str(-self.trade_cash), self.background, central,
+                    self.height/3)
+        elif self.trade_cash > 0:
+            message(self.display, initiator.name + "would also get $" +
+                    str(self.trade_cash), self.background, central,
+                    self.height/3)
+
     def compute_neighborhoods(self, receiver, sender, my_value, their_value):
         old_mine_c = 0
         new_mine_c = 0
