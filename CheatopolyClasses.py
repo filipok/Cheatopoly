@@ -2180,10 +2180,10 @@ class Cheatoid(Player):
         a = random.randint(-game.board[other.location].price / 10,
                            game.board[other.location].price / 10)
         if isinstance(game.board[other.location], Street) and my_neighborhood:
-            reply = min(auction_price + 1,
+            reply = min(auction_price + 5,
                         game.board[other.location].rent_h + a, self.cash)
         else:
-            reply = min(auction_price + 1,
+            reply = min(auction_price + 5,
                         game.board[other.location].price + a, self.cash)
         game.cover_n_central(self.name + " bids " + str(reply) + ".")
         return reply
