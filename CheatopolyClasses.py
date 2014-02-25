@@ -771,15 +771,15 @@ class Game(object):
         message(self.display, receiver.name + "would get:", self.background,
                 central - central/2, self.height/5 + 20)
         self.sell_list(self.sell, central - central/2)
-        message(self.display, initiator.name + "would get:", self.background,
+        message(self.display, initiator.name + " would get:", self.background,
                 central + central/2, self.height/5 + 20)
         self.sell_list(self.buy, central + central/2)
         if self.trade_cash < 0:
-            message(self.display, receiver.name + "would also get $" +
+            message(self.display, receiver.name + " would also get $" +
                     str(-self.trade_cash), self.background, central,
                     self.height/3)
         elif self.trade_cash > 0:
-            message(self.display, initiator.name + "would also get $" +
+            message(self.display, initiator.name + " would also get $" +
                     str(self.trade_cash), self.background, central,
                     self.height/3)
 
