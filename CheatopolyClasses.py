@@ -716,8 +716,8 @@ class Game(object):
         self.visual_refresh()
 
     def robot_negotiate(self, receiver, sender):
-        my_value = 0
-        their_value = 0
+        receiver_value = 0
+        sender_value = 0
         # Check for complete neighborhoods
         for item in self.buy:
             #find neighborhood
@@ -744,20 +744,20 @@ class Game(object):
                     return False
 
         # Calculate how many neighborhoods each player gains from exchange
-        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c = \
-            self.compute_neighborhoods(receiver, sender, my_value, their_value)
+        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, sender_value = \
+            self.compute_neighborhoods(receiver, sender, receiver_value, sender_value)
         # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
         if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
             return False
         # Parse sell/buy lists
-        my_value += self.add_values(my_value, self.sell)
-        their_value += self.add_values(their_value, self.buy)
+        receiver_value += self.add_values(receiver_value, self.sell)
+        sender_value += self.add_values(sender_value, self.buy)
         # Add trade_cash
-        their_value += self.trade_cash
+        sender_value += self.trade_cash
         # Compare values
-        result = my_value - their_value
+        result = receiver_value - sender_value
         # Add some random element
-        result -= random.randint(0, int(my_value/4))
+        result -= random.randint(0, int(receiver_value/4))
         return result > 0
 
     def show_trade(self, initiator, receiver):
@@ -779,7 +779,7 @@ class Game(object):
                     str(self.trade_cash), self.background, central,
                     self.height/3)
 
-    def compute_neighborhoods(self, receiver, sender, my_value, their_value):
+    def compute_neighborhoods(self, receiver, sender, receiver_value, sender_value):
         old_mine_c = 0
         new_mine_c = 0
         old_theirs_c = 0
@@ -806,11 +806,10 @@ class Game(object):
             new_mine_c += new_mine
             new_theirs_c += new_theirs
             # Add value of entire neighborhood to player estimations
-            my_value += self.neighb_value(neighborhood)*(new_mine - old_mine)/2
-            their_value += \
+            receiver_value += self.neighb_value(neighborhood)*(new_mine - old_mine)/2
+            sender_value += \
                 self.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
-        return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c
-
+        return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, sender_value
 
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
