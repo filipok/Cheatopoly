@@ -249,8 +249,8 @@ class Game(object):
             for street in neighborhood:
                 if street.owned_by != player or street.mortgaged:
                     #restore to 5
-                    for street in neighborhood:
-                        street.min_upgrade = 5
+                    for strt in neighborhood:
+                        strt.min_upgrade = 5
                     min_upgrade = 5
                     break
                 else:
@@ -579,7 +579,7 @@ class Game(object):
                 self.height/5 - 20)
         message(self.display, player_left.name, self.background, x/2,
                 self.height/5)
-        message(self.display, player_right.name,self.background,
+        message(self.display, player_right.name, self.background,
                 x + x/2, self.height/5)
         message(self.display, "You give:", self.background,
                 x/2, self.height/5 + 20)
@@ -679,8 +679,8 @@ class Game(object):
                     elif event.key == loc.K_RETURN and len(name) > 0:
                         return name
 
-    def add_values(self, value, list):
-        for item in list:
+    def add_values(self, value, item_list):
+        for item in item_list:
             if isinstance(item, Street):
                 value += item.rent_h
             if isinstance(item, Railroad):
@@ -696,12 +696,14 @@ class Game(object):
         return value
 
     def display_trade_cash(self, player_1, player_2, central, button_w):
-        left = self.button("Gives: "+ str(max(-self.trade_cash, 0)),
-                           player_1.col, central/2 - button_w/4,
-            self.height - 3*self.square_side, button_w/2, 30)
-        right = self.button("Gives: "+ str(max(self.trade_cash, 0)),
-                            player_2.col, central + central/2 - button_w/4,
-            self.height - 3*self.square_side, button_w/2, 30)
+        left = self.button(
+            "Gives: " + str(max(-self.trade_cash, 0)), player_1.col,
+            central/2 - button_w/4, self.height - 3*self.square_side,
+            button_w/2, 30)
+        right = self.button(
+            "Gives: " + str(max(self.trade_cash, 0)), player_2.col,
+            central + central/2 - button_w/4, self.height - 3*self.square_side,
+            button_w/2, 30)
 
     def transfer_properties(self, initiator, chosen_one):
         # Transfer properties
@@ -744,8 +746,10 @@ class Game(object):
                     return False
 
         # Calculate how many neighborhoods each player gains from exchange
-        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, sender_value = \
-            self.compute_neighborhoods(receiver, sender, receiver_value, sender_value)
+        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, \
+            sender_value = \
+            self.compute_neighborhoods(
+                receiver, sender, receiver_value, sender_value)
         # Reject outright if other player gets more neighborhoods (1 vs 0 etc)
         if new_mine_c - old_mine_c < new_theirs_c - old_theirs_c:
             return False
@@ -779,7 +783,8 @@ class Game(object):
                     str(self.trade_cash), self.background, central,
                     self.height/3)
 
-    def compute_neighborhoods(self, receiver, sender, receiver_value, sender_value):
+    def compute_neighborhoods(self, receiver, sender, receiver_value,
+                              sender_value):
         old_mine_c = 0
         new_mine_c = 0
         old_theirs_c = 0
@@ -789,16 +794,16 @@ class Game(object):
             new_mine = True
             old_theirs = True
             new_theirs = True
-            for street in neighborhood:
-                if street.owned_by != receiver:
+            for strt in neighborhood:
+                if strt.owned_by != receiver:
                     old_mine = False
-                if street.owned_by != sender:
+                if strt.owned_by != sender:
                     old_theirs = False
-                if (street.owned_by != receiver and street not in self.sell) or \
-                        (street.owned_by == receiver and street in self.buy):
+                if (strt.owned_by != receiver and strt not in self.sell) or \
+                        (strt.owned_by == receiver and strt in self.buy):
                     new_mine = False
-                if (street.owned_by != sender and street not in self.buy) \
-                        or (street.owned_by == sender and street in self.sell):
+                if (strt.owned_by != sender and strt not in self.buy) \
+                        or (strt.owned_by == sender and strt in self.sell):
                     new_theirs = False
             # Count how many new neighborhoods each player gets
             old_mine_c += old_mine
@@ -806,10 +811,12 @@ class Game(object):
             new_mine_c += new_mine
             new_theirs_c += new_theirs
             # Add value of entire neighborhood to player estimations
-            receiver_value += self.neighb_value(neighborhood)*(new_mine - old_mine)/2
+            receiver_value += \
+                self.neighb_value(neighborhood)*(new_mine - old_mine)/2
             sender_value += \
                 self.neighb_value(neighborhood)*(new_theirs - old_theirs)/2
-        return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, sender_value
+        return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, \
+            receiver_value, sender_value
 
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
