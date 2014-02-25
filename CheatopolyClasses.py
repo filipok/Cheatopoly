@@ -1971,8 +1971,11 @@ class Cheatoid(Player):
     successful_mortgage = True
     successful_upgrade = True
     successful_demortgage = True
+    # Trade
     trades = 0
     other_players = {}
+    poor_guy = None
+    poor_trade = True
 
     def mortgage(self, game):
         """
@@ -2073,7 +2076,7 @@ class Cheatoid(Player):
                 self.successful_mortgage:
             return "m"
         # Computer negotiates if cash negative after downgrade and mortgage
-        # Number of consecutive trades may not exceed number of players.
+        # Number of consecutive trade attempts cannot exceed number of players.
         # That is an arbitrary value.
         if self.cash < 0 and not self.successful_downgrade and \
                 not self.successful_mortgage and \
@@ -2109,11 +2112,16 @@ class Cheatoid(Player):
         min_cash = float("inf")
         avg_cash = 0
         for player in game.players:
-            min_cash = min(min_cash, player.cash)
+            if player.cash < min_cash:
+                min_cash = player.cash
+                self.poor_guy = player
             avg_cash += player.cash
         if min_cash < (avg_cash/len(game.players))/3 and \
-                min_cash < 2*self.cash:
+                min_cash < 2*self.cash and self.poor_guy != self and \
+                self.poor_trade and self.trades <= len(game.players):
             print "trying to trade with poor guy!"
+            self.poor_trade = False  # Only one poor-trade attempt per turn
+            self.trades += 1
             return "g"
 
         #at the very end
@@ -2122,6 +2130,7 @@ class Cheatoid(Player):
         self.successful_upgrade = True
         self.successful_demortgage = True
         self.trades = 0
+        self.poor_trade = True
         return "n"
 
     def negotiate(self, game):
