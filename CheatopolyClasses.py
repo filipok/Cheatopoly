@@ -2134,16 +2134,41 @@ class Cheatoid(Player):
         return "n"
 
     def negotiate(self, game):
-        print "negotiate!!"
         # There are three cases where the cheatoid wants to trade:
         # 1. has negative cash
-        # Loop through assets:
-        #    select a random player to trade with (if not tempbanned)
-        #    estimate value for respective player
-        #    if value larger than deficit, send offer
-        #    otherwise check value for the next player (not tempbanned) etc.
-        #    if no player value is larger than deficit, try with next asset
-        #    (sometimes no trade takes place and player goes bankrupt)
+        if self.cash < 0:
+            # Choose a random (not banned) person to trade with
+            shuffle_players = random.sample(game.players, len(game.players))
+            chosen_one = None
+            for person in shuffle_players:
+                if person != self and self.other_players[person] == 0 and \
+                        person.cash > -self.cash:
+                    chosen_one = person
+                    break
+            if chosen_one is not None:
+                # Loop through assets and add them one by one
+                shuffle_board = random.sample(game.board, len(game.board))
+                for item in shuffle_board:
+                    if item.owned_by == self:
+                        game.sell.append(item)
+                        # Calculate sell list value and add to trade cash
+                        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, \
+                            receiver_value, sender_value = \
+                            game.compute_neighborhoods(chosen_one, self, 0, 0)
+                        game.trade_cash = \
+                            game.add_values(receiver_value, game.sell) + \
+                            random.randint(0, 50)
+                        # Send offer only if cash becomes positive
+                        if game.trade_cash > -self.cash:
+                            game.show_trade(self, chosen_one)
+                            pygame.time.wait(1000)
+                            response = chosen_one.reply_negotiate(game, self)
+                            if response:
+                                game.transfer_properties(self, chosen_one)
+                            else:
+                                self.other_players[chosen_one] = 2
+                            break  # break loop and basically exit method
+
         # 2. wants a street to complete neighborhood
         #    there should be a flag in the choose_action() method
         #    send offer according to the flag
@@ -2156,8 +2181,6 @@ class Cheatoid(Player):
         # If rejected, add temporary ban in each case!
         # Question: should we flag the poorest player in choose_action()?
         # Question: should we flag the desired street in choose_action()?
-        pass
-
 
     def reply_negotiate(self, game, other):
         return game.robot_negotiate(self, other)
