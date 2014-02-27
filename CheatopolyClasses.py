@@ -1976,6 +1976,7 @@ class Cheatoid(Player):
     other_players = {}
     poor_guy = None
     poor_trade = True
+    street_trade = None
 
     def mortgage(self, game):
         """
@@ -2092,7 +2093,9 @@ class Cheatoid(Player):
         # Computer should also trade strategically under certain conditions:
         # - another player has a street in same neighborhood;
         if self.trades <= len(game.players):
-            for neighborhood in game.neighborhoods.values():
+            shuffle_neighb = random.sample(game.neighborhoods.values(),
+                                           len(game.neighborhoods.values()))
+            for neighborhood in shuffle_neighb:
                 mine = False
                 other = False
                 empty = False
@@ -2102,6 +2105,7 @@ class Cheatoid(Player):
                     elif street.owned_by is not None and \
                             self.other_players[street.owned_by] == 0:
                         other = True
+                        self.street_trade = neighborhood
                     else:
                         empty = True
                 if mine and other and not empty:
@@ -2170,8 +2174,10 @@ class Cheatoid(Player):
                             break  # break loop and basically exit method
 
         # 2. wants a street to complete neighborhood
-        #    there should be a flag in the choose_action() method
-        #    send offer according to the flag
+        chosen_one = self.street_trade.owned_by
+        #If player has a lot of cash, send cash
+        #Else send another street (perhaps to complete neighborhood)
+
         # 3. wants to profit from the poorest player
         #    get flagged player (there should be a flag)
         #    search through poor player assets for streets in the same nb
