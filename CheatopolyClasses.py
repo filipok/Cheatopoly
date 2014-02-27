@@ -2096,10 +2096,12 @@ class Cheatoid(Player):
             shuffle_neighb = random.sample(game.neighborhoods.values(),
                                            len(game.neighborhoods.values()))
             for neighborhood in shuffle_neighb:
-                mine = False
-                other = False
-                empty = False
+                unique_players = set()  # Create list of unique players
+                mine = False  # True if the cheatoid owns at least one street
+                other = False  # True if there is at least one player available
+                empty = False  # True if there are unowned streets
                 for street in neighborhood:
+                    unique_players.add(street.owned_by)
                     if street.owned_by == self:
                         mine = True
                     elif street.owned_by is not None and \
@@ -2107,8 +2109,10 @@ class Cheatoid(Player):
                         other = True
                         self.street_trade = neighborhood
                     else:
-                        empty = True
-                if mine and other and not empty:
+                        if street.owned_by is None:
+                            empty = True
+                # trade only if there are 2 owners only and no empty streets
+                if mine and other and not empty and len(unique_players) == 2:
                     self.trades += 1
                     print "trying to get street!"
                     return "g"
