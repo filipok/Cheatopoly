@@ -2182,11 +2182,27 @@ class Cheatoid(Player):
             chosen_one = self.street_trade.owned_by
             # Add street to offer
             game.buy.append(self.street_trade)
-            #If partner is human, give less
-            #Else send according to cheatoid calculation
-
+            # Assess trade value
+            old_mine_c, new_mine_c, old_theirs_c, new_theirs_c,  \
+                receiver_value, sender_value = \
+                game.compute_neighborhoods(chosen_one, self, 0, 0)
+            sender_value += game.add_values(sender_value, game.buy)
+            #If chosen_one is human, give less
+            if isinstance(chosen_one, Cheatoid):
+                sender_value += random.randint(0, 100)
+            else:
+                sender_value = int(sender_value*0.66)
             #If self has a lot of cash, send cash
-            #Else send another street (perhaps to complete neighborhood)
+            if self.cash > sender_value + random.randint(0, 200):
+                game.trade_cash = -sender_value
+            else:
+                # Search self's properties for  street missing from other
+                # player's neighborhood
+                # Add to game.sell
+                # Recalculate sender_value and receiver_value and apply haircut
+            #Display and send offer (if any)
+
+                pass
             # at the end:
             self.street_trade = None
 
