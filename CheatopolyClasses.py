@@ -2180,7 +2180,8 @@ class Cheatoid(Player):
         # 2. wants a street to complete neighborhood
         elif self.street_trade is not None:
             chosen_one = self.street_trade.owned_by
-
+            # Add street to offer
+            game.buy.append(self.street_trade)
             #If partner is human, give less
             #Else send according to cheatoid calculation
 
