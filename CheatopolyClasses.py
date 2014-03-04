@@ -2096,26 +2096,14 @@ class Cheatoid(Player):
             shuffle_neighb = random.sample(game.neighborhoods.values(),
                                            len(game.neighborhoods.values()))
             for neighborhood in shuffle_neighb:
-                unique_players = set()  # Create list of unique players
-                mine = False  # True if the cheatoid owns at least one street
-                other = False  # True if there is at least one player available
-                empty = False  # True if there are unowned streets
-                for street in neighborhood:
-                    unique_players.add(street.owned_by)
-                    if street.owned_by == self:
-                        mine = True
-                    elif street.owned_by is not None and \
-                            self.other_players[street.owned_by] == 0:
-                        other = True
-                        self.street_trade = neighborhood
-                    else:
-                        if street.owned_by is None:
-                            empty = True
                 # trade only if there are 2 owners only and no empty streets
-                if mine and other and not empty and len(unique_players) == 2:
+                mine, other, empty, c = self.neighborhood_players(neighborhood)
+                if mine and other and not empty and c == 2:
                     self.trades += 1
                     print "trying to get street!"
                     return "g"
+                else:
+                    self.street_trade = None
         # - there is a very poor player compared to the other players.
         min_cash = float("inf")
         avg_cash = 0
@@ -2198,6 +2186,7 @@ class Cheatoid(Player):
             else:
                 # Search self's properties for  street missing from other
                 # player's neighborhood
+                # (use the neighborhood_players function?)
                 # Add to game.sell
                 # Recalculate sender_value and receiver_value and apply haircut
             #Display and send offer (if any)
@@ -2215,6 +2204,24 @@ class Cheatoid(Player):
         # If rejected, add temporary ban in each case!
         # Question: should we flag the poorest player in choose_action()?
         # Question: should we flag the desired street in choose_action()?
+
+    def neighborhood_players(self, neighborhood):
+        unique_players = set()  # Create list of unique players
+        mine = False  # True if the cheatoid owns at least one street
+        other = False  # True if there is at least one player available
+        empty = False  # True if there are unowned streets
+        for street in neighborhood:
+            unique_players.add(street.owned_by)
+            if street.owned_by == self:
+                mine = True
+            elif street.owned_by is not None and \
+                    self.other_players[street.owned_by] == 0:
+                other = True
+                self.street_trade = street
+            else:
+                if street.owned_by is None:
+                    empty = True
+        return mine, other, empty, len(unique_players)
 
     def reply_negotiate(self, game, other):
         return game.robot_negotiate(self, other)
