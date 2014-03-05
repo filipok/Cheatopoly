@@ -2166,26 +2166,58 @@ class Cheatoid(Player):
                             break  # break loop and basically exit method
 
         # 2. wants a street to complete neighborhood
+
         elif self.street_trade is not None:
+
+            #get neighborhood with desired street
+            first_neighborhood = None
+            for neighborhood in game.neighborhood.values():
+                if self.street_trade in neighborhood:
+                    first_neighborhood = neighborhood
             chosen_one = self.street_trade.owned_by
+
             # Add street to offer
             game.buy.append(self.street_trade)
+
             # Assess trade value
             old_mine_c, new_mine_c, old_theirs_c, new_theirs_c,  \
                 receiver_value, sender_value = \
                 game.compute_neighborhoods(chosen_one, self, 0, 0)
             sender_value += game.add_values(sender_value, game.buy)
+
             #If chosen_one is human, give less
             if isinstance(chosen_one, Cheatoid):
                 sender_value += random.randint(0, 100)
             else:
                 sender_value = int(sender_value*0.66)
+
             #If self has a lot of cash, send cash
             if self.cash > sender_value + random.randint(0, 200):
                 game.trade_cash = -sender_value
             else:
                 # Search self's properties for  street missing from other
                 # player's neighborhood
+                for item in game.board:
+                    if isinstance(item, Street) and item.owned_by == self:
+                        for neighborhood in game.neighborhoods.values():
+                            mine, other, empty, c = self.neighborhood_players(neighborhood)
+                            use_it = False
+                            # just 2 players & other neighborhood
+                            if first_neighborhood != neighborhood and c == 2:
+                                for street in neighborhood:
+                                    if street.owned_by == chosen_one:
+                                        use_it = True
+                                        break
+                                if use_it:
+                                    for street in neighborhood:
+                                        game.sell.append(street)
+                                        #compute values of game.sell
+                                        # send less cash accordingly
+                                        # if still short of cash, that's it
+
+
+
+
                 # (use the neighborhood_players function?)
                 # Add to game.sell
                 # Recalculate sender_value and receiver_value and apply haircut
