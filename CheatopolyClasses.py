@@ -818,6 +818,23 @@ class Game(object):
         return old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, \
             receiver_value, sender_value
 
+    def compute_trade(self, receiver, sender):
+        old_mine_c, new_mine_c, old_theirs_c, new_theirs_c, receiver_value, \
+            sender_value = \
+            self.compute_neighborhoods(receiver, sender, 0, 0)
+        receiver_value += self.add_values(receiver_value, self.sell)
+        sender_value += self.add_values(sender_value, self.buy)
+        return sender_value, receiver_value
+
+    def send_trade(self, receiver, sender):
+        self.show_trade(sender, receiver)
+        pygame.time.wait(1000)
+        response = receiver.reply_negotiate(self, sender)
+        if response:
+            self.transfer_properties(sender, receiver)
+        else:
+            sender.other_players[receiver] = 2
+
     def return_card_and_add(self, card_set, position, card):
         card_set.insert(position, card)
         return self.add_one(position, len(card_set))
@@ -2156,13 +2173,7 @@ class Cheatoid(Player):
                             random.randint(0, 50)
                         # Send offer only if cash becomes positive
                         if game.trade_cash > -self.cash:
-                            game.show_trade(self, chosen_one)
-                            pygame.time.wait(1000)
-                            response = chosen_one.reply_negotiate(game, self)
-                            if response:
-                                game.transfer_properties(self, chosen_one)
-                            else:
-                                self.other_players[chosen_one] = 2
+                            game.send_trade(chosen_one, self)
                             break  # break loop and basically exit method
 
         # 2. wants a street to complete neighborhood
@@ -2180,50 +2191,40 @@ class Cheatoid(Player):
             game.buy.append(self.street_trade)
 
             # Assess trade value
-            old_mine_c, new_mine_c, old_theirs_c, new_theirs_c,  \
-                receiver_value, sender_value = \
-                game.compute_neighborhoods(chosen_one, self, 0, 0)
-            sender_value += game.add_values(sender_value, game.buy)
+            sender_value, receiver_value = game.compute_trade(chosen_one, self)
 
             #If chosen_one is human, give less
             if isinstance(chosen_one, Cheatoid):
-                sender_value += random.randint(0, 100)
+                game.trade_cash = -sender_value - random.randint(0, 100)
             else:
-                sender_value = int(sender_value*0.66)
+                game.trade_cash = -int(sender_value*0.66)
 
-            #If self has a lot of cash, send cash
-            if self.cash > sender_value + random.randint(0, 200):
-                game.trade_cash = -sender_value
+            #If self has not enough cash, sell properties
+            if self.cash < -game.trade_cash:
+                # Search neighborhood shared between self and chosen_one
+                #  and sell all properties to chosen_one
+                for neighborhood in game.neighborhood.values():
+                    mine, other, empty, c = \
+                        self.neighborhood_players(neighborhood)
+                    if mine and not empty and c == 2 and \
+                            neighborhood != first_neighborhood:
+                        for street in neighborhood:
+                            if street.owned_by == chosen_one:
+                                game.sell.append(street)
+                        if len(game.sell) > 0:
+                            sender_value, receiver_value = \
+                                game.compute_trade(chosen_one, self)
+                            if isinstance(chosen_one, Cheatoid):
+                                sender_value += random.randint(0, 100)
+                            else:
+                                sender_value = int(sender_value*0.66)
+                            game.trade_cash = receiver_value - sender_value
+                            if self.cash > game.trade_cash:
+                                game.send_trade(chosen_one, self)
+                                break  # break neighborhood loop
             else:
-                # Search self's properties for  street missing from other
-                # player's neighborhood
-                for item in game.board:
-                    if isinstance(item, Street) and item.owned_by == self:
-                        for neighborhood in game.neighborhoods.values():
-                            mine, other, empty, c = self.neighborhood_players(neighborhood)
-                            use_it = False
-                            # just 2 players & other neighborhood
-                            if first_neighborhood != neighborhood and c == 2:
-                                for street in neighborhood:
-                                    if street.owned_by == chosen_one:
-                                        use_it = True
-                                        break
-                                if use_it:
-                                    for street in neighborhood:
-                                        game.sell.append(street)
-                                        #compute values of game.sell
-                                        # send less cash accordingly
-                                        # if still short of cash, that's it
+                game.send_trade(chosen_one, self)
 
-
-
-
-                # (use the neighborhood_players function?)
-                # Add to game.sell
-                # Recalculate sender_value and receiver_value and apply haircut
-            #Display and send offer (if any)
-
-                pass
             # at the end:
             self.street_trade = None
 
@@ -2236,6 +2237,11 @@ class Cheatoid(Player):
         # If rejected, add temporary ban in each case!
         # Question: should we flag the poorest player in choose_action()?
         # Question: should we flag the desired street in choose_action()?
+
+        # at the very end:
+        game.sell = []
+        game.buy = []
+        game.trade_cash = 0
 
     def neighborhood_players(self, neighborhood):
         unique_players = set()  # Create list of unique players
