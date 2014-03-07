@@ -2179,10 +2179,9 @@ class Cheatoid(Player):
         # 2. wants a street to complete neighborhood
 
         elif self.street_trade is not None:
-
             #get neighborhood with desired street
             first_neighborhood = None
-            new_neighborhood = None
+            new_neighborhood = []
             for neighborhood in game.neighborhood.values():
                 if self.street_trade in neighborhood:
                     first_neighborhood = neighborhood
