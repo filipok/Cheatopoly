@@ -2182,6 +2182,7 @@ class Cheatoid(Player):
 
             #get neighborhood with desired street
             first_neighborhood = None
+            new_neighborhood = None
             for neighborhood in game.neighborhood.values():
                 if self.street_trade in neighborhood:
                     first_neighborhood = neighborhood
@@ -2200,30 +2201,31 @@ class Cheatoid(Player):
                 game.trade_cash = -int(sender_value*0.66)
 
             #If self has not enough cash, sell properties
-            if self.cash < -game.trade_cash:
-                # Search neighborhood shared between self and chosen_one
-                #  and sell all properties to chosen_one
+            if self.cash >= -game.trade_cash:
+                game.send_trade(chosen_one, self)
+            else:
+                # Find neighborhood shared between self and chosen_one
                 for neighborhood in game.neighborhood.values():
                     mine, other, empty, c = \
                         self.neighborhood_players(neighborhood)
                     if mine and not empty and c == 2 and \
                             neighborhood != first_neighborhood:
-                        for street in neighborhood:
-                            if street.owned_by == chosen_one:
-                                game.sell.append(street)
-                        if len(game.sell) > 0:
-                            sender_value, receiver_value = \
-                                game.compute_trade(chosen_one, self)
-                            if isinstance(chosen_one, Cheatoid):
-                                sender_value += random.randint(0, 100)
-                            else:
-                                sender_value = int(sender_value*0.66)
-                            game.trade_cash = receiver_value - sender_value
-                            if self.cash > game.trade_cash:
-                                game.send_trade(chosen_one, self)
-                                break  # break neighborhood loop
-            else:
-                game.send_trade(chosen_one, self)
+                        new_neighborhood = neighborhood
+                        break
+                #  Sell all properties in that neighborhood to chosen_one
+                for street in new_neighborhood:
+                    if street.owned_by == chosen_one:
+                        game.sell.append(street)
+                if len(game.sell) > 0:
+                    sender_value, receiver_value = \
+                        game.compute_trade(chosen_one, self)
+                    if isinstance(chosen_one, Cheatoid):
+                        sender_value += random.randint(0, 100)
+                    else:
+                        sender_value = int(sender_value*0.66)
+                    game.trade_cash = receiver_value - sender_value
+                    if self.cash > game.trade_cash:
+                        game.send_trade(chosen_one, self)
 
             # at the end:
             self.street_trade = None
