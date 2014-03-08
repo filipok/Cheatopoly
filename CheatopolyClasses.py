@@ -2230,14 +2230,13 @@ class Cheatoid(Player):
             self.street_trade = None
 
         # 3. wants to profit from the poorest player
-        #    get flagged player (there should be a flag)
-        #    search through poor player assets for streets in the same nb
-        #    if player street(s) enough to complete nb, offer more
-        #    if not enough to complete nb, but no other owners, offer less
-
-        # If rejected, add temporary ban in each case!
-        # Question: should we flag the poorest player in choose_action()?
-        # Question: should we flag the desired street in choose_action()?
+        elif self.poor_guy is not None:
+            # search through poor player assets for streets in the same nb
+            # if player street(s) enough to complete self's nb, offer more
+            # if not enough to complete nb, but no other owners, offer less
+            # TODO
+            # at the and
+            self.poor_guy = None
 
         # at the very end:
         game.sell = []
