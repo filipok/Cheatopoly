@@ -2243,7 +2243,7 @@ class Cheatoid(Player):
                 #if mine and other and empty and other == poor_guy:
                 #    offer less (send_trade); break
                 # if no break as above, then reset trades?
-
+                pass
             # at the and
             self.poor_guy = None
 
