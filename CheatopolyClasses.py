@@ -2238,12 +2238,17 @@ class Cheatoid(Player):
             # TODO
 
             for neighborhood in game.neighborhoods:
-                #if mine and other and not empty and other == poor_guy:
-                #    offer more (send_trade); break
-                #if mine and other and empty and other == poor_guy:
-                #    offer less (send_trade); break
-                # if no break as above, then reset trades?
-                pass
+                mine, other, empty, c = \
+                        self.neighborhood_players(neighborhood)
+                if mine and other and not empty and c == 2:
+                #  if other == poor_guy:
+                #      offer more (send_trade); break
+                    pass
+                if mine and other and empty and c == 2:
+                #     if other == poor_guy:
+                #        offer less (send_trade); break
+                    pass
+            # if no, exit after loop
             # at the and
             self.poor_guy = None
 
