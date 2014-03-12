@@ -1965,6 +1965,12 @@ class Player(object):
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
 
+    def in_neighborhood(self, neighborhood):
+        for street in neighborhood:
+            if street.owned_by == self:
+                return True
+        return False
+
     def __repr__(self):
         return "Player " + self.name + ", human: " + str(self.human)
 
