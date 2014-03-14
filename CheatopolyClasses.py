@@ -2244,13 +2244,16 @@ class Cheatoid(Player):
             for neighborhood in game.neighborhoods:
                 mine, other, empty, c = \
                     self.neighborhood_players(neighborhood)
-                if mine and other and not empty and c == 2 and \
+                if mine and other and  c == 2 and \
                         self.poor_guy.in_neighborhood(neighborhood):
-                #      offer more (send_trade); break
-                    pass
-                if mine and other and empty and c == 2 and \
-                        self.poor_guy.in_neighborhood(neighborhood):
-                #        offer less (send_trade); break
+                #       add poor_guy's properties to game.buy
+                #       if not empty:
+                #           for each property add hotel rent to trade_cash
+                #       else:
+                #            for each property add 4_hose rent to trade_cash
+                #       trade_cash = min(trade_cash,int(0.75 * self.cash))
+                #       send_trade;
+                #       break
                     pass
             # if no, exit after loop
             # at the and
