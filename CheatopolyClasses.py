@@ -2240,22 +2240,26 @@ class Cheatoid(Player):
             # search through poor player assets for streets in the same nb
             # if player street(s) enough to complete self's nb, offer more
             # if not enough to complete nb, but no other owners, offer less
-            # TODO
+            empty = False
             for neighborhood in game.neighborhoods:
                 mine, other, empty, c = \
                     self.neighborhood_players(neighborhood)
-                if mine and other and  c == 2 and \
+                if mine and other and c == 2 and \
                         self.poor_guy.in_neighborhood(neighborhood):
-                #       add poor_guy's properties to game.buy
-                #       if not empty:
-                #           for each property add hotel rent to trade_cash
-                #       else:
-                #            for each property add 4_hose rent to trade_cash
-                #       trade_cash = min(trade_cash,int(0.75 * self.cash))
-                #       send_trade;
-                #       break
-                    pass
-            # if no, exit after loop
+                    # add poor_guy's properties to game.buy
+                    for street in neighborhood:
+                        if street.owned_by == self.poor_guy:
+                            game.buy.append(street)
+                    break
+            # determine trade_cash
+            for street in game.buy:
+                if not empty:
+                    game.trade_cash -= street.rent_h
+                else:
+                    game.trade_cash -= street.rent4
+            #do not exceed self's money
+            game.trade_cash = max(game.trade_cash, -int(0.75*self.cash))
+            game.send_trade(self.poor_guy, self)
             # at the and
             self.poor_guy = None
 
