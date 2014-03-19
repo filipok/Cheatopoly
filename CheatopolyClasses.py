@@ -2106,6 +2106,7 @@ class Cheatoid(Player):
                 not self.successful_mortgage and \
                 self.trades <= len(game.players):
             self.trades += 1
+            print "negative cash!"
             return "g"
         if self.cash > 125 and self.successful_demortgage:
             return "e"
@@ -2188,7 +2189,7 @@ class Cheatoid(Player):
             #get neighborhood with desired street
             first_neighborhood = None
             new_neighborhood = []
-            for neighborhood in game.neighborhood.values():
+            for neighborhood in game.neighborhoods.values():
                 if self.street_trade in neighborhood:
                     first_neighborhood = neighborhood
             chosen_one = self.street_trade.owned_by
@@ -2210,7 +2211,7 @@ class Cheatoid(Player):
                 game.send_trade(chosen_one, self)
             else:
                 # Find neighborhood shared between self and chosen_one
-                for neighborhood in game.neighborhood.values():
+                for neighborhood in game.neighborhoods.values():
                     mine, other, empty, c = \
                         self.neighborhood_players(neighborhood)
                     if mine and not empty and c == 2 and \
@@ -2241,7 +2242,7 @@ class Cheatoid(Player):
             # if player street(s) enough to complete self's nb, offer more
             # if not enough to complete nb, but no other owners, offer less
             empty = False
-            for neighborhood in game.neighborhoods:
+            for neighborhood in game.neighborhoods.values():
                 mine, other, empty, c = \
                     self.neighborhood_players(neighborhood)
                 if mine and other and c == 2 and \
