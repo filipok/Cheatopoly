@@ -2230,7 +2230,7 @@ class Cheatoid(Player):
                     else:
                         sender_value = int(sender_value*0.66)
                     game.trade_cash = receiver_value - sender_value
-                    if self.cash > game.trade_cash:
+                    if self.cash >= -game.trade_cash:
                         game.send_trade(chosen_one, self)
 
             # at the end:
