@@ -2106,7 +2106,7 @@ class Cheatoid(Player):
                 not self.successful_mortgage and \
                 self.trades <= len(game.players):
             self.trades += 1
-            print "negative cash!"
+            #print "negative cash!"
             return "g"
         if self.cash > 125 and self.successful_demortgage:
             return "e"
@@ -2124,7 +2124,7 @@ class Cheatoid(Player):
                 mine, other, empty, c = self.neighborhood_players(neighborhood)
                 if mine and other and not empty and c == 2:
                     self.trades += 1
-                    print "trying to get street!"
+                    #print "trying to get street!"
                     return "g"
                 else:
                     self.street_trade = None
@@ -2139,7 +2139,7 @@ class Cheatoid(Player):
         if min_cash < (avg_cash/len(game.players))/3 and \
                 min_cash < 2*self.cash and self.poor_guy != self and \
                 self.poor_trade and self.trades <= len(game.players):
-            print "trying to trade with poor guy!"
+            #print "trying to trade with poor guy!"
             self.poor_trade = False  # Only one poor-trade attempt per turn
             self.trades += 1
             return "g"
@@ -2208,6 +2208,7 @@ class Cheatoid(Player):
 
             #If self has not enough cash, sell properties
             if self.cash >= -game.trade_cash:
+                #print -game.trade_cash
                 game.send_trade(chosen_one, self)
             else:
                 # Find neighborhood shared between self and chosen_one
@@ -2231,6 +2232,7 @@ class Cheatoid(Player):
                         sender_value = int(sender_value*0.66)
                     game.trade_cash = receiver_value - sender_value
                     if self.cash >= -game.trade_cash:
+                        #print -game.trade_cash
                         game.send_trade(chosen_one, self)
 
             # at the end:
