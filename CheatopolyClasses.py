@@ -1391,6 +1391,9 @@ class Player(object):
     #Random position variation
     x_rand = 0
     y_rand = 0
+    #Used to reverse payments and transfer ownership in case of bankruptcy
+    killer = None
+    last_payment = 0
 
     def __init__(self, name, cash, human, col):
         self.name = name
@@ -1814,6 +1817,7 @@ class Player(object):
                                  str(rent_due) + ".")
             self.cash -= rent_due
             place.owned_by.cash += rent_due
+            self.last_payment = rent_due
         else:
             game.cover_n_central(place.owned_by.name + " owns " + place.name +
                                  ", but is mortgaged.")
