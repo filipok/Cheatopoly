@@ -1392,7 +1392,7 @@ class Player(object):
     x_rand = 0
     y_rand = 0
     #Used to reverse payments and transfer ownership in case of bankruptcy
-    killer = None
+    last_party = None
     last_payment = 0
 
     def __init__(self, name, cash, human, col):
@@ -1818,6 +1818,7 @@ class Player(object):
             self.cash -= rent_due
             place.owned_by.cash += rent_due
             self.last_payment = rent_due
+            self.last_party = place.owned_by
         else:
             game.cover_n_central(place.owned_by.name + " owns " + place.name +
                                  ", but is mortgaged.")
@@ -1831,6 +1832,8 @@ class Player(object):
             tax = max(tax1, tax2)
         else:
             tax = min(tax1, tax2)
+        self.last_payment = tax
+        self.last_party = None
         game.cover_n_central(self.name + " pays taxes amounting to: $" +
                              str(tax))
         game.bank.move_money_to_table(-tax, self)

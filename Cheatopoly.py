@@ -134,8 +134,6 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
         else:
             #Finally, you pay rent (if not mortgaged)
             myPlayer.pay_rent(thisPlace, thisGame)
-            if myPlayer.cash < 0:
-                myPlayer.killer = thisPlace.owned_by
             thisGame.visual_refresh()
 
     #Free Parking
