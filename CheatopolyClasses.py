@@ -1969,6 +1969,12 @@ class Player(object):
                     game.cover_n_central(person.name + " pays $" +
                                          str(game.collect_fine) + " to " +
                                          self.name + ".")
+                person.last_payment = game.collect_fine
+                person.last_party = self
+                if person.cash < 0:
+                    # ask person to take action
+                    # eliminate if still negative
+                    pass
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
 
