@@ -1455,6 +1455,24 @@ class Player(object):
                             game.cover()
                             return "n"
 
+    def process_choices(self, game):
+        choose = ""
+        while choose not in ["u", "d", "m", "e", "g", "n"]:
+            choose = self.choose_action(game)
+            if choose == "u":
+                self.upgrade(game)  # Upgrade
+            elif choose == "d":
+                self.downgrade(game)  # Downgrade
+            elif choose == "m":
+                self.mortgage(game)  # Mortgage
+            elif choose == "e":
+                self.demortgage(game)  # Demortgage
+            elif choose == "g":
+                self.negotiate(game)  # Trade
+            elif choose == "n":  # Exit loop
+                break
+            choose = ""
+
     def move_to_jail(self, game):
         #find next jail (you can have several, if you ask me)
         search_jail = self.location
@@ -1972,8 +1990,8 @@ class Player(object):
                 person.last_payment = game.collect_fine
                 person.last_party = self
                 if person.cash < 0:
-                    # ask person to take action
-                    # eliminate if still negative
+                    person.process_choices(game)
+                    #TODO eliminate if still negative
                     pass
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)

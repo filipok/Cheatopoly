@@ -192,22 +192,7 @@ while thisGame.bank.money > 0 and len(thisGame.players) > 1:
     if myPlayer.cash < 0:
         thisGame.cover_n_central(
             "YOU MUST SELL ASSETS OR YOU GET OUT OF THE GAME!")
-    choose = ''
-    while choose not in ["u", "d", "m", "e", "g", "n"]:
-        choose = myPlayer.choose_action(thisGame)
-        if choose == "u":
-            myPlayer.upgrade(thisGame)  # Upgrade
-        elif choose == "d":
-            myPlayer.downgrade(thisGame)  # Downgrade
-        elif choose == "m":
-            myPlayer.mortgage(thisGame)  # Mortgage
-        elif choose == "e":
-            myPlayer.demortgage(thisGame)  # Demortgage
-        elif choose == "g":
-            myPlayer.negotiate(thisGame)  # Trade
-        elif choose == "n":  # Exit loop
-            break
-        choose = ""
+    myPlayer.process_choices(thisGame)
 
     #save/load game from disk
     # add turn counter and print it at the end
