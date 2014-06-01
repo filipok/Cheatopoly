@@ -293,17 +293,7 @@ class Game(object):
     def check_eliminate(self, player):
         if player.cash < 0:
             self.cover_n_central(player.name + " HAS BEEN ELIMINATED!")
-            for item in self.board:
-                if isinstance(item, (Street, Railroad, Utility)) and \
-                        item.owned_by == player:
-                    item.owned_by = None
-                    if item.hotels == 1:
-                        item.hotels = 0
-                        self.bank.hotels += 1
-                        item.houses = 0
-                    else:
-                        self.bank.houses += item.houses
-                        item.houses = 0
+            self.liquidate_properties(player)
             self.players.pop(self.current_player)
             #no need to increment currentPlayer, but set to zero as needed
             if self.current_player == len(self.players):
@@ -313,6 +303,37 @@ class Game(object):
             self.current_player = self.add_one(self.current_player,
                                                len(self.players))
     
+    def liquidate_properties(self, player):
+        for item in self.board:
+            if isinstance(item, (Street, Railroad, Utility)) and \
+                    item.owned_by == player:
+                item.owned_by = None
+                #item.mortgaged = False
+                #Demolish houses and hotels
+                if item.hotels == 1:
+                    item.hotels = 0
+                    self.bank.hotels += 1
+                    item.houses = 0
+                else:
+                    self.bank.houses += item.houses
+                    item.houses = 0
+
+    def eliminate_other_player(self, other_player):
+        #find other player's index
+        k = 0
+        j = 0
+        n = len(self.players)
+        for i in range(len(self.players)):
+            if self.players[i] == other_player:
+                k = i
+            if self.players[i] == self.players[self.current_player]:
+                j = i
+        self.players.pop(k)
+        if k < self.current_player:
+            self.current_player -= 1
+            if self.current_player == -1:
+                self.current_player = n-1
+
     def game_end(self):
         self.visual_refresh()
         if len(self.players) == 1:
