@@ -2000,8 +2000,10 @@ class Player(object):
             game.cover_n_central(text)
     
     def check_specific_comm(self, game):
+        import copy
         if game.community_chest[game.current_comm].collect == 1:
-            for person in game.players:
+            players_copy = copy.deepcopy(game.players)
+            for person in players_copy:
                 if person != self:
                     person.cash -= game.collect_fine
                     self.cash += game.collect_fine
@@ -2012,8 +2014,10 @@ class Player(object):
                 person.last_party = self
                 if person.cash < 0:
                     person.process_choices(game)
-                    #TODO eliminate if still negative
-                    pass
+                    #eliminate if still negative
+                    game.cover_n_central(person.name + " HAS BEEN ELIMINATED!")
+                    game.liquidate_properties(person)
+                    game.eliminate_other_player(person)
         elif game.community_chest[game.current_comm].go_start == 1:
             self.move_to_start(game)
 
