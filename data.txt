@@ -1,0 +1,86 @@
+start
+street	60	2	10	30	90	160	250	30	50	50	Purple	Bulgaria
+chestL
+street	60	4	20	60	180	320	450	30	50	50	Purple	Romania
+tax	10%	200	Income Tax	Pay 10% or $200
+rail	200	25	50	100	200	100	Berlin
+street	100	6	30	90	270	400	550	50	50	50	Teal	Estonia
+chanceL
+street	100	6	30	90	270	400	550	50	50	50	Teal	Latvia
+street	110	8	40	100	300	450	600	60	50	50	Teal	Lithuania
+jail
+street	150	10	50	150	450	625	750	70	100	100	Pink	Croatia
+utility	150	75	EU Commission
+street	150	10	50	150	450	625	750	70	100	100	Pink	Slovenia
+street	160	12	60	180	500	700	900	80	100	100	Pink	Austria
+rail	200	25	50	100	200	100	London
+street	180	14	70	200	550	750	950	90	100	100	Orange	Hungary
+chestL
+street	180	14	70	200	550	750	950	90	100	100	Orange	Slovakia
+street	200	16	80	220	600	800	1000	100	100	100	Orange	Czech Rep
+park
+street	220	18	90	250	700	875	1050	110	150	150	Red	Greece
+chanceL
+street	220	18	90	250	700	875	1050	110	150	150	Red	Portugal
+street	240	20	100	300	750	925	1100	120	150	150	Red	Spain
+rail	200	25	50	100	200	100	Moscow
+street	260	22	110	330	800	975	1150	130	150	150	Yellow	Denmark
+street	260	22	110	330	800	975	1150	130	150	150	Yellow	Belgium
+utility	150	75	NATO HQ
+street	280	24	120	360	850	1025	1200	140	150	150	Yellow	Netherlands
+gotojail
+street	300	26	130	390	900	1100	1275	150	200	200	Green	Italy
+street	300	26	130	390	900	1100	1275	150	200	200	Green	France
+chestL
+street	320	28	150	450	1000	1200	1400	160	200	200	Green	Germany
+rail	200	25	50	100	200	100	Istanbul
+chanceL
+street	350	35	175	500	1100	1300	1500	175	200	200	Blue	Ireland
+tax	75	None	Luxury Tax	Pay $75
+street	400	50	200	600	1400	1700	2000	200	200	200	Blue	United Kingdom
+
+chest	0	0	1	0	0	0	Get out of jail, free
+chest	0	0	1	0	0	0	Get out of jail, free
+chest	0	45	0	0	0	0	From sale of stock you get $45
+chest	0	100	0	0	0	0	You inherit $100
+chest	0	-100	0	0	0	0	Pay hospital $100
+chest	0	0	0	1	0	0	You are assessed for street repairs ($45/house, $115/hotel)
+chest	0	25	0	0	0	0	Receive for services $25
+chest	0	-150	0	0	0	0	Pay school tax of $150
+chest	0	-50	0	0	0	0	Doctor's fee, pay $50
+chest	0	0	0	0	1	0	Collect $50 from every player
+chest	0	10	0	0	0	0	You have won second prize in a beauty contest, collect $10
+chest	0	100	0	0	0	0	Xmas fund matures, collect $100
+chest	0	100	0	0	0	0	Life insurance fund matures, collect $100
+chest	0	20	0	0	0	0	Income tax refund, collect $20
+chest	0	200	0	0	0	0	Bank error in your favor, collect $200
+chest	1	0	0	0	0	0	Advance to Go
+chest	0	0	0	0	0	1	Go directly to jail, do not pass Go, do not collect $200
+chance	0	0	1	0	0	0	0	0	Get out of jail free
+chance	0	0	1	0	0	0	0	0	Get out of jail free
+chance	0	0	0	0	0	1	0	0	Go directly to jail, do not pass Go, do not collect $200
+chance	0	-15	0	0	0	0	0	0	Pay poor tax of $15
+chance	0	150	0	0	0	0	0	0	Your building and loan matures, collect $150
+chance	0	50	0	0	0	0	0	0	Bank pays you dividend of $50
+chance	0	0	1	0	0	0	0	0	Get out of jail free
+chance	0	0	0	0	0	0	1	Berlin	Take a flight to Berlin; if you pass Go, collect $200
+chance	-3	0	0	0	0	0	0	0	Go back 3 spaces
+chance	0	0	0	0	1	0	0	0	Make general repairs on all your property ($25/house, $100/hotel)
+chance	0	0	0	1	0	0	0	0	Advance token to next railroad and pay twice the rent or you can buy it from the bank
+chance	0	0	0	1	0	0	0	0	Advance token to next railroad and pay twice the rent or you can buy it from the bank
+chance	0	0	0	0	0	0	0	1	Advance to Go (collect $200)
+chance	0	0	0	0	0	0	0	Spain	Advance to Spain
+chance	0	0	0	0	0	0	0	United Kingdom	Take a walk to the UK
+chance	0	0	0	0	0	0	0	Croatia	Advance to Croatia
+const	playerCash	1500
+const	money	15140
+const	houses	32
+const	hotels	12
+const	startWage	200
+const	jailFine	50
+const	collectFine	50
+const	chanceRepairsMin	25
+const	chanceRepairsMax	100
+const	chestRepairsMin	45
+const	chestRepairsMax	115
+
