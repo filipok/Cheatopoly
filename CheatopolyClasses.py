@@ -286,6 +286,7 @@ class Game(object):
                 repair_cost += item.houses * house_cost + \
                     item.hotels * hotel_cost
         player.cash -= repair_cost
+        player.last_party = None
         self.bank.card_payments += repair_cost  # Money goes to table
         self.cover_n_central(
             "Your repair costs have amounted to $" + str(repair_cost) + ".")
@@ -307,8 +308,8 @@ class Game(object):
         for item in self.board:
             if isinstance(item, (Street, Railroad, Utility)) and \
                     item.owned_by == player:
-                item.owned_by = None
-                #item.mortgaged = False
+                # give item to last trade partner or the bank
+                item.owned_by = player.last_party
                 #Demolish houses and hotels
                 if item.hotels == 1:
                     item.hotels = 0
@@ -317,6 +318,11 @@ class Game(object):
                 else:
                     self.bank.houses += item.houses
                     item.houses = 0
+        #substract amount actually unpaid from last partner/bank
+        if isinstance(player.last_party, Player):
+            player.last_party.cash -= - player.cash
+        else:
+            self.bank.card_payments -= - player.cash
 
     def eliminate_other_player(self, other_player):
         #find other player's index
@@ -886,6 +892,9 @@ class Bank(object):
         #move money from player to table
         player.cash += amount
         self.card_payments -= amount
+        #if player pays money to the bank
+        if amount < 0:
+            player.last_party = None
 
 
 class Place(object):
@@ -1414,7 +1423,6 @@ class Player(object):
     y_rand = 0
     #Used to reverse payments and transfer ownership in case of bankruptcy
     last_party = None
-    last_payment = 0
 
     def __init__(self, name, cash, human, col):
         self.name = name
@@ -1856,7 +1864,6 @@ class Player(object):
                                  str(rent_due) + ".")
             self.cash -= rent_due
             place.owned_by.cash += rent_due
-            self.last_payment = rent_due
             self.last_party = place.owned_by
         else:
             game.cover_n_central(place.owned_by.name + " owns " + place.name +
@@ -1871,7 +1878,6 @@ class Player(object):
             tax = max(tax1, tax2)
         else:
             tax = min(tax1, tax2)
-        self.last_payment = tax
         self.last_party = None
         game.cover_n_central(self.name + " pays taxes amounting to: $" +
                              str(tax))
@@ -1993,7 +1999,8 @@ class Player(object):
                 game.cover_n_central(text)
         #Else if already three turns in jail:
         if self.time_in_jail == 3:
-            game.bank.move_money(-game.jail_fine, self)
+            #now the money goes to the table instead (for technical reasons)
+            game.bank.move_money_to_table(-game.jail_fine, self)
             self.reset_jail()
             text = self.name + " pays anyway $" + str(game.jail_fine) +\
                 " to get out of jail after three turns."
@@ -2010,7 +2017,6 @@ class Player(object):
                     game.cover_n_central(person.name + " pays $" +
                                          str(game.collect_fine) + " to " +
                                          self.name + ".")
-                person.last_payment = game.collect_fine
                 person.last_party = self
                 if person.cash < 0:
                     person.process_choices(game)
